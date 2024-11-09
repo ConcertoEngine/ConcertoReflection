@@ -1,38 +1,8 @@
-{-# LANGUAGE LambdaCase #-}
 import Text.XML.Light
 import Types
-import Data.Foldable (find)
 import Data.Maybe (mapMaybe)
 import Data.Either (partitionEithers)
-import Data.List (intercalate)
 
--- <?xml version="1.0" encoding="UTF-8"?>
-
--- <package name="Sample" version="1.0" author="John Doe" description="Sample package for Concerto">
-
---     <include file="Concerto/Core/Types"/>
-
---     <namespace name="cct">
-
---         <enum name="SampleEnum" base="UInt32">
---             <member name="Foo" value="0"/>
---             <member name="Bar" value="1"/>
---         </enum>
-
---         <class name="Sample">
---             <method name="Foo" return="void" public="true">
---                 <param name="bar" type="Int32"/>
---             </method>
-
---             <member name="_bar" type="Int32" public="false" accessors="true"/>
---         </class>
-
---     </namespace>
-
---     <class name="Test">
---     </class>
-
--- </package>
 
 parseInclude :: Element -> Maybe (Either String Include)
 parseInclude (Element (QName "include" Nothing Nothing) attrs _ line) = do
