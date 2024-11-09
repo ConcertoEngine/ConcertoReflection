@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<namespace name="cct">
+<package name="Sample" version="1.0" description="Sample package for Concerto">
+
     <include file="Concerto/Core/Types"/>
 
-    <enum name="SampleEnum" base="UInt32">
-        <member name="Foo" value="0"/>
-        <member name="Bar" value="1"/>
-    </enum>
+    <namespace name="cct">
+        <include file="invalidinclude"/>
+        <enum name="SampleEnum" base="UInt32">
+            <member name="Foo" value="0"/>
+            <member name="Bar" value="1"/>
+        </enum>
 
-    <class name="Sample">
-        <method name="Foo" return="void" public="true">
-            <param name="bar" type="Int32"/>
-        </method>
+        <class name="Sample">
+            <method name="Foo" return="void" public="true">
+                <param name="bar" type="Int32"/>
+            </method>
 
-        <member name="_bar" type="Int32" public="false" accessors="true"/>
+            <member name="_bar" type="Int32" public="false" accessors="true"/>
+        </class>
+
+    </namespace>
+
+    <class name="Test">
     </class>
 
-</namespace>
+</package>

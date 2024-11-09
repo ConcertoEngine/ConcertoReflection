@@ -1,4 +1,5 @@
 module Types where
+import Text.XML.Light (Element)
 
 data Param = Param {
                 paramName :: String,
@@ -9,8 +10,15 @@ data Method = Method {
                 methodName :: String,
                 methodReturnType :: String,
                 methodIsPublic :: Bool,
-                methodParameters :: [(String, String)]
+                methodParameters :: [Param]
             } deriving (Show)
+
+
+data ClassMember = ClassMember {
+                    classMemberName :: String,
+                    classMemberType :: String,
+                    classMemberIsPublic :: Bool
+                } deriving (Show)
 
 data Class = Class {
                 className :: String,
@@ -18,19 +26,12 @@ data Class = Class {
                 classMembers :: [ClassMember]
             } deriving (Show)
 
-data ClassMember = ClassMember {
-                    classMemberName :: String,
-                    classMemberType :: String,
-                    classMemberIsPublic :: Bool,
-                    classMemberHasAccessors :: Bool
-                } deriving (Show)
-
 data EnumMember = EnumMember {
                     enumMemberName :: String,
                     enumMemberValue :: Int
                 } deriving (Show)
 
-data Enumeration = Enum {
+data Enumeration = Enumeration {
                     enumName :: String,
                     enumBase :: String,
                     enumMembers :: [EnumMember]
@@ -47,9 +48,12 @@ data Include = Include {
                     includeIsPublic :: Bool
                 } deriving (Show)
 
-data File = File {
-                includes :: [Include],
-                namespaces :: [Namespace],
-                classes :: [Class],
-                enums :: [Enumeration]
+data Package = Package {
+                packageName :: String,
+                packageVersion :: String,
+                packageDescription :: String,
+                packageIncludes :: [Include],
+                packageNamespaces :: [Namespace],
+                packageClasses :: [Class],
+                packageEnums :: [Enumeration]
             } deriving (Show)
