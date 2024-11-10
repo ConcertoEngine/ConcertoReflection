@@ -1,2 +1,5 @@
 .vscode
+.xmake
 dist-newstyle
+vsxmake2022
+build
