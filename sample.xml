@@ -2,7 +2,7 @@
 
 <package name="Sample" version="1.0" description="Sample package for Concerto">
 
-    <include file="Concerto/Core/Types.hpp"/>
+    <include file="Concerto/Core/Types.hpp" public="true"/>
 
     <namespace name="cct">
         <include file="invalidinclude"/>

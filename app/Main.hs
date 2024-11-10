@@ -10,6 +10,6 @@ main = do
                 Nothing -> error "Failed to parse xml"
                 Just doc  -> case parsePackage doc of
                                 Just result -> case result of
-                                                Right p -> print p
+                                                Right p -> generate p
                                                 Left err -> putStr err
                                 Nothing -> print "No package found"
