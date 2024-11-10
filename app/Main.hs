@@ -1,6 +1,7 @@
 module Main where
-import Parser
 import Text.XML.Light
+import Parser
+import Generator
 
 main :: IO ()
 main = do
