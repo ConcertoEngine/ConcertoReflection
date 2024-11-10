@@ -40,6 +40,7 @@ generateClassHpp api (Class name True methods members) = "class " ++ api ++ " " 
                                                         ++ "public:\n" ++ concatMap generateClassMembersGetterHpp members ++ "\n"
                                                         ++ concatMap generateClassSetterHpp members ++ "\n"
                                                         ++ concatMap generateMethod methods ++ "\n"
+                                                        ++ "\tCONCERTO_OBJECT(" ++ name ++ ");\n"
                                                         ++ "private:\n"
                                                         ++ concatMap generateClassMembers members ++ "};\n"
 generateClassHpp _ _ = "" --class is defined by the user, no need to generate it

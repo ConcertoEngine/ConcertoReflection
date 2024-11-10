@@ -3,6 +3,7 @@ import Data.Char (toUpper)
 import Types
 import Generator.EnumGenerator
 import Generator.ClassGenerator
+import System.Directory (createDirectoryIfMissing)
 
 generateHppInclude :: Include -> String
 generateHppInclude (Include file True) = "#include \"" ++ file ++ "\"\n"
@@ -20,8 +21,11 @@ generateHpp packageName includes classes enums =
     let api = map toUpper packageName ++ "_API"
     in concatMap generateHppInclude includes
        ++ concatMap generateEnum enums
+       ++ "\n"
        ++ concatMap (generatePredeclareEnumToString api) enums
+       ++ "\n"
        ++ concatMap (generatePredeclareEnumFromString api) enums
+       ++ "\n"
        ++ concatMap (Generator.ClassGenerator.generateClassHpp api) classes
 
 generateCpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
@@ -37,12 +41,13 @@ generateNamespaceHpp api (Namespace name enums classes) = "namespace " ++ name +
 generateNamespaceCpp :: Namespace -> String
 generateNamespaceCpp (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateCpp name [] classes enums ++ "}\n"
 
-generate :: Package -> IO ()
-generate (Package name version description includes namespaces classes enums) = do
+generate :: Package -> String -> IO ()
+generate (Package name version description includes namespaces classes enums) outputDir = do
         let hpp = "//This file was automaticly generated, do not edit\n\n"
                 ++ "#pragma once\n"
-                ++ "#include <Concerto/Core/Types.hpp>\n"
+                ++ "#include <Concerto/Reflection/Defines.hpp>\n\n"
                 ++ generateDefines name
+                ++ "\n"
                 ++ generateHpp name includes classes enums
                 ++ "\n"
                 ++ concatMap (generateNamespaceHpp name) namespaces
@@ -53,5 +58,6 @@ generate (Package name version description includes namespaces classes enums) = 
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces
-        writeFile (name ++ ".hpp") hpp
-        writeFile (name ++ ".cpp") cpp
+        createDirectoryIfMissing True outputDir
+        writeFile (outputDir ++ "/" ++ name ++ "Package.hpp") hpp
+        writeFile (outputDir ++ "/" ++ name ++ "Package.cpp") cpp
