@@ -43,18 +43,19 @@ generateNamespaceCpp (Namespace name enums classes) = "namespace " ++ name ++ "\
 
 generate :: Package -> String -> IO ()
 generate (Package name version description includes namespaces classes enums) outputDir = do
-        let hpp = "//This file was automaticly generated, do not edit\n\n"
+        let hpp = "//This file was automatically generated, do not edit\n\n"
                 ++ "#pragma once\n"
                 ++ "#include <Concerto/Reflection/Defines.hpp>\n\n"
+                ++ "#include <Concerto/Reflection/Class.hpp>\n"
                 ++ generateDefines name
                 ++ "\n"
                 ++ generateHpp name includes classes enums
                 ++ "\n"
                 ++ concatMap (generateNamespaceHpp name) namespaces
 
-        let cpp = "//This file was automaticly generated, do not edit\n\n"
+        let cpp = "//This file was automatically generated, do not edit\n\n"
                 ++ "#include <Concerto/Core/Assert.hpp>\n"
-                ++ "#include \"" ++ name ++ ".hpp\"\n"
+                ++ "#include \"" ++ name ++ "Package.hpp\"\n"
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces
