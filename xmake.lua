@@ -12,15 +12,26 @@ rule("xml")
     set_extensions(".xml")
     on_config(function (target)
         for _, filepath in ipairs(os.files("Tests/**.xml")) do
-            local generatedFile = path.join(target:targetdir(), "Generated", path.basename(filepath))
-            target:add("headerfiles", target:targetdir() .. "/(Generated/" .. path.basename(filepath) ..".hpp)")
-            target:add("includedirs", path.join(target:targetdir(), "Generated"), {public = true})
+            local generatedFile = path.join(target:autogendir(), "Reflection", path.basename(filepath))
+            target:add("headerfiles", target:autogendir() .. "/(Reflection/" .. path.basename(filepath) ..".hpp)")
+            target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
             target:add("files", generatedFile .. ".cpp", {always_added = true})
             target:add("files", filepath)
         end
     end)
-    before_build_file(function (target, sourcefile)
-        os.execv("cabal", {"run", "Reflection", "--", sourcefile, path.join(target:targetdir(), "Generated")})
+
+    before_buildcmd_file(function (target, batchcmds, xmlFile, opt)
+        local outputFolder = path.join(target:autogendir(), "Reflection")
+        local outputCppFile = path.join(outputFolder, path.basename(xmlFile) .. ".cpp")
+        local outputHppFile = path.join(outputFolder, path.basename(xmlFile) .. ".hpp")
+
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection %s", xmlFile)
+        batchcmds:vrunv("cabal", {"run", "Reflection", "--", xmlFile, path.join(target:autogendir(), "Reflection")})
+
+        batchcmds:add_depfiles(xmlFile)
+		--batchcmds:add_depvalues() todo add version from cabal
+		batchcmds:set_depmtime(os.mtime(outputCppFile))
+		batchcmds:set_depcache(target:dependfile(outputCppFile))
     end)
 
 target("concerto-reflection")
