@@ -17,6 +17,7 @@ rule("xml")
             target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
             target:add("files", generatedFile .. ".cpp", {always_added = true})
             target:add("files", filepath)
+            target:add("defines", path.basename(filepath):upper() .. "_BUILD")
         end
     end)
 

@@ -14,11 +14,11 @@ generateCppInclude (Include file False) = "#include \"" ++ file ++ "\"\n"
 generateCppInclude _ = ""
 
 generateDefines :: String -> String
-generateDefines name = "#ifdef " ++ map toUpper name ++ "_BUILD\n#define " ++ map toUpper name ++ "_API CONCERTO_EXPORT\n#else\n#define " ++ map toUpper name ++ "_API CONCERTO_IMPORT\n#endif\n"
+generateDefines name = "#ifdef " ++ map toUpper name ++ "PACKAGE_BUILD\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_EXPORT\n#else\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_IMPORT\n#endif\n"
 
 generateHpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
 generateHpp packageName includes classes enums =
-    let api = map toUpper packageName ++ "_API"
+    let api = map toUpper packageName ++ "PACKAGE_API"
     in concatMap generateHppInclude includes
        ++ concatMap generateEnum enums
        ++ "\n"
