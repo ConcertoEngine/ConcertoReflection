@@ -45,6 +45,7 @@ generate :: Package -> String -> IO ()
 generate (Package name version description includes namespaces classes enums) outputDir = do
         let hpp = "//This file was automatically generated, do not edit\n\n"
                 ++ "#pragma once\n"
+                ++ "#include <string_view>\n"
                 ++ "#include <Concerto/Reflection/Defines.hpp>\n\n"
                 ++ "#include <Concerto/Reflection/Class.hpp>\n"
                 ++ generateDefines name
