@@ -41,7 +41,7 @@ target("concerto-reflection")
     add_files("Src/*.cpp")
     add_defines("CONCERTO_REFLECTION_BUILD")
     add_includedirs("Include/", { public = true })
-    add_headerfiles("Include/(Concerto/Reflection/**.hpp)")
+    add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
     add_packages("concerto-core", { public = true })
 
 target("concerto-reflection-tests")
