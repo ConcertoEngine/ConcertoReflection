@@ -5,26 +5,35 @@
 #ifndef CONCERTO_REFLECTION_PACKAGE_HPP
 #define CONCERTO_REFLECTION_PACKAGE_HPP
 
+#include <memory>
+#include <optional>
+#include <string_view>
+#include <vector>
+
 #include "Concerto/Reflection/Defines.hpp"
 
 namespace cct::refl
 {
-    class Class;
-    class Object;
-    class Namespace;
+	class Class;
+	class Object;
+	class Namespace;
 
-    class CONCERTO_REFLECTION_API Package
-    {
-    public:
-        virtual ~Package() = default;
+	class CONCERTO_REFLECTION_API Package
+	{
+	public:
+		virtual ~Package() = default;
 
-        virtual std::string_view GetName() const = 0;
-        virtual std::size_t GetClassCount() const = 0;
+		inline [[nodiscard]] std::string_view GetName() const;
+		[[nodiscard]] std::size_t GetClassCount() const;
+		[[nodiscard]] std::size_t GetNamespaceCount() const;
 
-        virtual const Class& GetClass(std::size_t index) const = 0;
-        virtual const Class& GetClass(std::string_view name) const = 0;
+		[[nodiscard]] const Namespace* GetNamespace(std::size_t index) const;
+		[[nodiscard]] const Namespace* GetNamespace(std::string_view name) const;
+	private:
+		std::string _name;
 
-        virtual bool HasClass(std::string_view name) const = 0;
+		std::vector<std::unique_ptr<Namespace>> _namespaces;
+	};
 }
 
 #endif //CONCERTO_REFLECTION_PACKAGE_HPP
