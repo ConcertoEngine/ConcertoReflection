@@ -10,6 +10,11 @@
 
 namespace cct::refl
 {
+	inline Package::Package(std::string name) :
+		_name(std::move(name))
+	{
+	}
+
 	inline std::string_view Package::GetName() const
 	{
 		return _name;

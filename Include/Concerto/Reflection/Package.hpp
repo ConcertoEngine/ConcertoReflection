@@ -21,7 +21,8 @@ namespace cct::refl
 	class CONCERTO_REFLECTION_API Package
 	{
 	public:
-		virtual ~Package() = default;
+		inline Package(std::string name);
+		~Package() = default;
 
 		inline [[nodiscard]] std::string_view GetName() const;
 		[[nodiscard]] std::size_t GetClassCount() const;
@@ -31,7 +32,6 @@ namespace cct::refl
 		[[nodiscard]] const Namespace* GetNamespace(std::string_view name) const;
 	private:
 		std::string _name;
-
 		std::vector<std::unique_ptr<Namespace>> _namespaces;
 	};
 }

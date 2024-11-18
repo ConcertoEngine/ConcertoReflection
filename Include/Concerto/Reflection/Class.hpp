@@ -22,23 +22,24 @@ namespace cct::refl
 	class CONCERTO_REFLECTION_API Class
 	{
 	public:
+		Class(Namespace* nameSpace, std::string name, Class* baseClass);
 		virtual ~Class() = default;
 
-		[[nodiscard]] virtual std::string_view GetName() const = 0;
-		[[nodiscard]] virtual std::string_view GetNamespaceName() const = 0;
-		[[nodiscard]] virtual const Namespace& GetNamespace() const = 0;
+		[[nodiscard]] std::string_view GetName() const;
+		[[nodiscard]] std::string_view GetNamespaceName() const;
+		[[nodiscard]] const Namespace& GetNamespace() const;
 
-		[[nodiscard]] virtual std::size_t GetMemberVariableCount() const = 0;
-		[[nodiscard]] virtual std::size_t GetMethodCount() const = 0;
+		[[nodiscard]] std::size_t GetMemberVariableCount() const;
+		[[nodiscard]] std::size_t GetMethodCount() const;
 
-		[[nodiscard]] virtual const MemberVariable& GetMemberVariable(std::size_t index) const = 0;
-		[[nodiscard]] virtual const MemberVariable& GetMemberVariable(std::string_view name) const = 0;
+		[[nodiscard]] const MemberVariable* GetMemberVariable(std::size_t index) const;
+		[[nodiscard]] const MemberVariable* GetMemberVariable(std::string_view name) const;
 
-		[[nodiscard]] virtual const Method& GetMethod(std::size_t index) const = 0;
-		[[nodiscard]] virtual const Method& GetMethod(std::string_view name) const = 0;
+		[[nodiscard]] const Method* GetMethod(std::size_t index) const;
+		[[nodiscard]] const Method* GetMethod(std::string_view name) const;
 
-		[[nodiscard]] virtual bool HasMemberVariable(std::string_view name) const = 0;
-		[[nodiscard]] virtual bool HasMethod(std::string_view name) const = 0;
+		[[nodiscard]] bool HasMemberVariable(std::string_view name) const;
+		[[nodiscard]] bool HasMethod(std::string_view name) const;
 
 		[[nodiscard]] virtual std::unique_ptr<Object> CreateInstance() const = 0;
 
@@ -53,8 +54,8 @@ namespace cct::refl
 	private:
 		std::string _name;
 		Namespace* _namespace;
-		std::vector<MemberVariable> _memberVariables;
-		std::vector<Method> _methods;
+		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
+		std::vector<std::unique_ptr<Method>> _methods;
 		Class* _baseClass;
 	};
 }
