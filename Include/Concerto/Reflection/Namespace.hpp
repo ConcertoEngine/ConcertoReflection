@@ -18,6 +18,13 @@ namespace cct::refl
 	{
 	public:
 		Namespace(std::string name);
+		~Namespace() = default;
+
+		Namespace(const Namespace&) = delete;
+		Namespace(Namespace&&) = default;
+
+		Namespace& operator=(const Namespace&) = delete;
+		Namespace& operator=(Namespace&&) = default;
 
 		[[nodiscard]] inline std::string_view GetName() const;
 		[[nodiscard]] inline std::size_t GetHash() const;

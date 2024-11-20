@@ -25,6 +25,12 @@ namespace cct::refl
 		Class(Namespace* nameSpace, std::string name, Class* baseClass);
 		virtual ~Class() = default;
 
+		Class(const Class&) = delete;
+		Class(Class&&) = default;
+
+		Class& operator=(const Class&) = delete;
+		Class& operator=(Class&&) = default;
+
 		[[nodiscard]] std::string_view GetName() const;
 		[[nodiscard]] std::string_view GetNamespaceName() const;
 		[[nodiscard]] const Namespace& GetNamespace() const;

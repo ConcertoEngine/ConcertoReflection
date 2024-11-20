@@ -18,6 +18,12 @@ namespace cct::refl
 		MemberVariable() = default;
 		~MemberVariable() = default;
 
+		MemberVariable(const MemberVariable&) = delete;
+		MemberVariable(MemberVariable&&) = default;
+
+		MemberVariable& operator=(const MemberVariable&) = delete;
+		MemberVariable& operator=(MemberVariable&&) = default;
+
 		std::string_view GetName() const;
 	private:
 		std::string _name;

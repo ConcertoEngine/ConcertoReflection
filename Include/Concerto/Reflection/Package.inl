@@ -10,11 +10,6 @@
 
 namespace cct::refl
 {
-	inline Package::Package(std::string name) :
-		_name(std::move(name))
-	{
-	}
-
 	inline std::string_view Package::GetName() const
 	{
 		return _name;
@@ -31,25 +26,6 @@ namespace cct::refl
 	inline std::size_t Package::GetNamespaceCount() const
 	{
 		return _namespaces.size();
-	}
-
-	inline const Namespace* Package::GetNamespace(std::size_t index) const
-	{
-		if (index > _namespaces.size())
-			return nullptr;
-		return _namespaces[index].get();
-	}
-
-	inline const Namespace* Package::GetNamespace(std::string_view name) const
-	{
-		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
-			{
-				return value->GetName() == name;
-			});
-
-		if (it != _namespaces.end())
-			return it->get();
-		return nullptr;
 	}
 }
 

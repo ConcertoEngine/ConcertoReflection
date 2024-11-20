@@ -18,6 +18,12 @@ namespace cct::refl
 		Method() = default;
 		~Method() = default;
 
+		Method(const Method&) = delete;
+		Method(Method&&) = default;
+
+		Method& operator=(const Method&) = delete;
+		Method& operator=(Method&&) = default;
+
 		std::string_view GetName() const;
 	private:
 		std::string _name;
