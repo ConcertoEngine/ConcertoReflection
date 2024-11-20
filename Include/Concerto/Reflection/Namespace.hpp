@@ -19,15 +19,19 @@ namespace cct::refl
 	public:
 		Namespace(std::string name);
 
-		inline [[nodiscard]] std::string_view GetName() const;
-		inline [[nodiscard]] std::size_t GetClassCount() const;
-		inline [[nodiscard]] const Class* GetClass(std::size_t index) const;
-		inline [[nodiscard]] const Class* GetClass(std::string_view name) const;
+		[[nodiscard]] inline std::string_view GetName() const;
+		[[nodiscard]] inline std::size_t GetHash() const;
+
+		[[nodiscard]] inline std::size_t GetClassCount() const;
+
+		[[nodiscard]] inline const Class* GetClass(std::size_t index) const;
+		[[nodiscard]] inline const Class* GetClass(std::string_view name) const;
 
 		[[nodiscard]] bool HasClass(std::string_view name) const;
 	private:
 		std::string _name;
 		std::vector<std::unique_ptr<Class>> _classes;
+		std::size_t _hash;
 	};
 }
 

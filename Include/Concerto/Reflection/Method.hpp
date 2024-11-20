@@ -5,6 +5,9 @@
 #ifndef CONCERTO_REFLECTION_METHOD_HPP
 #define CONCERTO_REFLECTION_METHOD_HPP
 
+#include <string>
+#include <string_view>
+
 #include "Concerto/Reflection/Defines.hpp"
 
 namespace cct::refl
@@ -14,6 +17,10 @@ namespace cct::refl
 	public:
 		Method() = default;
 		~Method() = default;
+
+		std::string_view GetName() const;
+	private:
+		std::string _name;
 	};
 }
 

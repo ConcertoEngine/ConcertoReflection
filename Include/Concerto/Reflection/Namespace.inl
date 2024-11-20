@@ -10,13 +10,20 @@
 
 namespace cct::refl
 {
-	inline Namespace::Namespace(std::string name) : _name(std::move(name))
+	inline Namespace::Namespace(std::string name) :
+		_name(std::move(name)),
+		_hash(std::hash<std::string>()(name))
 	{
 	}
 
 	inline std::string_view Namespace::GetName() const
 	{
 		return _name;
+	}
+
+	inline std::size_t Namespace::GetHash() const
+	{
+		return _hash;
 	}
 
 	inline std::size_t Namespace::GetClassCount() const

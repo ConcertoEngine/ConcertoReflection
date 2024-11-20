@@ -28,6 +28,7 @@ namespace cct::refl
 		[[nodiscard]] std::string_view GetName() const;
 		[[nodiscard]] std::string_view GetNamespaceName() const;
 		[[nodiscard]] const Namespace& GetNamespace() const;
+		[[nodiscard]] std::size_t GetHash() const;
 
 		[[nodiscard]] std::size_t GetMemberVariableCount() const;
 		[[nodiscard]] std::size_t GetMethodCount() const;
@@ -51,12 +52,17 @@ namespace cct::refl
 
 		template<typename T>
 		[[nodiscard]] bool InheritsFrom() const;
+
+		bool operator==(const Class& other) const;
+		bool operator!=(const Class& other) const;
 	private:
 		std::string _name;
 		Namespace* _namespace;
 		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
 		std::vector<std::unique_ptr<Method>> _methods;
 		Class* _baseClass;
+
+		std::size_t _hash;
 	};
 }
 

@@ -8,15 +8,19 @@
 
 #include "Concerto/Reflection/Class.hpp"
 #include "Concerto/Reflection/Namespace.hpp"
-
+#include "Concerto/Reflection/Method.hpp"
+#include "Concerto/Reflection/MemberVariable.hpp"
 
 namespace cct::refl
 {
 	Class::Class(Namespace* nameSpace, std::string name, Class* baseClass) :
 		_name(std::move(name)),
 		_namespace(nameSpace),
-		_baseClass(baseClass)
+		_baseClass(baseClass),
+		_hash(0)
 	{
+		_hash = nameSpace ? nameSpace->GetHash() : 0;
+		_hash |= baseClass ? baseClass->GetHash() : 0;
 	}
 
 	std::string_view Class::GetName() const
@@ -42,6 +46,11 @@ namespace cct::refl
 			throw std::runtime_error("Invalid namespace pointer");
 		}
 		return *_namespace;
+	}
+
+	std::size_t Class::GetHash() const
+	{
+		return _hash;
 	}
 
 	std::size_t Class::GetMemberVariableCount() const
@@ -120,5 +129,15 @@ namespace cct::refl
 		if (_baseClass->GetName() == name)
 			return true;
 		return _baseClass->InheritsFrom(name);
+	}
+
+	bool Class::operator==(const Class& other) const
+	{
+		return GetHash() == other.GetHash();
+	}
+
+	bool Class::operator!=(const Class& other) const
+	{
+		return !(*this == other);
 	}
 }
