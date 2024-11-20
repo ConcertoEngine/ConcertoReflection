@@ -2,8 +2,12 @@
 // Created by arthur on 10/11/2024.
 //
 
-#include "Concerto/Reflection/Package.hpp"
 #include "Concerto/Reflection/Namespace.hpp"
+#include "Concerto/Reflection/Class.hpp"
+#include "Concerto/Reflection/Method.hpp"
+#include "Concerto/Reflection/MemberVariable.hpp"
+
+#include "Concerto/Reflection/Package.hpp"
 
 namespace cct::refl
 {

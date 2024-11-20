@@ -42,4 +42,6 @@ namespace cct::refl
 	};
 }
 
+#include "Concerto/Reflection/Namespace.inl"
+
 #endif //CONCERTO_REFLECTION_NAMESPACE_HPP

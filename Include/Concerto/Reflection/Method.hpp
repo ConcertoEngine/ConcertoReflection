@@ -30,4 +30,6 @@ namespace cct::refl
 	};
 }
 
+#include "Concerto/Reflection/Method.inl"
+
 #endif //CONCERTO_REFLECTION_METHOD_HPP

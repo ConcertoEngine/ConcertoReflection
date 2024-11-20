@@ -15,7 +15,7 @@ namespace cct::refl
 	class CONCERTO_REFLECTION_API MemberVariable
 	{
 	public:
-		MemberVariable() = default;
+		MemberVariable(std::string name);
 		~MemberVariable() = default;
 
 		MemberVariable(const MemberVariable&) = delete;
@@ -24,10 +24,13 @@ namespace cct::refl
 		MemberVariable& operator=(const MemberVariable&) = delete;
 		MemberVariable& operator=(MemberVariable&&) = default;
 
-		std::string_view GetName() const;
+		[[nodiscard]] inline std::string_view GetName() const;
+
 	private:
 		std::string _name;
 	};
 }
+
+#include "Concerto/Reflection/MemberVariable.inl"
 
 #endif //CONCERTO_REFLECTION_MEMBERVARIABLE_HPP

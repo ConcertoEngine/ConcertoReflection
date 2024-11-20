@@ -7,13 +7,13 @@
 
 #include <memory>
 #include <string_view>
+#include <string>
 #include <vector>
 
 #include "Concerto/Reflection/Defines.hpp"
 
 namespace cct::refl
 {
-	class Class;
 	class Object;
 	class Namespace;
 
@@ -22,6 +22,13 @@ namespace cct::refl
 	public:
 		Package(std::string name);
 		~Package() = default;
+
+		Package(const Package&) = delete;
+		Package(Package&&) = default;
+
+		Package& operator=(const Package&) = delete;
+		Package& operator=(Package&&) = default;
+
 
 		[[nodiscard]] inline std::string_view GetName() const;
 		[[nodiscard]] inline std::size_t GetClassCount() const;

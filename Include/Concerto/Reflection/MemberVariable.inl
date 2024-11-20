@@ -6,8 +6,8 @@
 
 namespace cct::refl
 {
-	MemberVariable::MemberVariable(std::string name) :
-		_name(std::move(name))
+	inline std::string_view MemberVariable::GetName() const
 	{
+		return _name;
 	}
 }
