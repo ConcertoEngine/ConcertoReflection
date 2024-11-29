@@ -15,7 +15,7 @@ generateNamespaceString [] = ""
 generateNamespaceString namespace = namespace ++ "zz::"
 
 generateClassMembersGetterHpp :: ClassMember -> String
-generateClassMembersGetterHpp (ClassMember name typeName _ namespace) = "\tinline const " ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const;\n\tinline " ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "();\n"
+generateClassMembersGetterHpp (ClassMember name typeName _ namespace) = "\tconst " ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const;\n\t" ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "();\n"
 
 generateClassMembersGetterCpp :: String -> ClassMember -> String
 generateClassMembersGetterCpp klassName (ClassMember name typeName _ namespace) = "const " ++ generateNamespaceString namespace ++ typeName ++ "& " ++ klassName ++ "::Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const\n"
