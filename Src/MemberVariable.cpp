@@ -6,8 +6,9 @@
 
 namespace cct::refl
 {
-	MemberVariable::MemberVariable(std::string name) :
-		_name(std::move(name))
+	MemberVariable::MemberVariable(std::string name, std::shared_ptr<Class> type) :
+		_name(std::move(name)),
+		_type(std::move(type))
 	{
 	}
 }

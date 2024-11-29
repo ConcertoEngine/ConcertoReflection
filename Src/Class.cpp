@@ -140,4 +140,12 @@ namespace cct::refl
 	{
 		return !(*this == other);
 	}
+
+	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<Class> type)
+	{
+	}
+
+	void Class::AddMemberFunction(std::string_view name, std::shared_ptr<Class> returnValue, std::vector<std::shared_ptr<Class>> parameters)
+	{
+	}
 }

@@ -61,6 +61,10 @@ namespace cct::refl
 
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const;
+
+	protected:
+		void AddMemberVariable(std::string_view name, std::shared_ptr<Class> type);
+		void AddMemberFunction(std::string_view name, std::shared_ptr<Class> returnValue, std::vector<std::shared_ptr<Class>> parameters);
 	private:
 		std::string _name;
 		Namespace* _namespace;

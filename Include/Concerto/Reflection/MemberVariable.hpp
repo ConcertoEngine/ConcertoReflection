@@ -6,16 +6,17 @@
 #define CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
 
 #include <string>
-#include <string_view>
+#include <memory>
 
 #include "Concerto/Reflection/Defines.hpp"
 
 namespace cct::refl
 {
+	class Class;
 	class CONCERTO_REFLECTION_API MemberVariable
 	{
 	public:
-		MemberVariable(std::string name);
+		MemberVariable(std::string name, std::shared_ptr<Class> type);
 		~MemberVariable() = default;
 
 		MemberVariable(const MemberVariable&) = delete;
@@ -28,6 +29,7 @@ namespace cct::refl
 
 	private:
 		std::string _name;
+		std::shared_ptr<Class> _type;
 	};
 }
 

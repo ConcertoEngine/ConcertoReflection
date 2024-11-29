@@ -10,4 +10,14 @@ namespace cct::refl
 	{
 		return _name;
 	}
+
+	inline std::shared_ptr<const Class> Method::GetReturnValue() const
+	{
+		return _returnValue;
+	}
+
+	inline std::vector<std::shared_ptr<const Class>> Method::GetParameters() const
+	{
+		return _parameters;
+	}
 }
