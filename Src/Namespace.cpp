@@ -10,22 +10,22 @@
 
 namespace cct::refl
 {
-	const Class* Namespace::GetClass(std::size_t index) const
+	std::shared_ptr<const Class> Namespace::GetClass(std::size_t index) const
 	{
 		if (index > GetClassCount())
 			return nullptr;
-		return _classes[index].get();
+		return _classes[index];
 	}
 
-	const Class* Namespace::GetClass(std::string_view name) const
+	std::shared_ptr<const Class> Namespace::GetClass(std::string_view name) const
 	{
-		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::unique_ptr<Class>& value) -> bool
+		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::shared_ptr<const Class>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
 
 		if (it != _classes.end())
-			return it->get();
+			return *it;
 		return nullptr;
 	}
 }

@@ -141,11 +141,28 @@ namespace cct::refl
 		return !(*this == other);
 	}
 
-	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<Class> type)
+	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type)
 	{
 	}
 
-	void Class::AddMemberFunction(std::string_view name, std::shared_ptr<Class> returnValue, std::vector<std::shared_ptr<Class>> parameters)
+	void Class::AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters)
 	{
+	}
+
+	std::shared_ptr<const Namespace> GetNameSpaceByName(std::string_view name)
+	{
+		CONCERTO_ASSERT_FALSE("Not implemented");
+		return nullptr;
+	}
+
+	std::shared_ptr<const Class> GetClassByName(std::string_view nameSpaceName, std::string_view name)
+	{
+		auto nameSpace = GetNameSpaceByName(nameSpaceName);
+		if (nameSpace)
+		{
+			return nameSpace->GetClass(name);
+		}
+		CONCERTO_ASSERT_FALSE("Not implemented");
+		return nullptr;
 	}
 }

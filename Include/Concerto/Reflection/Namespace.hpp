@@ -31,13 +31,13 @@ namespace cct::refl
 
 		[[nodiscard]] inline std::size_t GetClassCount() const;
 
-		[[nodiscard]] inline const Class* GetClass(std::size_t index) const;
-		[[nodiscard]] inline const Class* GetClass(std::string_view name) const;
+		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::size_t index) const;
+		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::string_view name) const;
 
 		[[nodiscard]] bool HasClass(std::string_view name) const;
 	private:
 		std::string _name;
-		std::vector<std::unique_ptr<Class>> _classes;
+		std::vector<std::shared_ptr<Class>> _classes;
 		std::size_t _hash;
 	};
 }

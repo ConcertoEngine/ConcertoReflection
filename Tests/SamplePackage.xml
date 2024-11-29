@@ -3,6 +3,7 @@
 <package name="Sample" version="1.0" description="Sample package for Concerto">
 
     <include file="Concerto/Core/Types.hpp" public="true"/>
+    <include file="SampleBar.hpp" public="false"/>
 
     <namespace name="cct">
         <enum name="SampleEnum" base="UInt32">

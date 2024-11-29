@@ -13,8 +13,4 @@
 #define CONCERTO_REFLECTION_API CONCERTO_IMPORT
 #endif // CONCERTO_REFLECTION_BUILD
 
-#define CONCERTO_OBJECT(className)              \
-public:                                         \
-	static const cct::refl::Class* GetClass();  \
-
 #endif //CONCERTO_REFLECTION_DEFINE_HPP

@@ -51,6 +51,8 @@ target("concerto-reflection-tests")
     add_packages("catch2")
     add_deps("concerto-reflection")
     add_rules("xml")
+    add_includedirs("Tests/", { public = true })
+    add_headerfiles("Tests/**.hpp")
     if is_plat("windows") then
         add_cxflags("/Zc:preprocessor")
     end
