@@ -10,24 +10,28 @@ removeMemberPrefix :: String -> String
 removeMemberPrefix ('_':xs) = xs
 removeMemberPrefix xs       = xs
 
+generateNamespaceString :: String -> String
+generateNamespaceString [] = ""
+generateNamespaceString namespace = namespace ++ "zz::"
+
 generateClassMembersGetterHpp :: ClassMember -> String
-generateClassMembersGetterHpp (ClassMember name typeName _) = "\tinline const " ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const;\n\tinline " ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "();\n"
+generateClassMembersGetterHpp (ClassMember name typeName _ namespace) = "\tinline const " ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const;\n\tinline " ++ generateNamespaceString namespace ++ typeName ++ "& Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "();\n"
 
 generateClassMembersGetterCpp :: String -> ClassMember -> String
-generateClassMembersGetterCpp klassName (ClassMember name typeName _) = "inline const " ++ typeName ++ "& " ++ klassName ++ "::Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const\n"
+generateClassMembersGetterCpp klassName (ClassMember name typeName _ namespace) = "const " ++ generateNamespaceString namespace ++ typeName ++ "& " ++ klassName ++ "::Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "() const\n"
                                                                 ++"{\n\treturn " ++ name ++ ";\n}\n\n"
-                                                                ++ "inline " ++ typeName ++ "& " ++ klassName ++ "::Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "()\n"
+                                                                ++ generateNamespaceString namespace ++ typeName ++ "& " ++ klassName ++ "::Get" ++ capitalizeFirst (removeMemberPrefix name) ++ "()\n"
                                                                 ++"{\n\treturn " ++ name ++ ";\n}\n"
 
 generateClassSetterHpp :: ClassMember -> String
-generateClassSetterHpp (ClassMember name typeName _) = "\tinline void" ++ " Set" ++ capitalizeFirst (removeMemberPrefix name) ++ "(const " ++ typeName ++ "& value);\n"
+generateClassSetterHpp (ClassMember name typeName _ namespace) = "\tvoid" ++ " Set" ++ capitalizeFirst (removeMemberPrefix name) ++ "(const " ++ generateNamespaceString namespace ++ typeName ++ "& value);\n"
 
 generateClassSetterCpp :: String -> ClassMember -> String
-generateClassSetterCpp klassName (ClassMember name typeName _) = "inline void " ++ klassName ++ "::Set" ++ capitalizeFirst (removeMemberPrefix name) ++ "(const " ++ typeName ++ "& value)\n"
+generateClassSetterCpp klassName (ClassMember name typeName _ namespace) = "void " ++ klassName ++ "::Set" ++ capitalizeFirst (removeMemberPrefix name) ++ "(const " ++ generateNamespaceString namespace ++ typeName ++ "& value)\n"
                                                         ++ "{\n\t" ++ name ++ " = value;\n}\n"
 
 generateClassMembers :: ClassMember -> String
-generateClassMembers (ClassMember name typeName isPublic) = "\t" ++ if isPublic then "public: " else "private: " ++ typeName ++ " " ++ name ++ ";\n"
+generateClassMembers (ClassMember name typeName isPublic namespace) = "\t" ++ if isPublic then "public: " else "private:\n\t" ++ generateNamespaceString namespace ++ typeName ++ " " ++ name ++ ";\n"
 
 generateMethodParameters :: Param -> String
 generateMethodParameters (Param name type') = type' ++ " " ++ name
@@ -40,14 +44,14 @@ generateClassHpp api (Class name True methods members) = "class " ++ api ++ " " 
                                                         ++ "public:\n" ++ concatMap generateClassMembersGetterHpp members ++ "\n"
                                                         ++ concatMap generateClassSetterHpp members ++ "\n"
                                                         ++ concatMap generateMethod methods ++ "\n"
-                                                        ++ "\tCONCERTO_OBJECT(" ++ name ++ ");\n"
+                                                        ++ "\tCCT_OBJECT(" ++ name ++ ");\n"
                                                         ++ "private:\n"
                                                         ++ concatMap generateClassMembers members ++ "};\n"
 generateClassHpp _ _ = "" --class is defined by the user, no need to generate it
 
 generateClassCpp :: Class -> String
 generateClassCpp (Class name True _ members) = concatMap (generateClassMembersGetterCpp name) members ++ "\n"
-                                                    ++ concatMap (generateClassSetterCpp name) members
+                                                    ++ concatMap (generateClassSetterCpp name) members ++ "\n"
 generateClassCpp _ = "" --class is defined by the user, no need to generate it
 
 

@@ -62,7 +62,7 @@ executable Reflection
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules:    Types Parser Generator Generator.ClassGenerator Generator.EnumGenerator
+    other-modules:    Types Parser Generator Generator.ClassGenerator Generator.EnumGenerator Generator.InternalClassGenerator
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

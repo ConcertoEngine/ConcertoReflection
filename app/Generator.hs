@@ -3,6 +3,7 @@ import Data.Char (toUpper)
 import Types
 import Generator.EnumGenerator
 import Generator.ClassGenerator
+import Generator.InternalClassGenerator
 import System.Directory (createDirectoryIfMissing)
 
 generateHppInclude :: Include -> String
@@ -32,14 +33,18 @@ generateCpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
 generateCpp _ includes classes enums = do
                 concatMap generateCppInclude includes
                 ++ concatMap generateEnumFromString enums
+                ++ "\n"
                 ++ concatMap generateEnumToString enums
+                ++ "\n"
                 ++ concatMap Generator.ClassGenerator.generateClassCpp classes
+                ++ "\n"
+                ++ concatMap Generator.InternalClassGenerator.generateInternalClass classes
 
 generateNamespaceHpp :: String -> Namespace -> String
-generateNamespaceHpp api (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateHpp api [] classes enums ++ "}\n"
+generateNamespaceHpp api (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateHpp api [] classes enums ++ "}\n\n"
 
 generateNamespaceCpp :: Namespace -> String
-generateNamespaceCpp (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateCpp name [] classes enums ++ "}\n"
+generateNamespaceCpp (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateCpp name [] classes enums ++ "}\n\n"
 
 generate :: Package -> String -> IO ()
 generate (Package name version description includes namespaces classes enums) outputDir = do
@@ -48,6 +53,9 @@ generate (Package name version description includes namespaces classes enums) ou
                 ++ "#include <string_view>\n"
                 ++ "#include <Concerto/Reflection/Defines.hpp>\n\n"
                 ++ "#include <Concerto/Reflection/Class.hpp>\n"
+                ++ "#include <Concerto/Reflection/Object.hpp>\n"
+                ++ "#include <Concerto/Reflection/MemberVariable.hpp>\n"
+                ++ "#include <Concerto/Reflection/Method.hpp>\n"
                 ++ generateDefines name
                 ++ "\n"
                 ++ generateHpp name includes classes enums
@@ -57,6 +65,8 @@ generate (Package name version description includes namespaces classes enums) ou
         let cpp = "//This file was automatically generated, do not edit\n\n"
                 ++ "#include <Concerto/Core/Assert.hpp>\n"
                 ++ "#include \"" ++ name ++ "Package.hpp\"\n"
+                ++ "using namespace std::string_view_literals;\n"
+                ++ "using namespace std::string_literals;\n\n"
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces

@@ -13,13 +13,13 @@ generateEnumMembersFromString :: String -> EnumMember -> String
 generateEnumMembersFromString enumerationName (EnumMember name _) = "\tif(str == \"" ++ name ++ "\"sv)\n\t\treturn " ++ enumerationName ++ "::" ++ name ++ ";\n"
 
 generateEnumFromString :: Enumeration -> String
-generateEnumFromString (Enumeration name _ members) = name ++ " " ++ name ++ "FromString(std::string_view str)\n{\n\tusing namespace std::string_view_literals;\n" ++ concatMap (generateEnumMembersFromString name) members ++ "\tCONCERTO_ASSERT_FALSE(\"Invalid enum value\");\n\treturn " ++ name ++ "::" ++ enumMemberName (head members) ++ ";\n}\n"
+generateEnumFromString (Enumeration name _ members) = name ++ " " ++ name ++ "FromString(std::string_view str)\n{\n\t" ++ concatMap (generateEnumMembersFromString name) members ++ "\tCONCERTO_ASSERT_FALSE(\"Invalid enum value\");\n\treturn " ++ name ++ "::" ++ enumMemberName (head members) ++ ";\n}\n"
 
 generateEnumMembersToString :: String -> EnumMember -> String
 generateEnumMembersToString enumerationName (EnumMember name _) = "\tcase " ++ enumerationName ++ "::" ++ name ++ ":\n\t\treturn \"" ++ name ++ "\"sv;\n"
 
 generateEnumToString :: Enumeration -> String
-generateEnumToString (Enumeration name _ members) = "std::string_view " ++ name ++ "ToString(" ++ name ++ " value)\n{\n\tusing namespace std::string_view_literals;\n\tswitch(value)\n\t{\n" ++ concatMap (generateEnumMembersToString  name) members ++ "\t}\n}\n"
+generateEnumToString (Enumeration name _ members) = "std::string_view " ++ name ++ "ToString(" ++ name ++ " value)\n{\n\t\tswitch(value)\n\t{\n" ++ concatMap (generateEnumMembersToString  name) members ++ "\t}\n}\n"
 
 generatePredeclareEnumToString :: String -> Enumeration -> String
 generatePredeclareEnumToString api (Enumeration name _ _) = api ++ " std::string_view " ++ name ++ "ToString(" ++ name ++ " value);\n"

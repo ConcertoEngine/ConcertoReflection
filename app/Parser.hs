@@ -27,16 +27,19 @@ parseClassMember (Element (QName "member" Nothing Nothing) attrs _ line) = do
     let nameAttr = lookupAttr (unqual "name") attrs
     let typeAttr = lookupAttr (unqual "type") attrs
     let publicAttr = lookupAttr (unqual "public") attrs
+    let namespaceAttr = lookupAttr (unqual "namespace") attrs
 
     let errorMsg attr = "<member> missing '" ++ attr ++ "' attribute on line: " ++  maybe "X" show line
     let name = maybe (Left $ errorMsg "name") Right nameAttr
     let type' = maybe (Left $ errorMsg "type") Right typeAttr
     let public = maybe (Right False) (Right . (== "true")) publicAttr
+    let namespace = maybe (Right "") Right namespaceAttr
 
-    case (name, type') of
-        (Right n, Right t) -> Just (Right ClassMember { classMemberName = n, classMemberType = t, classMemberIsPublic = either id id public })
-        (Left err, _) -> Just (Left err)
-        (_, Left err) -> Just (Left err)
+    case (name, type', namespace) of
+        (Right n, Right t, Right u) -> Just (Right ClassMember { classMemberName = n, classMemberType = t, classMemberIsPublic = either id id public, classMemberNamespace = u })
+        (Left err, _, _) -> Just (Left err)
+        (_, Left err, _) -> Just (Left err)
+        (_, _, Left err) -> Just (Left err)
 parseClassMember _ = Nothing
 
 

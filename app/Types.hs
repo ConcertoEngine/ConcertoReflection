@@ -17,7 +17,8 @@ data Method = Method {
 data ClassMember = ClassMember {
                     classMemberName :: String,
                     classMemberType :: String,
-                    classMemberIsPublic :: Bool
+                    classMemberIsPublic :: Bool,
+                    classMemberNamespace :: String
                 } deriving (Show)
 
 data Class = Class {
