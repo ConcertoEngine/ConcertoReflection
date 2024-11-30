@@ -28,6 +28,8 @@ generateHpp packageName includes classes enums =
        ++ concatMap (generatePredeclareEnumFromString api) enums
        ++ "\n"
        ++ concatMap (Generator.ClassGenerator.generateClassHpp api) classes
+       ++ "\n"
+       ++ api ++ " std::unique_ptr<cct::refl::Package> CreatePackage();\n"
 
 generateCpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
 generateCpp _ includes classes enums = do
@@ -56,6 +58,7 @@ generate (Package name version description includes namespaces classes enums) ou
                 ++ "#include <Concerto/Reflection/Object.hpp>\n"
                 ++ "#include <Concerto/Reflection/MemberVariable.hpp>\n"
                 ++ "#include <Concerto/Reflection/Method.hpp>\n"
+                ++ "#include <Concerto/Reflection/Package.hpp>\n"
                 ++ generateDefines name
                 ++ "\n"
                 ++ generateHpp name includes classes enums
@@ -70,6 +73,9 @@ generate (Package name version description includes namespaces classes enums) ou
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces
+                ++ generateInternalPackage (Package name version description includes namespaces classes enums)
+                ++ "\n"
+                ++ "std::unique_ptr<cct::refl::Package> CreatePackage() { return std::make_unique<Internal" ++ name ++ "Package>(); }\n"
         createDirectoryIfMissing True outputDir
         writeFile (outputDir ++ "/" ++ name ++ "Package.hpp") hpp
         writeFile (outputDir ++ "/" ++ name ++ "Package.cpp") cpp

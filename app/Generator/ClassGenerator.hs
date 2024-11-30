@@ -40,7 +40,7 @@ generateMethod :: Method -> String
 generateMethod (Method name returnType _ params) = "\t" ++ returnType ++ " " ++ name ++ "(" ++ concatMap generateMethodParameters params ++ ");\n"
 
 generateClassHpp :: String -> Class -> String
-generateClassHpp api (Class name True methods members) = "class " ++ api ++ " " ++ name ++ "\n{\n"
+generateClassHpp api (Class name True baseClass methods members) = "class " ++ api ++ " " ++ name ++ "\n{\n"
                                                         ++ "public:\n" ++ concatMap generateClassMembersGetterHpp members ++ "\n"
                                                         ++ concatMap generateClassSetterHpp members ++ "\n"
                                                         ++ concatMap generateMethod methods ++ "\n"
@@ -50,7 +50,7 @@ generateClassHpp api (Class name True methods members) = "class " ++ api ++ " " 
 generateClassHpp _ _ = "" --class is defined by the user, no need to generate it
 
 generateClassCpp :: Class -> String
-generateClassCpp (Class name True _ members) = concatMap (generateClassMembersGetterCpp name) members ++ "\n"
+generateClassCpp (Class name True baseClass _ members) = concatMap (generateClassMembersGetterCpp name) members ++ "\n"
                                                     ++ concatMap (generateClassSetterCpp name) members ++ "\n"
 generateClassCpp _ = "" --class is defined by the user, no need to generate it
 
