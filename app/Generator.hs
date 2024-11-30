@@ -15,8 +15,8 @@ generateCppInclude (Include file False) = "#include \"" ++ file ++ "\"\n"
 generateCppInclude _ = ""
 
 generateDefines :: String -> String
-generateDefines name = "#ifdef " ++ map toUpper name ++ "PACKAGE_BUILD\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_EXPORT\n#else\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_IMPORT\n#endif\n"
-
+--generateDefines name = "#ifdef " ++ map toUpper name ++ "PACKAGE_BUILD\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_EXPORT\n#else\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_IMPORT\n#endif\n"
+generateDefines name = "#define " ++ map toUpper name ++ "PACKAGE_API\n"
 generateHpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
 generateHpp packageName includes classes enums =
     let api = map toUpper packageName ++ "PACKAGE_API"
@@ -29,10 +29,9 @@ generateHpp packageName includes classes enums =
        ++ "\n"
        ++ concatMap (Generator.ClassGenerator.generateClassHpp api) classes
        ++ "\n"
-       ++ api ++ " std::unique_ptr<cct::refl::Package> CreatePackage();\n"
 
 generateCpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
-generateCpp _ includes classes enums = do
+generateCpp namespaceName includes classes enums = do
                 concatMap generateCppInclude includes
                 ++ concatMap generateEnumFromString enums
                 ++ "\n"
@@ -40,13 +39,13 @@ generateCpp _ includes classes enums = do
                 ++ "\n"
                 ++ concatMap Generator.ClassGenerator.generateClassCpp classes
                 ++ "\n"
-                ++ concatMap Generator.InternalClassGenerator.generateInternalClass classes
+                ++ concatMap (\klasses -> Generator.InternalClassGenerator.generateInternalClass namespaceName klasses) classes
 
 generateNamespaceHpp :: String -> Namespace -> String
-generateNamespaceHpp api (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateHpp api [] classes enums ++ "}\n\n"
+generateNamespaceHpp api (Namespace name enums classes) = generateHpp api [] classes enums ++ "\n\n"
 
 generateNamespaceCpp :: Namespace -> String
-generateNamespaceCpp (Namespace name enums classes) = "namespace " ++ name ++ "\n{\n" ++ generateCpp name [] classes enums ++ "}\n\n"
+generateNamespaceCpp (Namespace name enums classes) = generateCpp name [] classes enums ++ "\n\n"
 
 generate :: Package -> String -> IO ()
 generate (Package name version description includes namespaces classes enums) outputDir = do
@@ -64,15 +63,19 @@ generate (Package name version description includes namespaces classes enums) ou
                 ++ generateHpp name includes classes enums
                 ++ "\n"
                 ++ concatMap (generateNamespaceHpp name) namespaces
+                ++ (map toUpper name ++ "PACKAGE_API") ++ " std::unique_ptr<cct::refl::Package> CreatePackage();\n"
 
         let cpp = "//This file was automatically generated, do not edit\n\n"
                 ++ "#include <Concerto/Core/Assert.hpp>\n"
                 ++ "#include \"" ++ name ++ "Package.hpp\"\n"
                 ++ "using namespace std::string_view_literals;\n"
                 ++ "using namespace std::string_literals;\n\n"
+                ++ "using namespace cct;\n"
+                ++ "using namespace cct::refl;\n\n"
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces
+                ++ concatMap generateInternalNamespaceCreation namespaces
                 ++ generateInternalPackage (Package name version description includes namespaces classes enums)
                 ++ "\n"
                 ++ "std::unique_ptr<cct::refl::Package> CreatePackage() { return std::make_unique<Internal" ++ name ++ "Package>(); }\n"
