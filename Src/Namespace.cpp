@@ -28,4 +28,11 @@ namespace cct::refl
 			return *it;
 		return nullptr;
 	}
+
+	std::shared_ptr<const Class> Namespace::AddClass(std::string name, std::shared_ptr<const Class> baseClass)
+	{
+		auto klass = std::make_shared<Class>(shared_from_this(), std::move(name), std::move(baseClass));
+		_classes.emplace_back(klass);
+		return klass;
+	}
 }

@@ -22,7 +22,7 @@ namespace cct::refl
 	class CONCERTO_REFLECTION_API Class
 	{
 	public:
-		Class(Namespace* nameSpace, std::string name, Class* baseClass);
+		Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass);
 		virtual ~Class() = default;
 
 		Class(const Class&) = delete;
@@ -62,16 +62,23 @@ namespace cct::refl
 		void AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);
 	private:
 		std::string _name;
-		Namespace* _namespace;
+		std::shared_ptr<Namespace> _namespace;
 		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
 		std::vector<std::unique_ptr<Method>> _methods;
-		Class* _baseClass;
+		std::shared_ptr<const Class> _baseClass;
 
 		std::size_t _hash;
 	};
 
 	std::shared_ptr<const Namespace> CONCERTO_REFLECTION_API GetNameSpaceByName(std::string_view nameSpaceName);
 	std::shared_ptr<const Class> CONCERTO_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
+
+	/**
+	 * 
+	 * @param name The name of the class, it can be prefixed with the namespace, GetClassByName("cct::Object")
+	 * @return nullptr if the class could not be found
+	 */
+	std::shared_ptr<const Class> CONCERTO_REFLECTION_API GetClassByName(std::string_view name);
 
 }
 

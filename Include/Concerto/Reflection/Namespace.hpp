@@ -14,7 +14,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CONCERTO_REFLECTION_API Namespace
+	class CONCERTO_REFLECTION_API Namespace : public std::enable_shared_from_this<Namespace>
 	{
 	public:
 		Namespace(std::string name);
@@ -35,10 +35,12 @@ namespace cct::refl
 		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::string_view name) const;
 
 		[[nodiscard]] bool HasClass(std::string_view name) const;
+		std::shared_ptr<const Class> AddClass(std::string name, std::shared_ptr<const Class> baseClass);
 	private:
 		std::string _name;
-		std::vector<std::shared_ptr<Class>> _classes;
+		std::vector<std::shared_ptr<const Class>> _classes;
 		std::size_t _hash;
+		friend class InternalSamplePackage;
 	};
 }
 

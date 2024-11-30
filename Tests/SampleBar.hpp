@@ -1,5 +1,5 @@
 #pragma once
-#include <Concerto/Reflection/Defines.hpp>s
+#include <Concerto/Reflection/Defines.hpp>
 #include <Concerto/Core/Types.hpp>
 
 #include "Concerto/Reflection/Object.hpp"

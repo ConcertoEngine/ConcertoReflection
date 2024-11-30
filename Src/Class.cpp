@@ -2,8 +2,7 @@
 // Created by arthur on 10/11/2024.
 //
 
-#include <stdexcept>
-
+#include <ranges>
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Reflection/Class.hpp"
@@ -13,14 +12,14 @@
 
 namespace cct::refl
 {
-	Class::Class(Namespace* nameSpace, std::string name, Class* baseClass) :
+	Class::Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass) :
 		_name(std::move(name)),
-		_namespace(nameSpace),
-		_baseClass(baseClass),
+		_namespace(std::move(nameSpace)),
+		_baseClass(std::move(baseClass)),
 		_hash(0)
 	{
-		_hash = nameSpace ? nameSpace->GetHash() : 0;
-		_hash |= baseClass ? baseClass->GetHash() : 0;
+		_hash = nameSpace ? _namespace->GetHash() : 0;
+		_hash |= baseClass ? _baseClass->GetHash() : 0;
 	}
 
 	std::string_view Class::GetName() const
@@ -157,12 +156,43 @@ namespace cct::refl
 
 	std::shared_ptr<const Class> GetClassByName(std::string_view nameSpaceName, std::string_view name)
 	{
-		auto nameSpace = GetNameSpaceByName(nameSpaceName);
+		const auto nameSpace = GetNameSpaceByName(nameSpaceName);
 		if (nameSpace)
 		{
 			return nameSpace->GetClass(name);
 		}
 		CONCERTO_ASSERT_FALSE("Not implemented");
 		return nullptr;
+	}
+
+	std::shared_ptr<const Class> GetClassByName(std::string_view name)
+	{
+		using namespace std::string_view_literals;
+		auto split = name | std::ranges::views::split("::"sv);
+		std::string_view nameSpace;
+		std::string_view klass;
+
+		UInt32 i = 0;
+		for (const auto elem : split)
+		{
+			if (i == 0)
+				nameSpace = std::string_view(elem.data(), elem.size());
+			else if (i == 1)
+				klass = std::string_view(elem.data(), elem.size());
+			else
+			{
+				CONCERTO_ASSERT_FALSE("Only one namespace is supported");
+				return nullptr;
+			}
+			++i;
+		}
+
+		if (i == 1)
+		{
+			klass = nameSpace;
+			nameSpace = {};
+		}
+
+		return GetClassByName(nameSpace, klass);
 	}
 }

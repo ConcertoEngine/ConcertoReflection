@@ -25,7 +25,7 @@ namespace cct::refl
 
 	const Namespace* Package::GetNamespace(std::string_view name) const
 	{
-		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
+		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::shared_ptr<Namespace>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
@@ -33,5 +33,12 @@ namespace cct::refl
 		if (it != _namespaces.end())
 			return it->get();
 		return nullptr;
+	}
+
+	std::shared_ptr<Namespace> Package::AddNamespace(std::string name)
+	{
+		auto nameSpace = std::make_shared<Namespace>(std::move(name));
+		_namespaces.emplace_back(nameSpace);
+		return nameSpace;
 	}
 }
