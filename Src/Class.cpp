@@ -14,8 +14,8 @@ namespace cct::refl
 {
 	Class::Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass) :
 		_name(std::move(name)),
-		_namespace(std::move(nameSpace)),
-		_baseClass(std::move(baseClass)),
+		_namespace(nameSpace ? std::move(nameSpace) : GlobalNamespace::Get()),
+		_baseClass(baseClass ? std::move(baseClass) : GetClassByName("Object")),
 		_hash(0)
 	{
 		_hash = nameSpace ? _namespace->GetHash() : 0;
@@ -148,20 +148,31 @@ namespace cct::refl
 	{
 	}
 
-	std::shared_ptr<const Namespace> GetNameSpaceByName(std::string_view name)
+	void Class::SetNamespace(std::shared_ptr<Namespace> nameSpace)
 	{
-		CONCERTO_ASSERT_FALSE("Not implemented");
-		return nullptr;
+		_namespace = std::move(nameSpace);
+	}
+
+	void Class::SetBaseClass(std::shared_ptr<const Class> klass)
+	{
+		_baseClass = std::move(klass);
+	}
+
+	std::shared_ptr<Namespace> GetNamespaceByName(std::string_view name)
+	{
+		if (name == GlobalNamespace::Get()->GetName() || name.empty())
+			return GlobalNamespace::Get();
+		return GlobalNamespace::Get()->GetNamespace(name);
 	}
 
 	std::shared_ptr<const Class> GetClassByName(std::string_view nameSpaceName, std::string_view name)
 	{
-		const auto nameSpace = GetNameSpaceByName(nameSpaceName);
+		const auto nameSpace = GetNamespaceByName(nameSpaceName);
 		if (nameSpace)
 		{
 			return nameSpace->GetClass(name);
 		}
-		CONCERTO_ASSERT_FALSE("Not implemented");
+		CONCERTO_ASSERT_FALSE("Should not happen");
 		return nullptr;
 	}
 

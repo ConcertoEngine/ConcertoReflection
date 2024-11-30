@@ -4,9 +4,6 @@
 
 #include "Concerto/Reflection/Object.hpp"
 
-namespace cct
-{
-	
 class SampleBar : cct::refl::Object
 {
 public:
@@ -18,5 +15,3 @@ public:
 private:
 	Int32 _bar;
 };
-
-}

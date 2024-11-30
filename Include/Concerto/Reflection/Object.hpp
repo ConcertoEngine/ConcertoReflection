@@ -10,7 +10,7 @@
 #include "Concerto/Reflection/Defines.hpp"
 
 #define CCT_OBJECT(className)									\
-		static std::shared_ptr<const cct::refl::Class> _class;	\
+		static std::shared_ptr<cct::refl::Class> _class;		\
 		friend class Internal##className##Class;				\
 
 namespace cct::refl

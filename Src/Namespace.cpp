@@ -10,6 +10,9 @@
 
 namespace cct::refl
 {
+	using namespace std::string_literals;
+	std::shared_ptr<GlobalNamespace> GlobalNamespace::_globalNameSpace = std::make_shared<GlobalNamespace>();
+
 	std::shared_ptr<const Class> Namespace::GetClass(std::size_t index) const
 	{
 		if (index > GetClassCount())
@@ -26,13 +29,48 @@ namespace cct::refl
 
 		if (it != _classes.end())
 			return *it;
+		CONCERTO_ASSERT_FALSE("Could bot find class {}", name);
 		return nullptr;
 	}
 
-	std::shared_ptr<const Class> Namespace::AddClass(std::string name, std::shared_ptr<const Class> baseClass)
+	void Namespace::AddClass(std::shared_ptr<Class> klass)
 	{
-		auto klass = std::make_shared<Class>(shared_from_this(), std::move(name), std::move(baseClass));
-		_classes.emplace_back(klass);
-		return klass;
+		_classes.emplace_back(std::move(klass));
+	}
+
+//GlobalNamespace class
+	GlobalNamespace::GlobalNamespace() : Namespace("Global"s)
+	{
+	}
+
+	void GlobalNamespace::LoadClasses()
+	{
+		for (auto& nameSpace : _namespaces)
+		{
+			nameSpace->LoadClasses();
+		}
+	}
+
+	void GlobalNamespace::InitializeClasses()
+	{
+		for (auto& nameSpace : _namespaces)
+		{
+			nameSpace->InitializeClasses();
+		}
+	}
+
+	void GlobalNamespace::AddNamespace(std::shared_ptr<Namespace> nameSpace)
+	{
+		_namespaces.emplace_back(std::move(nameSpace));
+	}
+
+	std::shared_ptr<Namespace> GlobalNamespace::GetNamespace(std::string_view name)
+	{
+		for (auto& nameSpace : _namespaces)
+		{
+			if (nameSpace->GetName() == name)
+				return nameSpace;
+		}
+		return nullptr;
 	}
 }

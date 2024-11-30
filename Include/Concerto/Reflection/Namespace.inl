@@ -5,6 +5,8 @@
 #ifndef CONCERTO_REFLECTION_NAMESPACE_INL
 #define CONCERTO_REFLECTION_NAMESPACE_INL
 
+#include <Concerto/Core/Assert.hpp>
+
 #include "Concerto/Reflection/Class.hpp"
 #include "Concerto/Reflection/Namespace.hpp"
 
@@ -34,6 +36,12 @@ namespace cct::refl
 	inline bool Namespace::HasClass(std::string_view name) const
 	{
 		return GetClass(name) != nullptr;
+	}
+
+	inline 	std::shared_ptr<GlobalNamespace> GlobalNamespace::Get()
+	{
+		CONCERTO_ASSERT(_globalNameSpace, "Global namespace is null");
+		return _globalNameSpace;
 	}
 }
 

@@ -36,9 +36,12 @@ namespace cct::refl
 
 		[[nodiscard]] const Namespace* GetNamespace(std::size_t index) const;
 		[[nodiscard]] const Namespace* GetNamespace(std::string_view name) const;
+
+		virtual void LoadNamespaces() = 0;
+		virtual void InitializeNamespaces() = 0;
+		virtual void InitializeClasses() = 0;
 	protected:
-		std::shared_ptr<Namespace> AddNamespace(std::string name);
-	private:
+		void AddNamespace(std::shared_ptr<Namespace> nameSpace);
 		std::string _name;
 		std::vector<std::shared_ptr<Namespace>> _namespaces;
 		friend class Namespace;

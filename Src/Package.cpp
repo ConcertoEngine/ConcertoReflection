@@ -9,6 +9,8 @@
 
 #include "Concerto/Reflection/Package.hpp"
 
+#include <Concerto/Core/Assert.hpp>
+
 namespace cct::refl
 {
 	Package::Package(std::string name) :
@@ -35,10 +37,14 @@ namespace cct::refl
 		return nullptr;
 	}
 
-	std::shared_ptr<Namespace> Package::AddNamespace(std::string name)
+	void Package::AddNamespace(std::shared_ptr<Namespace> nameSpace)
 	{
-		auto nameSpace = std::make_shared<Namespace>(std::move(name));
+		if (nameSpace == nullptr)
+		{
+			CONCERTO_ASSERT_FALSE("Namespace is null");
+			return;
+		}
 		_namespaces.emplace_back(nameSpace);
-		return nameSpace;
+		GlobalNamespace::Get()->AddNamespace(nameSpace);
 	}
 }

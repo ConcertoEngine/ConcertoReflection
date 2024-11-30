@@ -18,7 +18,7 @@ namespace cct::refl
 	{
 	public:
 		Namespace(std::string name);
-		~Namespace() = default;
+		virtual ~Namespace() = default;
 
 		Namespace(const Namespace&) = delete;
 		Namespace(Namespace&&) = default;
@@ -35,12 +35,32 @@ namespace cct::refl
 		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::string_view name) const;
 
 		[[nodiscard]] bool HasClass(std::string_view name) const;
-		std::shared_ptr<const Class> AddClass(std::string name, std::shared_ptr<const Class> baseClass);
-	private:
+
+		//should be private
+		void AddClass(std::shared_ptr<Class> klass);
+		virtual void LoadClasses() = 0;
+		virtual void InitializeClasses() = 0;
+
+	protected:
 		std::string _name;
-		std::vector<std::shared_ptr<const Class>> _classes;
+		std::vector<std::shared_ptr<Class>> _classes;
 		std::size_t _hash;
-		friend class InternalSamplePackage;
+	};
+
+	class CONCERTO_REFLECTION_API GlobalNamespace : public Namespace
+	{
+	public:
+		GlobalNamespace();
+		void LoadClasses() override;
+		void InitializeClasses() override;
+
+		inline static std::shared_ptr<GlobalNamespace> Get();
+
+		void AddNamespace(std::shared_ptr<Namespace> nameSpace);
+		std::shared_ptr<Namespace> GetNamespace(std::string_view name);
+	private:
+		std::vector<std::shared_ptr<Namespace>> _namespaces;
+		static std::shared_ptr<GlobalNamespace> _globalNameSpace;
 	};
 }
 

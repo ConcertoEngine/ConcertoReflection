@@ -3,6 +3,8 @@
 //
 
 
+#include <Concerto/Core/Logger.hpp>
+
 #include "SamplePackage.hpp"
 #include "Concerto/Reflection/Class.hpp"
 #include "Concerto/Reflection/MemberVariable.hpp"
@@ -10,6 +12,10 @@
 
 int main()
 {
-	cct::SampleFoo foo;
+	auto package = CreatePackage();
+	package->LoadNamespaces();
+	package->InitializeNamespaces();
+	package->InitializeClasses();
+	cct::Logger::Info("class count: {}", package->GetClassCount());
 	return 0;
 }

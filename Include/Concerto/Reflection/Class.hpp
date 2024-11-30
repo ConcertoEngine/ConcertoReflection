@@ -57,9 +57,13 @@ namespace cct::refl
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const;
 
+		virtual void Initialize() = 0;
+
 	protected:
 		void AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type);
 		void AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);
+		void SetNamespace(std::shared_ptr<Namespace> nameSpace);
+		void SetBaseClass(std::shared_ptr<const Class> klass);
 	private:
 		std::string _name;
 		std::shared_ptr<Namespace> _namespace;
@@ -70,7 +74,7 @@ namespace cct::refl
 		std::size_t _hash;
 	};
 
-	std::shared_ptr<const Namespace> CONCERTO_REFLECTION_API GetNameSpaceByName(std::string_view nameSpaceName);
+	std::shared_ptr<Namespace> CONCERTO_REFLECTION_API GetNamespaceByName(std::string_view nameSpaceName);
 	std::shared_ptr<const Class> CONCERTO_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
 
 	/**
