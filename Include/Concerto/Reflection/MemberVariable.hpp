@@ -13,7 +13,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CONCERTO_REFLECTION_API MemberVariable
+	class CCT_REFLECTION_API MemberVariable
 	{
 	public:
 		MemberVariable(std::string name, std::shared_ptr<Class> type);

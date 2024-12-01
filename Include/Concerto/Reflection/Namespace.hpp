@@ -14,7 +14,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CONCERTO_REFLECTION_API Namespace : public std::enable_shared_from_this<Namespace>
+	class CCT_REFLECTION_API Namespace : public std::enable_shared_from_this<Namespace>
 	{
 	public:
 		Namespace(std::string name);
@@ -47,7 +47,7 @@ namespace cct::refl
 		std::size_t _hash;
 	};
 
-	class CONCERTO_REFLECTION_API GlobalNamespace : public Namespace
+	class CCT_REFLECTION_API GlobalNamespace : public Namespace
 	{
 	public:
 		GlobalNamespace();

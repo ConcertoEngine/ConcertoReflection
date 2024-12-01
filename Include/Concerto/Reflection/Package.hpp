@@ -17,7 +17,7 @@ namespace cct::refl
 	class Object;
 	class Namespace;
 
-	class CONCERTO_REFLECTION_API Package
+	class CCT_REFLECTION_API Package
 	{
 	public:
 		Package(std::string name);

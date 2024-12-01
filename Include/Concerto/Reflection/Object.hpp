@@ -16,7 +16,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CONCERTO_REFLECTION_API Object
+	class CCT_REFLECTION_API Object
 	{
 	public:
 		virtual ~Object() = default;

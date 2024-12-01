@@ -29,7 +29,7 @@ namespace cct::refl
 
 		if (it != _classes.end())
 			return *it;
-		CONCERTO_ASSERT_FALSE("Could bot find class {}", name);
+		CCT_ASSERT_FALSE("Could bot find class {}", name);
 		return nullptr;
 	}
 

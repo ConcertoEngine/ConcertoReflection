@@ -14,7 +14,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CONCERTO_REFLECTION_API Method
+	class CCT_REFLECTION_API Method
 	{
 	public:
 		Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);

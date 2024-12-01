@@ -31,7 +31,7 @@ namespace cct::refl
 	{
 		if (_namespace == nullptr)
 		{
-			CONCERTO_ASSERT_FALSE("Invalid namespace pointer");
+			CCT_ASSERT_FALSE("Invalid namespace pointer");
 			return {};
 		}
 		return _namespace->GetName();
@@ -41,7 +41,7 @@ namespace cct::refl
 	{
 		if (_namespace == nullptr)
 		{
-			CONCERTO_ASSERT_FALSE("Invalid namespace pointer");
+			CCT_ASSERT_FALSE("Invalid namespace pointer");
 			throw std::runtime_error("Invalid namespace pointer");
 		}
 		return *_namespace;
@@ -110,7 +110,7 @@ namespace cct::refl
 	{
 		if (!_baseClass)
 		{
-			CONCERTO_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
+			CCT_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
 			return false;
 		}
 		if (other == *_baseClass)
@@ -122,7 +122,7 @@ namespace cct::refl
 	{
 		if (!_baseClass)
 		{
-			CONCERTO_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
+			CCT_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
 			return false;
 		}
 		if (_baseClass->GetName() == name)
@@ -172,7 +172,7 @@ namespace cct::refl
 		{
 			return nameSpace->GetClass(name);
 		}
-		CONCERTO_ASSERT_FALSE("Should not happen");
+		CCT_ASSERT_FALSE("Should not happen");
 		return nullptr;
 	}
 
@@ -192,7 +192,7 @@ namespace cct::refl
 				klass = std::string_view(elem.data(), elem.size());
 			else
 			{
-				CONCERTO_ASSERT_FALSE("Only one namespace is supported");
+				CCT_ASSERT_FALSE("Only one namespace is supported");
 				return nullptr;
 			}
 			++i;

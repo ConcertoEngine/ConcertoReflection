@@ -15,7 +15,7 @@ generateCppInclude (Include file False) = "#include \"" ++ file ++ "\"\n"
 generateCppInclude _ = ""
 
 generateDefines :: String -> String
---generateDefines name = "#ifdef " ++ map toUpper name ++ "PACKAGE_BUILD\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_EXPORT\n#else\n#define " ++ map toUpper name ++ "PACKAGE_API CONCERTO_IMPORT\n#endif\n"
+--generateDefines name = "#ifdef " ++ map toUpper name ++ "PACKAGE_BUILD\n#define " ++ map toUpper name ++ "PACKAGE_API CCT_EXPORT\n#else\n#define " ++ map toUpper name ++ "PACKAGE_API CCT_IMPORT\n#endif\n"
 generateDefines name = "#define " ++ map toUpper name ++ "PACKAGE_API\n"
 generateHpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
 generateHpp packageName includes classes enums =
@@ -31,9 +31,8 @@ generateHpp packageName includes classes enums =
        ++ "\n"
 
 generateCpp :: String -> [Include] -> [Class] -> [Enumeration] -> String
-generateCpp namespaceName includes classes enums = do
-                concatMap generateCppInclude includes
-                ++ concatMap generateEnumFromString enums
+generateCpp namespaceName _ classes enums = do
+                concatMap generateEnumFromString enums
                 ++ "\n"
                 ++ concatMap generateEnumToString enums
                 ++ "\n"
@@ -72,6 +71,7 @@ generate (Package name version description includes namespaces classes enums) ou
                 ++ "using namespace std::string_literals;\n\n"
                 ++ "using namespace cct;\n"
                 ++ "using namespace cct::refl;\n\n"
+                ++ concatMap generateCppInclude includes
                 ++ generateCpp name includes classes enums
                 ++ "\n"
                 ++ concatMap generateNamespaceCpp namespaces

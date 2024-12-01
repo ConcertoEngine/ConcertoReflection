@@ -41,7 +41,7 @@ namespace cct::refl
 	{
 		if (nameSpace == nullptr)
 		{
-			CONCERTO_ASSERT_FALSE("Namespace is null");
+			CCT_ASSERT_FALSE("Namespace is null");
 			return;
 		}
 		_namespaces.emplace_back(nameSpace);

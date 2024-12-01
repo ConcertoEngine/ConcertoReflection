@@ -40,7 +40,7 @@ namespace cct::refl
 
 	inline 	std::shared_ptr<GlobalNamespace> GlobalNamespace::Get()
 	{
-		CONCERTO_ASSERT(_globalNameSpace, "Global namespace is null");
+		CCT_ASSERT(_globalNameSpace, "Global namespace is null");
 		return _globalNameSpace;
 	}
 }

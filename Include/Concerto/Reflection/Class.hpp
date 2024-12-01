@@ -19,7 +19,7 @@ namespace cct::refl
 	class MemberVariable;
 	class Method;
 
-	class CONCERTO_REFLECTION_API Class
+	class CCT_REFLECTION_API Class
 	{
 	public:
 		Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass);
@@ -74,15 +74,15 @@ namespace cct::refl
 		std::size_t _hash;
 	};
 
-	std::shared_ptr<Namespace> CONCERTO_REFLECTION_API GetNamespaceByName(std::string_view nameSpaceName);
-	std::shared_ptr<const Class> CONCERTO_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
+	std::shared_ptr<Namespace> CCT_REFLECTION_API GetNamespaceByName(std::string_view nameSpaceName);
+	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
 
 	/**
 	 * 
 	 * @param name The name of the class, it can be prefixed with the namespace, GetClassByName("cct::Object")
 	 * @return nullptr if the class could not be found
 	 */
-	std::shared_ptr<const Class> CONCERTO_REFLECTION_API GetClassByName(std::string_view name);
+	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view name);
 
 }
 
