@@ -21,7 +21,7 @@ namespace cct::refl
 	{
 	public:
 		Package(std::string name);
-		~Package() = default;
+		virtual ~Package() = default;
 
 		Package(const Package&) = delete;
 		Package(Package&&) = default;
@@ -34,8 +34,8 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetClassCount() const;
 		[[nodiscard]] inline std::size_t GetNamespaceCount() const;
 
-		[[nodiscard]] const Namespace* GetNamespace(std::size_t index) const;
-		[[nodiscard]] const Namespace* GetNamespace(std::string_view name) const;
+		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::size_t index) const;
+		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::string_view name) const;
 
 		virtual void LoadNamespaces() = 0;
 		virtual void InitializeNamespaces() = 0;

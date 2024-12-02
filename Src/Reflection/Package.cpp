@@ -18,14 +18,14 @@ namespace cct::refl
 	{
 	}
 
-	const Namespace* Package::GetNamespace(std::size_t index) const
+	std::shared_ptr<Namespace> Package::GetNamespace(std::size_t index) const
 	{
 		if (index > _namespaces.size())
 			return nullptr;
-		return _namespaces[index].get();
+		return _namespaces[index];
 	}
 
-	const Namespace* Package::GetNamespace(std::string_view name) const
+	std::shared_ptr<Namespace> Package::GetNamespace(std::string_view name) const
 	{
 		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::shared_ptr<Namespace>& value) -> bool
 			{
@@ -33,7 +33,7 @@ namespace cct::refl
 			});
 
 		if (it != _namespaces.end())
-			return it->get();
+			return *it;
 		return nullptr;
 	}
 
