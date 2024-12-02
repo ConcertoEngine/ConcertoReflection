@@ -52,13 +52,18 @@ namespace cct::refl
 		[[nodiscard]] bool InheritsFrom(std::string_view name) const;
 
 		template<typename T>
-		[[nodiscard]] bool InheritsFrom() const;
+		[[nodiscard]] bool InheritsFrom(const Class&) const;
 
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const;
 
-		virtual void Initialize() = 0;
+		std::unique_ptr<cct::refl::Object> CreateDefaultObject() const;
 
+		template<typename T>
+		std::unique_ptr<T> CreateDefaultObject() const;
+
+		//should be private
+		virtual void Initialize() = 0;
 	protected:
 		void AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type);
 		void AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);
