@@ -9,9 +9,13 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)									\
-		static std::shared_ptr<cct::refl::Class> _class;		\
-		friend class Internal##className##Class;				\
+#define CCT_OBJECT(className)										\
+	public:															\
+		static std::shared_ptr<const cct::refl::Class> GetClass()	\
+			{return _class;}										\
+	private:														\
+		static std::shared_ptr<cct::refl::Class> _class;			\
+		friend class Internal##className##Class
 
 namespace cct::refl
 {
@@ -20,9 +24,7 @@ namespace cct::refl
 	{
 	public:
 		virtual ~Object() = default;
-		const std::shared_ptr<const Class>& GetClass() const;
-	private:
-		std::shared_ptr<const Class> _class;
+		CCT_OBJECT(Object);
 	};
 }
 
