@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
-add_requires("concerto-core", {configs = {debug = is_mode("debug"), with_symbols = true}})
+add_requires("concerto-core", "eventpp", {configs = {debug = is_mode("debug"), with_symbols = true}})
 add_requires("catch2")
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -11,7 +11,8 @@ end
 rule("xml")
     set_extensions(".xml")
     on_config(function (target)
-        for _, filepath in ipairs(os.files("Tests/**.xml")) do
+        --os.vrunv("cabal", {"install", "--installdir=" .. target:targetdir(), "--overwrite-policy=always"})
+        for _, filepath in ipairs(target:sourcebatches()["xml"].sourcefiles) do
             local generatedFile = path.join(target:autogendir(), "Reflection", path.basename(filepath))
             target:add("headerfiles", target:autogendir() .. "/(Reflection/" .. path.basename(filepath) ..".hpp)")
             target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
@@ -25,9 +26,10 @@ rule("xml")
         local outputFolder = path.join(target:autogendir(), "Reflection")
         local outputCppFile = path.join(outputFolder, path.basename(xmlFile) .. ".cpp")
         local outputHppFile = path.join(outputFolder, path.basename(xmlFile) .. ".hpp")
+        local exePrefix = target:is_plat("mingw", "windows") and ".exe" or ""
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection %s", xmlFile)
-        batchcmds:vrunv("cabal", {"run", "Reflection", "--", xmlFile, path.join(target:autogendir(), "Reflection")})
+        batchcmds:vrunv(path.join(target:targetdir(), "Reflection" .. exePrefix), {xmlFile, path.join(target:autogendir(), "Reflection")})
 
         batchcmds:add_depfiles(xmlFile)
 		--batchcmds:add_depvalues() todo add version from cabal
@@ -38,17 +40,18 @@ rule("xml")
 target("concerto-reflection")
     set_kind("shared")
     set_languages("cxx20")
-    add_files("Src/Reflection/*.cpp")
+    add_files("Src/Reflection/*.cpp", "Src/Reflection/*.xml")
     add_defines("CCT_REFLECTION_BUILD")
     add_includedirs("Include/", { public = true })
     add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
     add_packages("concerto-core", { public = true })
+    add_rules("xml")
 
 target("concerto-reflection-tests")
     set_kind("binary")
     set_languages("cxx20")
-    add_files("Tests/*.cpp")
-    add_packages("catch2")
+    add_files("Tests/*.cpp", "Tests/*.xml")
+    add_packages("catch2", "eventpp")
     add_deps("concerto-reflection")
     add_rules("xml")
     add_includedirs("Tests/", { public = true })
