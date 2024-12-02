@@ -6,8 +6,5 @@
 
 namespace cct::refl
 {
-	const std::shared_ptr<const Class>& Object::GetClass() const
-	{
-		return _class;
-	}
+
 }

@@ -140,6 +140,11 @@ namespace cct::refl
 		return !(*this == other);
 	}
 
+	std::unique_ptr<cct::refl::Object> Class::CreateDefaultObject() const
+	{
+		return nullptr;
+	}
+
 	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type)
 	{
 	}

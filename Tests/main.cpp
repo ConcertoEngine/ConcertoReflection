@@ -6,9 +6,6 @@
 #include <Concerto/Core/Logger.hpp>
 
 #include "SamplePackage.hpp"
-#include "Concerto/Reflection/Class.hpp"
-#include "Concerto/Reflection/MemberVariable.hpp"
-#include "Concerto/Reflection/Method.hpp"
 
 int main()
 {
@@ -17,5 +14,17 @@ int main()
 	package->InitializeNamespaces();
 	package->InitializeClasses();
 	cct::Logger::Info("class count: {}", package->GetClassCount());
+
+	for (std::size_t i = 0; i < package->GetNamespaceCount(); ++i)
+	{
+		auto nameSpace = package->GetNamespace(i);
+
+		for (std::size_t j = 0; j < nameSpace->GetClassCount(); ++j)
+		{
+			auto klass = nameSpace->GetClass(j);
+			std::unique_ptr<SampleFoo> object = klass->CreateDefaultObject<SampleFoo>();
+		}
+	}
+
 	return 0;
 }
