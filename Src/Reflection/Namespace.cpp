@@ -9,6 +9,8 @@
 
 #include "Concerto/Reflection/Namespace.hpp"
 
+#include <ranges>
+
 namespace cct::refl
 {
 	using namespace std::string_literals;
@@ -59,16 +61,34 @@ namespace cct::refl
 	std::shared_ptr<const Class> Namespace::GetClass(std::string_view name) const
 	{
 		using namespace std::string_view_literals;
+		if (name.find("::"sv) != std::string_view::npos)
+		{
+			using namespace std::string_view_literals;
+			auto split = name | std::ranges::views::split("::"sv);
+
+			std::vector<std::string_view> res;
+			for (const auto elem : split)
+				res.emplace_back(elem.data(), elem.size());
+			if (res.size() > 1)
+			{
+				for (auto& nameSpace : _namespaces)
+				{
+					if (nameSpace->GetName() != res[0])
+						continue;
+					auto klass = nameSpace->GetClass(name.substr(res[0].size() + 2 /*2 because of '::'*/));
+					if (klass != nullptr)
+						return klass;
+				}
+				GetClassByName(name);
+			}
+		}
+
 		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::shared_ptr<const Class>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
-
 		if (it != _classes.end())
 			return *it;
-		if (name.find("::"sv) != std::string_view::npos)
-			return GetClassByName(name);
-		CCT_ASSERT_FALSE("Could bot find class {}", name);
 		return nullptr;
 	}
 

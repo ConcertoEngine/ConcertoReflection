@@ -36,6 +36,7 @@ int main()
 
 	auto x = refl::Namespace::GetGlobalNamespace();
 	auto klass = refl::Namespace::GetGlobalNamespace()->GetClass("cct::refl::Object");
+	auto sampleFooClass = refl::Namespace::GetGlobalNamespace()->GetClass("cct::SampleFoo");
 			//std::unique_ptr<SampleFoo> object = klass->CreateDefaultObject<SampleFoo>();
 	
 	return 0;
