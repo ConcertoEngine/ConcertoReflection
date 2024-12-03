@@ -26,6 +26,31 @@ namespace cct::refl
 		virtual ~Object() = default;
 		CCT_OBJECT(Object);
 	};
+
+	class CCT_REFLECTION_API Int8 : public Object
+	{
+	public:
+		virtual ~Int8() = default;
+		CCT_OBJECT(Int8);
+	};
+	class CCT_REFLECTION_API Int16 : public Object
+	{
+	public:
+		virtual ~Int16() = default;
+		CCT_OBJECT(Int16);
+	};
+		class CCT_REFLECTION_API Int32 : public Object
+	{
+	public:
+		virtual ~Int32() = default;
+		CCT_OBJECT(Int32);
+	};
+	class CCT_REFLECTION_API Int64 : public Object
+	{
+	public:
+		virtual ~Int64() = default;
+		CCT_OBJECT(Int64);
+	};
 }
 
 #endif //CONCERTO_REFLECTION_OBJECT_HPP
