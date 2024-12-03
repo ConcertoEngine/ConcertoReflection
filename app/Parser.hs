@@ -137,12 +137,13 @@ parseEnum (Element (QName "enum" Nothing Nothing) attrs elems line) = do
 parseEnum _ = Nothing
 
 parseNamespace :: Element -> Maybe (Either String Namespace)
-parseNamespace (Element (QName "namespace" Nothing Nothing) attrs elems _) = do
+parseNamespace (Element (QName "namespace" _ _) attrs elems _) = do
     let nameAttr = lookupAttr (unqual "name") attrs
-
+    -- let toto = (onlyElems elems)
     let (enumErrors, enumerations) = partitionEithers (mapMaybe parseEnum (onlyElems elems))
     let (klassErros, klasses) = partitionEithers (mapMaybe parseClass (onlyElems elems))
-    let errors = enumErrors ++ klassErros
+    let (namespaceErrors, namespaces) = partitionEithers (mapMaybe parseNamespace (onlyElems elems))
+    let errors = enumErrors ++ klassErros ++ namespaceErrors
 
     let errorMsg attr = "<namespace> missing '" ++ attr ++ "' attribute"
     let name = maybe (Left $ errorMsg "name") Right nameAttr
@@ -150,7 +151,7 @@ parseNamespace (Element (QName "namespace" Nothing Nothing) attrs elems _) = do
     case name of
         Right n ->
             if null errors
-                then Just (Right Namespace { namespaceName = n, namespaceEnums = enumerations, namespaceClasses = klasses })
+                then Just (Right Namespace { namespaceName = n, namespaceEnums = enumerations, namespaceClasses = klasses, namespaceNamespaces = namespaces })
                 else Just (Left (concat errors ++ "\n"))
         _ -> Just (Left $ either id id name)
 parseNamespace _ = Nothing

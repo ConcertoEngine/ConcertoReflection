@@ -39,14 +39,29 @@ generateInternalClassCreation :: Class -> String
 generateInternalClassCreation (Class name _ baseClass _ _) = "\tAddClass(Internal" ++ name ++ "Class::CreateClassInstance());\n"
 
 generateInternalNamespaceCreation :: Namespace -> String
-generateInternalNamespaceCreation (Namespace name _ classes) = "class Internal" ++ name ++ "Namespace : public cct::refl::Namespace\n{\n"
+generateInternalNamespaceCreation (Namespace name _ classes (x:xs)) = generateInternalNamespaceCreation x
+                                                        ++ concatMap generateInternalNamespaceCreation xs
+                                                        ++  "class Internal" ++ name ++ "Namespace : public cct::refl::Namespace\n{\n"
                                                         ++ "public:\n"
                                                         ++  "Internal" ++ name ++ "Namespace() : cct::refl::Namespace(\"" ++ name ++ "\"s)\n"
                                                         ++ "{\n}\n"
-                                                        ++ "void LoadClasses() override\n{\n" ++  concatMap generateInternalClassCreation classes ++ "}\n"
+                                                        ++ "void LoadNamespaces() override\n{\n" ++ concatMap generateAddNamespaceInternalPackage (x:xs) ++ "\tfor (auto& namespace_ : _namespaces)\n\t\tnamespace_->LoadNamespaces();\n}\n"
+                                                        ++ "void LoadClasses() override\n{\n" ++ "for(auto& n : _namespaces)\n\tn->LoadClasses();\n" ++ concatMap generateInternalClassCreation classes ++ "}\n"
                                                         ++ "void InitializeClasses() override\n{\n\tfor (auto& klass : _classes)\n\t{\n\t\tklass->Initialize();\n\t}\n}\n"
                                                         ++ "static std::shared_ptr<cct::refl::Namespace> CreateNamespaceInstance(){return std::make_shared<Internal" ++ name ++ "Namespace>();}\n"
                                                         ++  "};\n\n"
+generateInternalNamespaceCreation (Namespace name _ classes []) = "class Internal" ++ name ++ "Namespace : public cct::refl::Namespace\n{\n"
+                                                        ++ "public:\n"
+                                                        ++  "Internal" ++ name ++ "Namespace() : cct::refl::Namespace(\"" ++ name ++ "\"s)\n"
+                                                        ++ "{\n}\n"
+                                                        ++ "void LoadNamespaces() override\n{\tfor (auto& namespace_ : _namespaces)\n\t\tnamespace_->LoadNamespaces();\n}\n"
+                                                        ++ "void LoadClasses() override\n{\n" ++ "\tfor(auto& n : _namespaces)\n\t\tn->LoadClasses();\n" ++ concatMap generateInternalClassCreation classes ++ "}\n"
+                                                        ++ "void InitializeClasses() override\n{\n\tfor (auto& klass : _classes)\n\t{\n\t\tklass->Initialize();\n\t}\n}\n"
+                                                        ++ "static std::shared_ptr<cct::refl::Namespace> CreateNamespaceInstance(){return std::make_shared<Internal" ++ name ++ "Namespace>();}\n"
+                                                        ++  "};\n\n"
+
+generateAddNamespaceInternalPackage :: Namespace -> String
+generateAddNamespaceInternalPackage (Namespace name _ _ _) = "\tAddNamespace(Internal" ++ name ++ "Namespace::CreateNamespaceInstance());\n"
 
 generateInternalPackage :: Package -> String
 generateInternalPackage (Package name version description includes namespaces classes enums) = do
@@ -55,10 +70,11 @@ generateInternalPackage (Package name version description includes namespaces cl
                                               ++  "Internal" ++ name ++ "Package() : cct::refl::Package(\"" ++ name ++ "\"s)\n"
                                               ++ "{\n}\n"
                                               ++ "void LoadNamespaces() override\n{\n"
-                                              ++  concatMap (\(Namespace namespaceName _ classes) -> "\tAddNamespace(Internal" ++ namespaceName ++ "Namespace::CreateNamespaceInstance());\n") namespaces
+                                              ++  concatMap generateAddNamespaceInternalPackage namespaces
+                                              ++ "\tfor (auto& namespace_ : _namespaces)\n\t\tnamespace_->LoadNamespaces();\n"
                                               ++ "}\n"
                                               ++ "void InitializeNamespaces() override\n{\n"
-                                              ++  concatMap (\klass -> "\tGetNamespaceByName(\"Global\"sv)->" ++ generateInternalClassCreation klass ++ "\n") classes
+                                              ++  concatMap (\klass -> "\tNamespace::GetGlobalNamespace()->" ++ generateInternalClassCreation klass ++ "\n") classes
                                               ++  "\tfor (auto& namespace_ : _namespaces)\n\t{\n\t\tnamespace_->LoadClasses();\n\t}\n"
                                               ++ "}\n"
                                               ++ "void InitializeClasses() override\n{\n"

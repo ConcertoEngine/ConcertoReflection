@@ -9,6 +9,7 @@
 #include <string_view>
 #include <memory>
 #include <vector>
+#include <span>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -81,10 +82,11 @@ namespace cct::refl
 
 	std::shared_ptr<Namespace> CCT_REFLECTION_API GetNamespaceByName(std::string_view nameSpaceName);
 	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
+	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name);
 
 	/**
 	 * 
-	 * @param name The name of the class, it can be prefixed with the namespace, GetClassByName("cct::Object")
+	 * @param name The name of the class, it can be prefixed with the namespace, GetClassByName("cct::refl::Object")
 	 * @return nullptr if the class could not be found
 	 */
 	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view name);

@@ -4,14 +4,17 @@
 
 #include "Concerto/Reflection/Object.hpp"
 
-class SampleBar : cct::refl::Object
+namespace cct
 {
-public:
+	class SampleBar : cct::refl::Object
+	{
+	public:
 
-	 void Foo(const Int32& bar);
+		 void Foo(const Int32& bar);
 
 
-	CCT_OBJECT(SampleBar);
-private:
-	Int32 _bar;
-};
+		CCT_OBJECT(SampleBar);
+	private:
+		Int32 _bar;
+	};
+}

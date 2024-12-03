@@ -43,7 +43,8 @@ data Enumeration = Enumeration {
 data Namespace = Namespace {
                     namespaceName :: String,
                     namespaceEnums :: [Enumeration],
-                    namespaceClasses :: [Class]
+                    namespaceClasses :: [Class],
+                    namespaceNamespaces :: [Namespace]
                 } deriving (Show)
 
 data Include = Include {

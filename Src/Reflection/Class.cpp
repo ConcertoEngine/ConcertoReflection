@@ -14,8 +14,8 @@ namespace cct::refl
 {
 	Class::Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass) :
 		_name(std::move(name)),
-		_namespace(nameSpace ? std::move(nameSpace) : GlobalNamespace::Get()),
-		_baseClass(baseClass ? std::move(baseClass) : GetClassByName("Object")),
+		_namespace(nameSpace ? std::move(nameSpace) : Namespace::GetGlobalNamespace()),
+		_baseClass(baseClass ? std::move(baseClass) : nullptr),
 		_hash(0)
 	{
 		_hash = nameSpace ? _namespace->GetHash() : 0;
@@ -165,9 +165,9 @@ namespace cct::refl
 
 	std::shared_ptr<Namespace> GetNamespaceByName(std::string_view name)
 	{
-		if (name == GlobalNamespace::Get()->GetName() || name.empty())
-			return GlobalNamespace::Get();
-		return GlobalNamespace::Get()->GetNamespace(name);
+		if (name == Namespace::GetGlobalNamespace()->GetName() || name.empty())
+			return Namespace::GetGlobalNamespace();
+		return Namespace::GetGlobalNamespace()->GetNamespace(name);
 	}
 
 	std::shared_ptr<const Class> GetClassByName(std::string_view nameSpaceName, std::string_view name)
@@ -181,34 +181,34 @@ namespace cct::refl
 		return nullptr;
 	}
 
+	std::shared_ptr<const Class> GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name)
+	{
+		auto nameSpace = Namespace::GetGlobalNamespace()->GetNamespace(nameSpaceNames);
+		if (nameSpace)
+			return nameSpace->GetClass(name);
+		return nullptr;
+	}
+
 	std::shared_ptr<const Class> GetClassByName(std::string_view name)
 	{
 		using namespace std::string_view_literals;
 		auto split = name | std::ranges::views::split("::"sv);
-		std::string_view nameSpace;
-		std::string_view klass;
 
-		UInt32 i = 0;
+		std::vector<std::string_view> res;
 		for (const auto elem : split)
+			res.emplace_back(elem.data(), elem.size());
+
+		if (res.empty())
 		{
-			if (i == 0)
-				nameSpace = std::string_view(elem.data(), elem.size());
-			else if (i == 1)
-				klass = std::string_view(elem.data(), elem.size());
-			else
-			{
-				CCT_ASSERT_FALSE("Only one namespace is supported");
-				return nullptr;
-			}
-			++i;
+			CCT_ASSERT_FALSE("Invalid class: {}", name);
+			return nullptr;
 		}
 
-		if (i == 1)
-		{
-			klass = nameSpace;
-			nameSpace = {};
-		}
+		if (res.size() == 1)
+			return GetClassByName("", res[0]);
 
-		return GetClassByName(nameSpace, klass);
+		std::string_view klass  = res.back();
+		res.pop_back();
+		return GetClassByName(res, klass);
 	}
 }

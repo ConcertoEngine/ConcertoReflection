@@ -33,15 +33,21 @@ namespace cct::refl
 		return _classes.size();
 	}
 
+
+	inline std::size_t Namespace::GetNamespaceCount() const
+	{
+		return _namespaces.size();
+	}
+
 	inline bool Namespace::HasClass(std::string_view name) const
 	{
 		return GetClass(name) != nullptr;
 	}
 
-	inline 	std::shared_ptr<GlobalNamespace> GlobalNamespace::Get()
+	inline std::shared_ptr<Namespace> Namespace::GetGlobalNamespace()
 	{
-		CCT_ASSERT(_globalNameSpace, "Global namespace is null");
-		return _globalNameSpace;
+		CCT_ASSERT(_globalNamespace, "Global namespace is null");
+		return _globalNamespace;
 	}
 }
 

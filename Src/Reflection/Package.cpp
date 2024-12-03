@@ -45,6 +45,6 @@ namespace cct::refl
 			return;
 		}
 		_namespaces.emplace_back(nameSpace);
-		GlobalNamespace::Get()->AddNamespace(nameSpace);
+		Namespace::GetGlobalNamespace()->AddNamespace(nameSpace);
 	}
 }
