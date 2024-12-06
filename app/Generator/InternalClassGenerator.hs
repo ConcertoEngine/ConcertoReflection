@@ -1,18 +1,22 @@
 module Generator.InternalClassGenerator where
 import Types
+import Generator.MethodGenerator
 
 
 generateInternalClassMembers :: ClassMember -> String
 generateInternalClassMembers (ClassMember name typeName _ namespace) = "\tAddMemberVariable(\"" ++ name ++ "\"sv, cct::refl::GetClassByName(\"" ++ namespace ++ "\"sv, \"" ++ typeName ++ "\"sv));\n"
 
-generateMethodParameters :: Param -> String
-generateMethodParameters (Param _ type') = "cct::refl::GetClassByName(\"\"sv, \"" ++ type' ++ "\"sv), "
+generateInternalMethodParameters :: Param -> String
+generateInternalMethodParameters (Param _ type') = "cct::refl::GetClassByName(\"\"sv, \"" ++ type' ++ "\"sv), "
 
-generateInternalMethod :: Method -> String
-generateInternalMethod (Method name returnType _ params) = "\tAddMemberFunction(\"" ++ name ++ "\"sv, cct::refl::GetClassByName(\"" ++ returnType ++ "\"sv), { " ++ concatMap generateMethodParameters params ++ " });\n"
+generateInternalMethod :: String -> Method -> String
+generateInternalMethod klass (Method name returnType _ params) = "\tauto* " ++ name ++ "Method = new " ++ klass ++ name ++ "Method(\"" ++ name ++ "\"sv, cct::refl::GetClassByName(\"" ++ returnType ++ "\"sv), { " ++ concatMap generateInternalMethodParameters params ++ " });\n"
+                                                              ++ "\tAddMemberFunction(std::unique_ptr<cct::refl::Method>(" ++ name ++ "Method));\n"
 
 generateInternalClass :: String -> Class -> String
-generateInternalClass namespaceName (Class name _ baseClass methods members) = "class Internal" ++ name ++ "Class : public cct::refl::Class\n{\n"
+generateInternalClass namespaceName (Class name _ baseClass methods members) = "class Internal" ++ name ++ "Class;\n"
+                                                    ++ concatMap (Generator.MethodGenerator.generateMethod name) methods
+                                                    ++ "class Internal" ++ name ++ "Class : public cct::refl::Class\n{\n"
                                                     ++ "public:\n"
                                                     ++  "Internal" ++ name ++ "Class() : cct::refl::Class(nullptr, \"" ++ name ++ "\"s, nullptr)\n"
                                                     ++ "{\n}\n"
@@ -20,8 +24,9 @@ generateInternalClass namespaceName (Class name _ baseClass methods members) = "
                                                     ++ "\tSetNamespace(GetNamespaceByName(\"" ++ namespaceName ++"\"sv));\n"
                                                     ++ "\tSetBaseClass(GetClassByName(\"" ++ baseClass ++ "\"sv));\n"
                                                     ++  concatMap generateInternalClassMembers members
-                                                    ++  concatMap generateInternalMethod methods
+                                                    ++  concatMap (generateInternalMethod name) methods
                                                     ++ "}\n"
+                                                    ++ "std::unique_ptr<cct::refl::Object> CreateDefaultObject() const override { return std::unique_ptr<cct::refl::Object>(new " ++ name ++ "); }\n"
                                                     ++ "static std::shared_ptr<cct::refl::Class> CreateClassInstance()\n"
                                                     ++ "{\n"
                                                     ++  "\tif (" ++ name ++ "::_class != nullptr)\n"
