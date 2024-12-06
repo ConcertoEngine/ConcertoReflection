@@ -10,4 +10,9 @@ namespace cct::refl
 	{
 		return _name;
 	}
+
+	inline std::size_t MemberVariable::GetIndex() const
+	{
+		return _index;
+	}
 }

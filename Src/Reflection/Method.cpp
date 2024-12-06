@@ -9,10 +9,11 @@
 
 namespace cct::refl
 {
-	Method::Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters) :
+	Method::Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters, std::size_t index) :
 		_name(name),
 		_returnValue(std::move(returnValue)),
-		_parameters(std::move(parameters))
+		_parameters(std::move(parameters)),
+		_index(index)
 	{
 	}
 }

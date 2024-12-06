@@ -22,7 +22,7 @@ namespace cct::refl
 	class CCT_REFLECTION_API Method
 	{
 	public:
-		Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);
+		Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters, std::size_t index);
 		~Method() = default;
 
 		Method(const Method&) = delete;
@@ -34,6 +34,7 @@ namespace cct::refl
 		[[nodiscard]] std::string_view GetName() const;
 		[[nodiscard]] std::shared_ptr<const Class> GetReturnValue() const;
 		[[nodiscard]] std::vector<std::shared_ptr<const Class>> GetParameters() const;
+		[[nodiscard]] inline std::size_t GetIndex() const;
 
 		template<typename T, typename ...Args>
 		T Invoke(Object& self, Args... args) const;
@@ -42,6 +43,7 @@ namespace cct::refl
 		std::string _name;
 		std::shared_ptr<const Class> _returnValue;
 		std::vector<std::shared_ptr<const Class>> _parameters;
+		std::size_t _index;
 	};
 
 	template <typename T, typename... Args>

@@ -44,6 +44,9 @@ namespace cct::refl
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::size_t index) const;
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::string_view name) const;
 
+		virtual [[nodiscard]] cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const = 0;
+		[[nodiscard]] cct::refl::Object* GetMemberVariable(std::string_view name, cct::refl::Object& self) const;
+
 		[[nodiscard]] const Method* GetMethod(std::size_t index) const;
 		[[nodiscard]] const Method* GetMethod(std::string_view name) const;
 
@@ -62,6 +65,7 @@ namespace cct::refl
 		virtual std::unique_ptr<cct::refl::Object> CreateDefaultObject() const = 0;
 
 		template<typename T>
+		requires (std::is_base_of_v<cct::refl::Object, T>&& std::is_polymorphic_v<T>)
 		std::unique_ptr<T> CreateDefaultObject() const;
 
 		//should be private

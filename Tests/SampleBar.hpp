@@ -12,14 +12,15 @@ namespace cct
 
 		 void Foo(const cct::refl::Int32& bar)
 		 {
+			_bar = bar;
 		 }
 
 		cct::refl::Int32 Bar(const cct::refl::Int32& bar1, const cct::refl::Int32& bar2, const cct::refl::Int32& bar3)
-		 {
-			 return {};
-		 }
+		{
+		 	return {};
+		}
 		CCT_OBJECT(SampleBar);
 	private:
-		Int32 _bar;
+		refl::Int32 _bar;
 	};
 }

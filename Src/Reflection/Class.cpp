@@ -18,8 +18,9 @@ namespace cct::refl
 		_baseClass(baseClass ? std::move(baseClass) : nullptr),
 		_hash(0)
 	{
-		_hash = nameSpace ? _namespace->GetHash() : 0;
-		_hash |= baseClass ? _baseClass->GetHash() : 0;
+		_hash = _namespace ? _namespace->GetHash() : 0;
+		_hash |= _baseClass ? _baseClass->GetHash() : 0;
+		_hash |= std::hash<std::string>()(_name);
 	}
 
 	std::string_view Class::GetName() const
@@ -64,6 +65,8 @@ namespace cct::refl
 
 	const MemberVariable* Class::GetMemberVariable(std::size_t index) const
 	{
+		if (_memberVariables.empty())
+			return nullptr;
 		if (index > _memberVariables.size())
 			return nullptr;
 		return _memberVariables[index].get();
@@ -79,8 +82,18 @@ namespace cct::refl
 		return nullptr;
 	}
 
+	cct::refl::Object* Class::GetMemberVariable(std::string_view name, cct::refl::Object& self) const
+	{
+		auto* memberVariable = GetMemberVariable(name);
+		if (memberVariable == nullptr)
+			return nullptr;
+		return GetMemberVariable(memberVariable->GetIndex(), self);
+	}
+
 	const Method* Class::GetMethod(std::size_t index) const
 	{
+		if (_methods.empty())
+			return nullptr;
 		if (index > _methods.size())
 			return nullptr;
 		return _methods[index].get();
@@ -142,6 +155,8 @@ namespace cct::refl
 
 	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type)
 	{
+		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");
+		_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), std::move(type), _memberVariables.size()));
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)

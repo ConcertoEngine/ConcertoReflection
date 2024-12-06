@@ -16,9 +16,15 @@ namespace cct::refl
 	}
 
 	template <typename T>
+	requires (std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 	std::unique_ptr<T> Class::CreateDefaultObject() const
 	{
-		if (!T::GetClass()->InheritsFrom(*this))
+		if (*T::GetClass() != *this)
+		{
+			CCT_ASSERT_FALSE("Invalid class");
+			return nullptr;
+		}
+		if (!T::GetClass()->InheritsFrom(*cct::refl::Object::GetClass()))
 		{
 			CCT_ASSERT_FALSE("Trying to create object '{}' but it does not inherits from 'Class'", T::GetClass()->GetName());
 			return nullptr;

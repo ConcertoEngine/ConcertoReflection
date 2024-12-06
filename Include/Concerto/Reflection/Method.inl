@@ -20,4 +20,9 @@ namespace cct::refl
 	{
 		return _parameters;
 	}
+
+	inline std::size_t Method::GetIndex() const
+	{
+		return _index;
+	}
 }
