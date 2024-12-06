@@ -39,11 +39,15 @@ namespace cct::refl
 		virtual ~Int16() = default;
 		CCT_OBJECT(Int16);
 	};
-		class CCT_REFLECTION_API Int32 : public Object
+	class CCT_REFLECTION_API Int32 : public Object
 	{
 	public:
+		Int32() = default;
+		Int32(cct::Int32 value) : _value(value){}
 		virtual ~Int32() = default;
 		CCT_OBJECT(Int32);
+	private:
+		cct::Int32 _value;
 	};
 	class CCT_REFLECTION_API Int64 : public Object
 	{

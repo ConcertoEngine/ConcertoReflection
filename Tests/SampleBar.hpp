@@ -6,13 +6,18 @@
 
 namespace cct
 {
-	class SampleBar : cct::refl::Object
+	class SampleBar : public cct::refl::Object
 	{
 	public:
 
-		 void Foo(const Int32& bar);
+		 void Foo(const cct::refl::Int32& bar)
+		 {
+		 }
 
-
+		cct::refl::Int32 Bar(const cct::refl::Int32& bar1, const cct::refl::Int32& bar2, const cct::refl::Int32& bar3)
+		 {
+			 return {};
+		 }
 		CCT_OBJECT(SampleBar);
 	private:
 		Int32 _bar;

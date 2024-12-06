@@ -140,17 +140,14 @@ namespace cct::refl
 		return !(*this == other);
 	}
 
-	std::unique_ptr<cct::refl::Object> Class::CreateDefaultObject() const
-	{
-		return nullptr;
-	}
-
 	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type)
 	{
 	}
 
-	void Class::AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters)
+	void Class::AddMemberFunction(std::unique_ptr<Method> method)
 	{
+		CCT_ASSERT(!GetMethod(method->GetName()), "Method already registered");
+		_methods.emplace_back(std::move(method));
 	}
 
 	void Class::SetNamespace(std::shared_ptr<Namespace> nameSpace)

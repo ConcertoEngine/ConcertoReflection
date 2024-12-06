@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <span>
+#include <unordered_map>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -58,7 +59,7 @@ namespace cct::refl
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const;
 
-		std::unique_ptr<cct::refl::Object> CreateDefaultObject() const;
+		virtual std::unique_ptr<cct::refl::Object> CreateDefaultObject() const = 0;
 
 		template<typename T>
 		std::unique_ptr<T> CreateDefaultObject() const;
@@ -67,7 +68,7 @@ namespace cct::refl
 		virtual void Initialize() = 0;
 	protected:
 		void AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type);
-		void AddMemberFunction(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters);
+		void AddMemberFunction(std::unique_ptr<Method> method);
 		void SetNamespace(std::shared_ptr<Namespace> nameSpace);
 		void SetBaseClass(std::shared_ptr<const Class> klass);
 	private:

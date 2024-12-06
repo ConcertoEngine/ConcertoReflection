@@ -7,6 +7,7 @@
 #include <Concerto/Core/Logger.hpp>
 
 #include "CorePackage.hpp"
+#include "SampleBar.hpp"
 #include "SamplePackage.hpp"
 
 
@@ -36,8 +37,10 @@ int main()
 
 	auto x = refl::Namespace::GetGlobalNamespace();
 	auto klass = refl::Namespace::GetGlobalNamespace()->GetClass("cct::refl::Object");
-	auto sampleFooClass = refl::Namespace::GetGlobalNamespace()->GetClass("cct::SampleFoo");
-			//std::unique_ptr<SampleFoo> object = klass->CreateDefaultObject<SampleFoo>();
+	auto sampleFooClass = refl::Namespace::GetGlobalNamespace()->GetClass("cct::SampleBar");
+	std::unique_ptr<SampleBar> object = klass->CreateDefaultObject<SampleBar>();
+	cct::refl::Int32 i(55);
+	sampleFooClass->GetMethod(0)->Invoke<void>(*object, i);
 	
 	return 0;
 }
