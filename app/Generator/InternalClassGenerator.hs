@@ -10,8 +10,12 @@ generateInternalMethodParameters :: Param -> String
 generateInternalMethodParameters (Param _ type') = "cct::refl::GetClassByName(\"\"sv, \"" ++ type' ++ "\"sv), "
 
 generateInternalMethod :: String -> Method -> String
-generateInternalMethod klass (Method name returnType _ params) = "\tauto* " ++ name ++ "Method = new " ++ klass ++ name ++ "Method(\"" ++ name ++ "\"sv, cct::refl::GetClassByName(\"" ++ returnType ++ "\"sv), { " ++ concatMap generateInternalMethodParameters params ++ " });\n"
+generateInternalMethod klass (Method name returnType _ params) = "\tauto* " ++ name ++ "Method = new " ++ klass ++ name ++ "Method(\"" ++ name ++ "\"sv, cct::refl::GetClassByName(\"" ++ returnType ++ "\"sv), { " ++ concatMap generateInternalMethodParameters params ++ " }, methodIndex);\n\t++methodIndex;\n"
                                                               ++ "\tAddMemberFunction(std::unique_ptr<cct::refl::Method>(" ++ name ++ "Method));\n"
+
+generateGetMemberVariable :: String -> Int -> [ClassMember] -> String
+generateGetMemberVariable _ _ [] = ""
+generateGetMemberVariable klass index ((ClassMember name _ _ _):xs) = "\n\tif (index == " ++ show index ++ ")\n\t\treturn &static_cast<"++ klass ++ "&>(self)." ++ name ++ ";\n" ++ generateGetMemberVariable klass (index + 1) xs
 
 generateInternalClass :: String -> Class -> String
 generateInternalClass namespaceName (Class name _ baseClass methods members) = "class Internal" ++ name ++ "Class;\n"
@@ -22,11 +26,15 @@ generateInternalClass namespaceName (Class name _ baseClass methods members) = "
                                                     ++ "{\n}\n"
                                                     ++ "void Initialize() override\n{\n"
                                                     ++ "\tSetNamespace(GetNamespaceByName(\"" ++ namespaceName ++"\"sv));\n"
-                                                    ++ "\tSetBaseClass(GetClassByName(\"" ++ baseClass ++ "\"sv));\n"
+                                                    ++ "\tSetBaseClass(GetClassByName(\"" ++ baseClass ++ "\"sv));\n\n"
                                                     ++  concatMap generateInternalClassMembers members
+                                                    ++ "\n\n\tsize_t methodIndex = 0;\n"
                                                     ++  concatMap (generateInternalMethod name) methods
                                                     ++ "}\n"
                                                     ++ "std::unique_ptr<cct::refl::Object> CreateDefaultObject() const override { return std::unique_ptr<cct::refl::Object>(new " ++ name ++ "); }\n"
+                                                    ++ "cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const override \n{"
+                                                    ++  generateGetMemberVariable name 0 members
+                                                    ++ "\n\tCCT_ASSERT_FALSE(\"Invalid index\");\n\treturn nullptr;\n}\n"
                                                     ++ "static std::shared_ptr<cct::refl::Class> CreateClassInstance()\n"
                                                     ++ "{\n"
                                                     ++  "\tif (" ++ name ++ "::_class != nullptr)\n"
