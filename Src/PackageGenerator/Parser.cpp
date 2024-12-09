@@ -11,7 +11,10 @@
 #define CCT_TRY_DECLARE_ATTR(varName, node, attrName)													\
 	const auto* varName = (node).attribute((attrName).c_str()).value();									\
 	if ((varName) == nullptr)																			\
-		return std::format("Package {} does not have required attribute: '{}'", node.name(), attrName)
+	{																									\
+		CCT_ASSERT_FALSE("");																			\
+		return std::format("Package {} does not have required attribute: '{}'", node.name(), attrName);	\
+	}
 
 #define CCT_TRY_DECLARE(varName, func, node)	\
 	auto varName = func(node);					\
@@ -222,12 +225,17 @@ namespace cct
 
 	Result<Class::Member, std::string> Parser::TryParseClassMember(const pugi::xml_node& node)
 	{
-		if (!node.children().empty())
-			return std::format("Class::Member '{}' must not have child elements", node.name());
-
 		CCT_TRY_DECLARE_ATTR(memberName, node, ClassMemberNameAttr);
 		CCT_TRY_DECLARE_ATTR(memberType, node, ClassTypeNameAttr);
 		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
+
+		for (auto child : node)
+		{
+			if (child.name() == AttributeElement)
+				continue;
+			CCT_ASSERT_FALSE("");
+			return std::format("Class::Member {} has an invalid element: {}", node.name(), child.name());
+		}
 
 		return Class::Member{
 			.name = CCT_MAKE_SV(memberName),

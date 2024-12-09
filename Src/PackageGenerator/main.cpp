@@ -35,7 +35,7 @@ int main(int argc, const char** argv)
 
 	if (result.IsError())
 	{
-		std::cout << result.GetError() << '\n';
+		std::cerr << result.GetError() << '\n';
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
