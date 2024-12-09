@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 #include <span>
-#include <unordered_map>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -60,7 +59,7 @@ namespace cct::refl
 		[[nodiscard]] bool InheritsFrom(const Class&) const;
 
 		bool operator==(const Class& other) const;
-		bool operator!=(const Class& other) const;
+		bool operator!=(const Class& other) const; 
 
 		virtual std::unique_ptr<cct::refl::Object> CreateDefaultObject() const = 0;
 
