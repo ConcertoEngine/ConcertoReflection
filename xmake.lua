@@ -39,10 +39,10 @@ rule("xml")
     on_config(function (target)
         for _, filepath in ipairs(target:sourcebatches()["xml"].sourcefiles) do
             local generatedFile = path.join(target:autogendir(), "Reflection", path.basename(filepath))
-            target:add("headerfiles", target:autogendir() .. "/(Reflection/" .. path.basename(filepath) ..".hpp)")
+            target:add("headerfiles", path.join(target:autogendir(), "(Reflection", path.basename(filepath) ..".hpp)"))
             target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
             target:add("files", generatedFile .. ".cpp", {always_added = true})
-            target:add("files", filepath)
+            target:add("headerfiles", filepath)
             target:add("defines", path.basename(filepath):upper() .. "_BUILD")
         end
     end)
