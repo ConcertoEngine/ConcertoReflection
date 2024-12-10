@@ -3,6 +3,8 @@
 
 #include <pugixml.hpp>
 
+#include "Concerto/PackageGenerator/CppGenerator.hpp"
+#include "Concerto/PackageGenerator/HeaderGenerator.hpp"
 #include "Concerto/PackageGenerator/Parser.hpp"
 
 
@@ -14,11 +16,18 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
-	//if (argc < 3)
-	//{
-	//	PrintHelp();
-	//	return EXIT_FAILURE;
-	//}
+	using namespace std::string_view_literals;
+	if (argc == 2 && std::string_view(argv[1], std::strlen(argv[1])) == "--version"sv)
+	{
+		std::cout << "concerto-pkg-generator version 1.0.0";
+		return EXIT_SUCCESS;
+	}
+
+	if (argc < 3)
+	{
+		PrintHelp();
+		return EXIT_FAILURE;
+	}
 
 	pugi::xml_document doc;
 	{
@@ -38,5 +47,11 @@ int main(int argc, const char** argv)
 		std::cerr << result.GetError() << '\n';
 		return EXIT_FAILURE;
 	}
+
+	cct::HeaderGenerator headerGenerator("./SamplePackage.hpp");
+	headerGenerator.Generate(result.GetValue());
+	cct::CppGenerator cppGenerator("./SamplePackage.cpp");
+	cppGenerator.Generate(result.GetValue());
+
 	return EXIT_SUCCESS;
 }

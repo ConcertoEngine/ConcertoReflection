@@ -148,7 +148,9 @@ namespace cct
 		for (auto child : node)
 		{
 			const auto* name = child.name();
-			if (name != EnumMemberElement && name != AttributeElement)
+			if (name == AttributeElement)
+				continue;
+			if (name != EnumMemberElement)
 			{
 				CCT_ASSERT_FALSE("");
 				std::cout << std::format("Unknown element '{}' in enum '{}'", name, enumName);
@@ -256,7 +258,9 @@ namespace cct
 
 		for (auto child : node)
 		{
-			if (child.name() != ClassMethodParamElement && child.name() != AttributeElement)
+			if (child.name() == AttributeElement)
+				continue;
+			if (child.name() != ClassMethodParamElement)
 				return std::format("Class:Method has an invalid element: '{}'", child.name());
 
 			CCT_TRY_DECLARE_ATTR(paramName, child, ClassMethodParamNameAttr);
