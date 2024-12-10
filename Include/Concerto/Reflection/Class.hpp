@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <span>
+#include <unordered_map>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -55,8 +56,8 @@ namespace cct::refl
 		[[nodiscard]] bool InheritsFrom(const Class& other) const;
 		[[nodiscard]] bool InheritsFrom(std::string_view name) const;
 
-		template<typename T>
-		[[nodiscard]] bool InheritsFrom(const Class&) const;
+		bool HasAttribute(std::string_view attribute) const;
+		std::string_view GetAttribute(std::string_view attribute);
 
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const; 
@@ -72,6 +73,7 @@ namespace cct::refl
 	protected:
 		void AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type);
 		void AddMemberFunction(std::unique_ptr<Method> method);
+		void AddAttribute(std::string name, std::string value);
 		void SetNamespace(std::shared_ptr<Namespace> nameSpace);
 		void SetBaseClass(std::shared_ptr<const Class> klass);
 	private:
@@ -80,6 +82,7 @@ namespace cct::refl
 		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
 		std::vector<std::unique_ptr<Method>> _methods;
 		std::shared_ptr<const Class> _baseClass;
+		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
 
 		std::size_t _hash;
 	};

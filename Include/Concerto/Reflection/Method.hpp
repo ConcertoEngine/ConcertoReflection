@@ -38,12 +38,21 @@ namespace cct::refl
 
 		template<typename T, typename ...Args>
 		T Invoke(Object& self, Args... args) const;
+
+		inline bool HasAttribute(std::string_view attribute) const;
+		inline std::string_view GetAttribute(std::string_view attribute);
+
+		//Should be private
+		virtual void Initialize() = 0;
+	protected:
+		void AddAttribute(std::string name, std::string value);
 	private:
 		virtual cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		std::string _name;
 		std::shared_ptr<const Class> _returnValue;
 		std::vector<std::shared_ptr<const Class>> _parameters;
 		std::size_t _index;
+		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
 	};
 
 	template <typename T, typename... Args>

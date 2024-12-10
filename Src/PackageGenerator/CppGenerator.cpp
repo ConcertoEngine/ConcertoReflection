@@ -125,6 +125,9 @@ namespace cct
 					Write("AddMemberFunction(std::unique_ptr<cct::refl::Method>({}Method));", method.name);
 					++i;
 				}
+
+				for (auto& [name, value] : klass.attributes)
+					Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			}
 			LeaveScope();
 			NewLine();
@@ -177,6 +180,13 @@ namespace cct
 		{
 			Write("public:");
 			Write("using Method::Method;");
+			NewLine();
+			Write("void Initialize() override");
+			EnterScope();
+			for (auto& [name, value] : method.attributes)
+				Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
+			LeaveScope();
+			NewLine();
 			Write("cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
 			EnterScope();
 			{

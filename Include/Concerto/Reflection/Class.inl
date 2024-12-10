@@ -10,12 +10,6 @@
 namespace cct::refl
 {
 	template <typename T>
-	bool Class::InheritsFrom(const Class& klass) const
-	{
-		return false;
-	}
-
-	template <typename T>
 	requires (std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 	std::unique_ptr<T> Class::CreateDefaultObject() const
 	{
