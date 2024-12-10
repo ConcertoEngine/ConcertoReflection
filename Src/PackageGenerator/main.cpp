@@ -1,5 +1,6 @@
 #include <iostream>
 #include <format>
+#include <filesystem>
 
 #include <pugixml.hpp>
 
@@ -31,7 +32,7 @@ int main(int argc, const char** argv)
 
 	pugi::xml_document doc;
 	{
-		pugi::xml_parse_result result = doc.load_file("E:/Documents/git/ConcertoEngine/Reflection/Tests/SamplePackage.xml");
+		pugi::xml_parse_result result = doc.load_file(argv[1]);
 
 		if (!result)
 		{
@@ -47,11 +48,24 @@ int main(int argc, const char** argv)
 		std::cerr << result.GetError() << '\n';
 		return EXIT_FAILURE;
 	}
+	try
+	{
+		std::filesystem::path file(argv[1]);
+		file = file.filename().replace_extension();
+		std::filesystem::path path = argv[2] / file.filename();
+		path = std::filesystem::absolute(path);
+		std::filesystem::create_directories(path.parent_path());
 
-	cct::HeaderGenerator headerGenerator("./SamplePackage.hpp");
-	headerGenerator.Generate(result.GetValue());
-	cct::CppGenerator cppGenerator("./SamplePackage.cpp");
-	cppGenerator.Generate(result.GetValue());
+		cct::HeaderGenerator headerGenerator(path.string() + ".hpp");
+		headerGenerator.Generate(result.GetValue());
+		cct::CppGenerator cppGenerator(path.string() + ".cpp");
+		cppGenerator.Generate(result.GetValue());
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return 84;
+	}
 
 	return EXIT_SUCCESS;
 }

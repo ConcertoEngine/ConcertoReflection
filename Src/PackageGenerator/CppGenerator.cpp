@@ -10,6 +10,20 @@ namespace cct
 
 	bool CppGenerator::Generate(const Package& package)
 	{
+		Write("//This file was automatically generated, do not edit");
+		Write("#include <Concerto/Core/Assert.hpp>");
+		Write("#include \"{}Package.hpp\"", package.name);
+		Write("using namespace std::string_view_literals;");
+		Write("using namespace std::string_literals;");
+		Write("using namespace cct;");
+		Write("using namespace cct::refl;");
+
+		for (auto& include : package.includes)
+		{
+			if (include.isPublic)
+				continue;
+			Write("#include \"{}\"", include.file);
+		}
 		for (auto& enum_ : package.enums)
 			GenerateEnum(enum_);
 		for (auto& klass : package.classes)
@@ -22,25 +36,29 @@ namespace cct
 
 	void CppGenerator::GenerateNamespace(const Namespace& ns)
 	{
-		for (auto& nestedNs : ns.namespaces)
-			GenerateNamespace(ns);
-		for (auto& enum_ : ns.enums)
-			GenerateEnum(enum_);
-		for (auto& klass : ns.classes)
-			GenerateClass(ns.name, klass);
-
+		Write("namespace {}", ns.name);
+		EnterScope();
+		{
+			for (auto& nestedNs : ns.namespaces)
+				GenerateNamespace(nestedNs);
+			for (auto& enum_ : ns.enums)
+				GenerateEnum(enum_);
+			for (auto& klass : ns.classes)
+				GenerateClass(ns.name, klass);
+		}
+		LeaveScope();
 		Write("class Internal{}Namespace : public cct::refl::Namespace", ns.name);
 		EnterScope();
 		{
-			Write("public");
-			Write("Internal{}Namespace() : cct::refl::Namespace(\"{}\"sv) {{}}", ns.name, ns.name);
+			Write("public:");
+			Write("Internal{}Namespace() : cct::refl::Namespace(\"{}\"s) {{}}", ns.name, ns.name);
 			NewLine();
 			Write("void LoadNamespaces() override");
 			EnterScope();
 			{
 				for (auto& nestedNs : ns.namespaces)
 					Write("AddNamespace(Internal{}Namespace::CreateNamespaceInstance());", nestedNs.name);
-				Write("for (auto& ns : _namespaces");
+				Write("for (auto& ns : _namespaces)");
 				EnterScope();
 				{
 					Write("ns->LoadNamespaces();");
@@ -54,10 +72,10 @@ namespace cct
 			{
 				Write("for(auto& ns : _namespaces)");
 				EnterScope();
-				Write("ns->LoadClasses()");
+				Write("ns->LoadClasses();");
 				LeaveScope();
 				for (auto& klass : ns.classes)
-					Write("AddCLass(Internal{}Class::CreateClassInstance();", klass.name);
+					Write("AddClass(Internal{}Class::CreateClassInstance());", klass.name);
 					
 			}
 			LeaveScope();
@@ -65,7 +83,7 @@ namespace cct
 			Write("void InitializeClasses() override");
 			EnterScope();
 			{
-				Write("for (auto& klass : _classes");
+				Write("for (auto& klass : _classes)");
 				EnterScope();
 				Write("klass->Initialize();");
 				LeaveScope();
@@ -85,7 +103,8 @@ namespace cct
 		Write("class Internal{}Class : public cct::refl::Class", klass.name);
 		EnterScope();
 		{
-			Write("Internal{0}Class() : public cct::refl::Class(\"{0}\"sv) {{}}", klass.name);
+			Write("public:");
+			Write("Internal{0}Class() : cct::refl::Class(nullptr, \"{0}\"s, nullptr) {{}}", klass.name);
 			NewLine();
 			Write("void Initialize() override");
 			EnterScope();
@@ -94,7 +113,7 @@ namespace cct
 				Write("SetBaseClass(GetClassByName(\"{}\"sv));", klass.base);
 				NewLine();
 				for (auto& member : klass.members)
-					Write("AddMemberVariable({}, cct::refl::GetClassByName(\"{}\"));", member.name, member.type);
+					Write("AddMemberVariable(\"{}\", cct::refl::GetClassByName(\"{}\"));", member.name, member.type);
 				NewLine();
 				std::size_t i = 0;
 				for (auto& method : klass.methods)
@@ -114,13 +133,13 @@ namespace cct
 			Write("cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const override");
 			EnterScope();
 			{
-				std::size_t i;
+				std::size_t i = 0;
 				for (auto& member : klass.members)
 				{
 					Write("if (index == {})", i);
 					EnterScope();
 					{
-						Write("return &static_cast<{}&>(self).{};", klass.name, member.name);
+						Write("return &static_cast<{}&>(self)._{};", klass.name, member.name);
 					}
 					LeaveScope();
 					++i;
@@ -142,7 +161,7 @@ namespace cct
 				}
 				LeaveScope();
 				Write("{}::_class = std::make_shared<Internal{}Class>();", klass.name, klass.name);
-				Write("return {}::_class", klass.name);
+				Write("return {}::_class;", klass.name);
 			}
 			LeaveScope();
 		}
@@ -181,7 +200,7 @@ namespace cct
 				else
 				{
 					Write("auto res = static_cast<{}&>(self).{}({});", className, method.name, callArgs);
-					Write("return cct::Any::Make<{}>(result);", method.returnValue);
+					Write("return cct::Any::Make<{}>(res);", method.returnValue);
 				}
 			}
 			LeaveScope();
@@ -205,7 +224,7 @@ namespace cct
 				}
 			}
 			LeaveScope();
-			Write("CCT_ASSERT_FALSE(\"Invalid enum value: {{}}\", value);");
+			Write("CCT_ASSERT_FALSE(\"Invalid enum value\");");
 			Write("return {{}};");
 		}
 		LeaveScope();
@@ -215,7 +234,7 @@ namespace cct
 		{
 			for (auto& elem : enum_.elements)
 			{
-				Write("if (value == \"{}\"sv", elem.name);
+				Write("if (value == \"{}\"sv)", elem.name);
 				EnterScope();
 				Write("return {}::{};", enum_.name, elem.name);
 				LeaveScope();
@@ -232,13 +251,13 @@ namespace cct
 		EnterScope();
 		{
 			Write("public:");
-			Write("Internal{0}Package() : cct::refl::Package(\"{0}\"sv) {{}}", pkg.name);
+			Write("Internal{0}Package() : cct::refl::Package(\"{0}\"s) {{}}", pkg.name);
 			Write("void LoadNamespaces() override");
 			EnterScope();
 			{
 				for (auto& ns : pkg.namepsaces)
-					Write("AddNamespace(Internal{}Namespace::CreateNamespaceInstance());", pkg.name);
-				Write("for (auto& ns : _namespaces");
+					Write("AddNamespace(Internal{}Namespace::CreateNamespaceInstance());", ns.name);
+				Write("for (auto& ns : _namespaces)");
 				EnterScope();
 				{
 					Write("ns->LoadNamespaces();");
@@ -253,17 +272,14 @@ namespace cct
 				for (auto& klass : pkg.classes)
 				{
 					EnterScope();
-					Write("AddClass(Internal{}Class::CreateClassInstance());", klass.name);
+					Write("Namespace::GetGlobalNamespace()->AddClass(Internal{}Class::CreateClassInstance());", klass.name);
 					LeaveScope();
 				}
 				NewLine();
-				for (auto& klass : pkg.classes)
-				{
-					Write("for (auto& ns : _namespaces)");
-					EnterScope();
-					Write("ns->LoadClasses();");
-					LeaveScope();
-				}
+				Write("for (auto& ns : _namespaces)");
+				EnterScope();
+				Write("ns->LoadClasses();");
+				LeaveScope();
 			}
 			LeaveScope();
 			NewLine();
@@ -280,5 +296,10 @@ namespace cct
 			LeaveScope();
 		}
 		LeaveScope(";"sv);
+		NewLine();
+		Write("std::unique_ptr<cct::refl::Package> Create{}Package()", pkg.name);
+		EnterScope();
+		Write("return std::unique_ptr<cct::refl::Package>(new Internal{}Package);", pkg.name);
+		LeaveScope();
 	}
 }

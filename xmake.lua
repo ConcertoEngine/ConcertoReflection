@@ -49,7 +49,6 @@ rule("xml")
 
     before_buildcmd_file(function (target, batchcmds, xmlFile, opt)
         local cctPkgGen = target:data("concerto-pkg-generator")
-        print("cctPkgGen: ", cctPkgGen)
         assert(cctPkgGen, "concerto-pkg-generator not found!")
         local outputFolder = path.join(target:autogendir(), "Reflection")
         local outputCppFile = path.join(outputFolder, path.basename(xmlFile) .. ".cpp")

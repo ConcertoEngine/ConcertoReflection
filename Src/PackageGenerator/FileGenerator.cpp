@@ -4,12 +4,15 @@
 
 #include "Concerto/PackageGenerator/FileGenerator.hpp"
 
+#include <iostream>
+
 namespace cct
 {
 	FileGenerator::FileGenerator(const std::string& path) :
 		_indentLevel(0),
-		stream(path)
+		stream(path, std::ios::trunc)
 	{
+		std::cout << "Generating file: " << path << '\n';
 	}
 
 	void FileGenerator::EnterScope()

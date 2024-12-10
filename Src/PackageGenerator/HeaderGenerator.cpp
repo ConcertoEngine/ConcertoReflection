@@ -17,7 +17,7 @@ namespace cct
 			{
 				return std::toupper(c);
 			});
-		std::string api = upperPackageName + "_API";
+		std::string api = upperPackageName + "PACKAGE_API";
 		Write("//This file was automatically generated, do not edit\n");
 		Write("#pragma once");
 		Write("#include <string_view>");
@@ -56,16 +56,17 @@ namespace cct
 
 		for (auto& ns : package.namepsaces)
 			GenerateNamespace(ns, api);
-
+		NewLine();
+		Write("{} std::unique_ptr<cct::refl::Package> Create{}Package();", api, package.name);
 		return true;
 	}
 
 	void HeaderGenerator::GenerateNamespace(const Namespace& ns, const std::string& api)
 	{
-		for (auto& nestedNamespace : ns.namespaces)
-			GenerateNamespace(nestedNamespace, api);
 		Write("namespace {}", ns.name);
 		EnterScope();
+		for (auto& nestedNamespace : ns.namespaces)
+			GenerateNamespace(nestedNamespace, api);
 		for (auto& enum_ : ns.enums)
 			GenerateEnum(enum_, api);
 		NewLine();
@@ -97,15 +98,15 @@ namespace cct
 				LeaveScope();
 			}
 			NewLine();
-			Write("CCT_OBJECT({})", klass.name);
+			Write("CCT_OBJECT({});", klass.name);
 			NewLine();
 			Write("private:");
 			for (const auto& member : klass.members)
 			{
-				Write("{} _{}", member.type, member.name);
+				Write("{} _{};", member.type, member.name);
 			}
 		}
-		LeaveScope();
+		LeaveScope(";");
 	}
 
 	void HeaderGenerator::GenerateEnum(const Enum& enum_, const std::string& api)
@@ -114,9 +115,9 @@ namespace cct
 		EnterScope();
 		for (auto& elem : enum_.elements)
 			Write("{} = {},", elem.name, elem.value);
-		LeaveScope();
+		LeaveScope(";");
 		NewLine();
-		Write("{} {}ToString({} value);", api, Capitalize(enum_.name), enum_.name);
-		Write("{} {}FromString(std::string_view str);", api, Capitalize(enum_.name));
+		Write("{} std::string_view {}ToString({} value);", api, Capitalize(enum_.name), enum_.name);
+		Write("{} {} {}FromString(std::string_view str);", api, enum_.name, Capitalize(enum_.name));
 	}
 }
