@@ -9,12 +9,12 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)										\
-	public:															\
-		static std::shared_ptr<const cct::refl::Class> GetClass()	\
-			{return _class;}										\
-	private:														\
-		static std::shared_ptr<cct::refl::Class> _class;			\
+#define CCT_OBJECT(className)						\
+	public:											\
+		static const cct::refl::Class* GetClass()	\
+			{return _class;}						\
+	private:										\
+		static const cct::refl::Class* _class;		\
 		friend class Internal##className##Class
 
 namespace cct::refl

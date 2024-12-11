@@ -17,7 +17,7 @@ namespace cct
 
 		cct::refl::Int32 Bar(const cct::refl::Int32& bar1, const cct::refl::Int32& bar2, const cct::refl::Int32& bar3)
 		{
-		 	return {};
+		 	return 22;
 		}
 		CCT_OBJECT(SampleBar);
 	private:

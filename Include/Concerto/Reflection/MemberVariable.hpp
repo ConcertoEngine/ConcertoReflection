@@ -16,7 +16,7 @@ namespace cct::refl
 	class CCT_REFLECTION_API MemberVariable
 	{
 	public:
-		MemberVariable(std::string name, std::shared_ptr<const Class> type, std::size_t index);
+		MemberVariable(std::string name, const Class* type, std::size_t index);
 		~MemberVariable() = default;
 
 		MemberVariable(const MemberVariable&) = delete;
@@ -31,7 +31,7 @@ namespace cct::refl
 	private:
 		std::string _name;
 		std::size_t _index;
-		std::shared_ptr<const Class> _type;
+		const Class* _type;
 	};
 }
 

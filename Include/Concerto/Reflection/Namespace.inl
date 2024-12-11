@@ -30,7 +30,10 @@ namespace cct::refl
 
 	inline std::size_t Namespace::GetClassCount() const
 	{
-		return _classes.size();
+		std::size_t count = _classes.size();
+		for (auto& ns : _namespaces)
+			count += ns->GetClassCount();
+		return count;
 	}
 
 
@@ -42,12 +45,6 @@ namespace cct::refl
 	inline bool Namespace::HasClass(std::string_view name) const
 	{
 		return GetClass(name) != nullptr;
-	}
-
-	inline std::shared_ptr<Namespace> Namespace::GetGlobalNamespace()
-	{
-		CCT_ASSERT(_globalNamespace, "Global namespace is null");
-		return _globalNamespace;
 	}
 }
 

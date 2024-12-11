@@ -14,51 +14,15 @@
 namespace cct::refl
 {
 	using namespace std::string_literals;
-	
-	class CCT_REFLECTION_API GlobalNamespace : public Namespace
-	{
-	public:
-		GlobalNamespace() : Namespace("Global"s)
-		{}
 
-		void LoadNamespaces() override
-		{
-			for (auto& nameSpace : _namespaces)
-			{
-				nameSpace->LoadNamespaces();
-			}
-		}
-		void LoadClasses() override
-		{
-			for (auto& nameSpace : _namespaces)
-			{
-				CCT_ASSERT(nameSpace, "Invalid namespace pointer");
-				nameSpace->LoadClasses();
-			}
-		}
-
-		void InitializeClasses() override
-		{
-			for (auto& nameSpace : _namespaces)
-			{
-				CCT_ASSERT(nameSpace, "Invalid namespace pointer");
-				nameSpace->InitializeClasses();
-			}
-		}
-
-		std::shared_ptr<Namespace> GetNamespace(std::string_view name);
-	};
-
-	std::shared_ptr<Namespace> Namespace::_globalNamespace = std::make_shared<GlobalNamespace>();
-
-	std::shared_ptr<const Class> Namespace::GetClass(std::size_t index) const
+	const Class* Namespace::GetClass(std::size_t index) const
 	{
 		if (index > GetClassCount())
 			return nullptr;
-		return _classes[index];
+		return _classes[index].get();
 	}
 
-	std::shared_ptr<const Class> Namespace::GetClass(std::string_view name) const
+	const Class* Namespace::GetClass(std::string_view name) const
 	{
 		using namespace std::string_view_literals;
 		if (name.find("::"sv) != std::string_view::npos)
@@ -83,43 +47,44 @@ namespace cct::refl
 			}
 		}
 
-		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::shared_ptr<const Class>& value) -> bool
+		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::unique_ptr<Class>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
 		if (it != _classes.end())
-			return *it;
+			return it->get();
 		return nullptr;
 	}
 
-	inline std::shared_ptr<Namespace> Namespace::GetNamespace(std::size_t index) const
+	inline Namespace* Namespace::GetNamespace(std::size_t index) const
 	{
 		if (index > GetNamespaceCount())
 			return nullptr;
-		return _namespaces[index];
+		return _namespaces[index].get();
 	}
 
-	void Namespace::AddClass(std::shared_ptr<Class> klass)
+	void Namespace::AddClass(std::unique_ptr<Class> klass)
 	{
 		_classes.emplace_back(std::move(klass));
 	}
 
-	void Namespace::AddNamespace(std::shared_ptr<Namespace> nameSpace)
+	void Namespace::AddNamespace(std::unique_ptr<Namespace> nameSpace)
 	{
 		_namespaces.emplace_back(std::move(nameSpace));
 	}
 
-	std::shared_ptr<Namespace> Namespace::GetNamespace(std::string_view name) const
+	Namespace* Namespace::GetNamespace(std::string_view name) const
 	{
+
 		for (auto& nameSpace : _namespaces)
 		{
 			if (nameSpace->GetName() == name)
-				return nameSpace;
+				return nameSpace.get();
 		}
 		return nullptr;
 	}
 
-	std::shared_ptr<Namespace> Namespace::GetNamespace(std::span<std::string_view> namespaces) const
+	Namespace* Namespace::GetNamespace(std::span<std::string_view> namespaces) const
 	{
 		if (namespaces.empty())
 		{
@@ -127,6 +92,8 @@ namespace cct::refl
 			return nullptr;
 		}
 		auto nameSpace = GetNamespace(namespaces[0]);
+		if (nameSpace == nullptr)
+			return nullptr;
 		auto res = namespaces.subspan(1);
 		if (res.empty())
 			return nameSpace;

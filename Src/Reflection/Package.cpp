@@ -11,6 +11,8 @@
 
 #include <Concerto/Core/Assert.hpp>
 
+#include "Concerto/Reflection/GlobalNamespace.hpp"
+
 namespace cct::refl
 {
 	Package::Package(std::string name) :
@@ -18,33 +20,39 @@ namespace cct::refl
 	{
 	}
 
-	std::shared_ptr<Namespace> Package::GetNamespace(std::size_t index) const
+	Namespace* Package::GetNamespace(std::size_t index) const
 	{
 		if (index > _namespaces.size())
 			return nullptr;
-		return _namespaces[index];
+		return _namespaces[index].get();
 	}
 
-	std::shared_ptr<Namespace> Package::GetNamespace(std::string_view name) const
+	Namespace* Package::GetNamespace(std::string_view name) const
 	{
-		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::shared_ptr<Namespace>& value) -> bool
+		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
 
 		if (it != _namespaces.end())
-			return *it;
+			return it->get();
 		return nullptr;
 	}
 
-	void Package::AddNamespace(std::shared_ptr<Namespace> nameSpace)
+	void Package::AddNamespace(std::unique_ptr<Namespace> nameSpace)
 	{
 		if (nameSpace == nullptr)
 		{
 			CCT_ASSERT_FALSE("Namespace is null");
 			return;
 		}
-		_namespaces.emplace_back(nameSpace);
-		Namespace::GetGlobalNamespace()->AddNamespace(nameSpace);
+		GlobalNamespace::Get().AddNamespace(nameSpace.get());
+		_namespaces.emplace_back(std::move(nameSpace));
+	}
+
+	void Package::AddClass(std::unique_ptr<Class> klass)
+	{
+		GlobalNamespace::Get().AddClass(klass.get());
+		_classes.push_back(std::move(klass));
 	}
 }

@@ -3,19 +3,21 @@
 //
 
 #include <ranges>
+#include <string_view>
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Reflection/Class.hpp"
 #include "Concerto/Reflection/Namespace.hpp"
 #include "Concerto/Reflection/Method.hpp"
 #include "Concerto/Reflection/MemberVariable.hpp"
+#include "Concerto/Reflection/GlobalNamespace.hpp"
 
 namespace cct::refl
 {
-	Class::Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass) :
+	Class::Class(Namespace* nameSpace, std::string name, const Class* baseClass) :
 		_name(std::move(name)),
-		_namespace(nameSpace ? std::move(nameSpace) : Namespace::GetGlobalNamespace()),
-		_baseClass(baseClass ? std::move(baseClass) : nullptr),
+		_namespace(nameSpace),
+		_baseClass(baseClass ? baseClass : nullptr),
 		_hash(0)
 	{
 		_hash = _namespace ? _namespace->GetHash() : 0;
@@ -147,9 +149,9 @@ namespace cct::refl
 	{
 		//not using "contains", because it does not support std::string_view
 		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-		{
-			return "attribute" == value.first;
-		});
+			{
+				return "attribute" == value.first;
+			});
 		return it != _attributes.end();
 	}
 
@@ -178,10 +180,10 @@ namespace cct::refl
 		return !(*this == other);
 	}
 
-	void Class::AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type)
+	void Class::AddMemberVariable(std::string_view name, const Class* type)
 	{
 		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");
-		_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), std::move(type), _memberVariables.size()));
+		_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), type, _memberVariables.size()));
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)
@@ -196,26 +198,19 @@ namespace cct::refl
 		_attributes.emplace(std::move(name), std::move(value));
 	}
 
-	void Class::SetNamespace(std::shared_ptr<Namespace> nameSpace)
+	void Class::SetNamespace(Namespace* nameSpace)
 	{
-		_namespace = std::move(nameSpace);
+		_namespace = nameSpace;
 	}
 
-	void Class::SetBaseClass(std::shared_ptr<const Class> klass)
+	void Class::SetBaseClass(const Class* klass)
 	{
-		_baseClass = std::move(klass);
+		_baseClass = klass;
 	}
 
-	std::shared_ptr<Namespace> GetNamespaceByName(std::string_view name)
+	const Class* GetClassByName(std::string_view nameSpaceName, std::string_view name)
 	{
-		if (name == Namespace::GetGlobalNamespace()->GetName() || name.empty())
-			return Namespace::GetGlobalNamespace();
-		return Namespace::GetGlobalNamespace()->GetNamespace(name);
-	}
-
-	std::shared_ptr<const Class> GetClassByName(std::string_view nameSpaceName, std::string_view name)
-	{
-		const auto nameSpace = GetNamespaceByName(nameSpaceName);
+		const auto nameSpace = GlobalNamespace::Get().GetNamespaceByName(nameSpaceName);
 		if (nameSpace)
 		{
 			return nameSpace->GetClass(name);
@@ -224,15 +219,15 @@ namespace cct::refl
 		return nullptr;
 	}
 
-	std::shared_ptr<const Class> GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name)
+	const Class* GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name)
 	{
-		auto nameSpace = Namespace::GetGlobalNamespace()->GetNamespace(nameSpaceNames);
+		auto nameSpace = GlobalNamespace::Get().GetNamespaceByName(nameSpaceNames);
 		if (nameSpace)
 			return nameSpace->GetClass(name);
 		return nullptr;
 	}
 
-	std::shared_ptr<const Class> GetClassByName(std::string_view name)
+	const Class* GetClassByName(std::string_view name)
 	{
 		using namespace std::string_view_literals;
 		auto split = name | std::ranges::views::split("::"sv);

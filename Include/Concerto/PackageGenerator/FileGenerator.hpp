@@ -17,6 +17,7 @@ namespace cct
 	class FileGenerator
 	{
 	public:
+		virtual ~FileGenerator() = default;
 		explicit FileGenerator(const std::string& path);
 
 		virtual bool Generate(const Package& package) = 0;

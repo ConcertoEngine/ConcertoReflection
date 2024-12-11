@@ -34,16 +34,18 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetClassCount() const;
 		[[nodiscard]] inline std::size_t GetNamespaceCount() const;
 
-		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::size_t index) const;
-		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::string_view name) const;
+		[[nodiscard]] Namespace* GetNamespace(std::size_t index) const;
+		[[nodiscard]] Namespace* GetNamespace(std::string_view name) const;
 
 		virtual void LoadNamespaces() = 0;
 		virtual void InitializeNamespaces() = 0;
 		virtual void InitializeClasses() = 0;
 	protected:
-		void AddNamespace(std::shared_ptr<Namespace> nameSpace);
+		void AddNamespace(std::unique_ptr<Namespace> nameSpace);
+		void AddClass(std::unique_ptr<Class> klass);
 		std::string _name;
-		std::vector<std::shared_ptr<Namespace>> _namespaces;
+		std::vector<std::unique_ptr<Namespace>> _namespaces;
+		std::vector<std::unique_ptr<Class>> _classes;
 		friend class Namespace;
 	};
 }

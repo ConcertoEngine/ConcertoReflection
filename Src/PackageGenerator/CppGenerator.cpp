@@ -7,11 +7,13 @@
 namespace cct
 {
 	using namespace std::string_view_literals;
+	using namespace std::string_literals;
 
 	bool CppGenerator::Generate(const Package& package)
 	{
 		Write("//This file was automatically generated, do not edit");
 		Write("#include <Concerto/Core/Assert.hpp>");
+		Write("#include \"Concerto/Reflection/GlobalNamespace.hpp\"");
 		Write("#include \"{}Package.hpp\"", package.name);
 		Write("using namespace std::string_view_literals;");
 		Write("using namespace std::string_literals;");
@@ -34,17 +36,17 @@ namespace cct
 		return true;
 	}
 
-	void CppGenerator::GenerateNamespace(const Namespace& ns)
+	void CppGenerator::GenerateNamespace(const Namespace& ns, const std::string& namepsaceChain)
 	{
 		Write("namespace {}", ns.name);
 		EnterScope();
 		{
 			for (auto& nestedNs : ns.namespaces)
-				GenerateNamespace(nestedNs);
+				GenerateNamespace(nestedNs, namepsaceChain + "::"s + std::string(ns.name));
 			for (auto& enum_ : ns.enums)
 				GenerateEnum(enum_);
 			for (auto& klass : ns.classes)
-				GenerateClass(ns.name, klass);
+				GenerateClass(namepsaceChain + "::"s + std::string(ns.name), klass);
 		}
 		LeaveScope();
 		Write("class Internal{}Namespace : public cct::refl::Namespace", ns.name);
@@ -52,6 +54,16 @@ namespace cct
 		{
 			Write("public:");
 			Write("Internal{}Namespace() : cct::refl::Namespace(\"{}\"s) {{}}", ns.name, ns.name);
+			NewLine();
+			Write("~Internal{}Namespace() override", ns.name);
+			EnterScope();
+			{
+				Write("_classes.clear();");
+				Write("_namespaces.clear();");
+				for (auto& klass : ns.classes)
+					Write("Internal{}Class::DestroyClassInstance();", klass.name);
+			}
+			LeaveScope();
 			NewLine();
 			Write("void LoadNamespaces() override");
 			EnterScope();
@@ -83,6 +95,10 @@ namespace cct
 			Write("void InitializeClasses() override");
 			EnterScope();
 			{
+				Write("for (auto& ns : _namespaces)");
+				EnterScope();
+				Write("ns->InitializeClasses();");
+				LeaveScope();
 				Write("for (auto& klass : _classes)");
 				EnterScope();
 				Write("klass->Initialize();");
@@ -90,7 +106,7 @@ namespace cct
 			}
 			LeaveScope();
 			NewLine();
-			Write("static std::shared_ptr<cct::refl::Namespace> CreateNamespaceInstance(){{return std::make_shared<Internal{}Namespace>();}}", ns.name);
+			Write("static std::unique_ptr<cct::refl::Namespace> CreateNamespaceInstance(){{return std::make_unique<Internal{}Namespace>();}}", ns.name);
 		}
 		LeaveScope(";"sv);
 	}
@@ -109,8 +125,9 @@ namespace cct
 			Write("void Initialize() override");
 			EnterScope();
 			{
-				Write("SetNamespace(GetNamespaceByName(\"{}\"sv));", ns);
-				Write("SetBaseClass(GetClassByName(\"{}\"sv));", klass.base);
+				Write("SetNamespace(GlobalNamespace::Get().GetNamespaceByName(\"{}\"sv));", ns);
+				if (!klass.base.empty())
+					Write("SetBaseClass(GetClassByName(\"{}\"sv));", klass.base);
 				NewLine();
 				for (auto& member : klass.members)
 					Write("AddMemberVariable(\"{}\", cct::refl::GetClassByName(\"{}\"));", member.name, member.type);
@@ -153,23 +170,32 @@ namespace cct
 			LeaveScope();
 			NewLine();
 
-			Write("static std::shared_ptr<cct::refl::Class> CreateClassInstance()");
+			Write("static std::unique_ptr<cct::refl::Class> CreateClassInstance()");
 			EnterScope();
 			{
 				Write("if ({}::_class != nullptr)", klass.name);
 				EnterScope();
 				{
 					Write("CCT_ASSERT_FALSE(\"Class already created\");");
-					Write("return {}::_class;", klass.name);
+					Write("return nullptr;");
 				}
 				LeaveScope();
-				Write("{}::_class = std::make_shared<Internal{}Class>();", klass.name, klass.name);
-				Write("return {}::_class;", klass.name);
+				Write("auto ptr = std::make_unique<Internal{}Class>();", klass.name, klass.name);
+				Write("{}::_class = ptr.get();", klass.name);
+				Write("return std::move(ptr);", klass.name);
+			}
+			LeaveScope();
+			NewLine();
+
+			Write("static void DestroyClassInstance()");
+			EnterScope();
+			{
+				Write("{}::_class = nullptr;", klass.name, klass.name);
 			}
 			LeaveScope();
 		}
 		LeaveScope(";"sv);
-		Write("std::shared_ptr<cct::refl::Class> {}::_class = nullptr;", klass.name);
+		Write("const cct::refl::Class* {}::_class = nullptr;", klass.name);
 		NewLine();
 	}
 
@@ -262,6 +288,15 @@ namespace cct
 		{
 			Write("public:");
 			Write("Internal{0}Package() : cct::refl::Package(\"{0}\"s) {{}}", pkg.name);
+			NewLine();
+			Write("~Internal{}Package() override", pkg.name);
+			EnterScope();
+			{
+				Write("_namespaces.clear();");
+			}
+			LeaveScope();
+
+			NewLine();
 			Write("void LoadNamespaces() override");
 			EnterScope();
 			{
@@ -282,7 +317,7 @@ namespace cct
 				for (auto& klass : pkg.classes)
 				{
 					EnterScope();
-					Write("Namespace::GetGlobalNamespace()->AddClass(Internal{}Class::CreateClassInstance());", klass.name);
+					Write("AddClass(Internal{}Class::CreateClassInstance());", klass.name);
 					LeaveScope();
 				}
 				NewLine();
@@ -309,7 +344,7 @@ namespace cct
 		NewLine();
 		Write("std::unique_ptr<cct::refl::Package> Create{}Package()", pkg.name);
 		EnterScope();
-		Write("return std::unique_ptr<cct::refl::Package>(new Internal{}Package);", pkg.name);
+		Write("return std::make_unique<Internal{}Package>();", pkg.name);
 		LeaveScope();
 	}
 }

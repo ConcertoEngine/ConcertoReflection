@@ -2,9 +2,8 @@ add_rules("mode.debug", "mode.release")
 add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 add_repositories("local-repo build")
 
-add_requires("concerto-core", "pugixml", "eventpp", "concerto-pkg-generator", {configs = {debug = is_mode("debug"), with_symbols = true}})
+add_requires("concerto-core", "pugixml", "eventpp", "concerto-pkg-generator", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
 
-add_requires("catch2")
 add_rules("plugin.vsxmake.autoupdate")
 
 if is_plat("windows") then
@@ -78,7 +77,7 @@ target("concerto-reflection-tests")
     set_kind("binary")
     set_languages("cxx20")
     add_files("Tests/*.cpp", "Tests/*.xml")
-    add_packages("catch2", "eventpp")
+    add_packages("catch2")
     add_deps("concerto-reflection")
     add_rules("xml")
     add_includedirs("Tests/", { public = true })

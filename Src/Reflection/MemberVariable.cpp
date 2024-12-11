@@ -6,10 +6,10 @@
 
 namespace cct::refl
 {
-	MemberVariable::MemberVariable(std::string name, std::shared_ptr<const Class> type, std::size_t index) :
+	MemberVariable::MemberVariable(std::string name, const Class* type, std::size_t index) :
 		_name(std::move(name)),
 		_index(index),
-		_type(std::move(type))
+		_type(type)
 	{
 	}
 }

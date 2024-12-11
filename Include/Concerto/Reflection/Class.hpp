@@ -24,7 +24,7 @@ namespace cct::refl
 	class CCT_REFLECTION_API Class
 	{
 	public:
-		Class(std::shared_ptr<Namespace> nameSpace, std::string name, std::shared_ptr<const Class> baseClass);
+		Class(Namespace* nameSpace, std::string name, const Class* baseClass);
 		virtual ~Class() = default;
 
 		Class(const Class&) = delete;
@@ -71,32 +71,30 @@ namespace cct::refl
 		//should be private
 		virtual void Initialize() = 0;
 	protected:
-		void AddMemberVariable(std::string_view name, std::shared_ptr<const Class> type);
+		void AddMemberVariable(std::string_view name, const Class* type);
 		void AddMemberFunction(std::unique_ptr<Method> method);
 		void AddAttribute(std::string name, std::string value);
-		void SetNamespace(std::shared_ptr<Namespace> nameSpace);
-		void SetBaseClass(std::shared_ptr<const Class> klass);
+		void SetNamespace(Namespace* nameSpace);
+		void SetBaseClass(const Class* klass);
 	private:
 		std::string _name;
-		std::shared_ptr<Namespace> _namespace;
+		Namespace* _namespace;
 		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
 		std::vector<std::unique_ptr<Method>> _methods;
-		std::shared_ptr<const Class> _baseClass;
+		const Class* _baseClass;
 		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
 
 		std::size_t _hash;
 	};
-
-	std::shared_ptr<Namespace> CCT_REFLECTION_API GetNamespaceByName(std::string_view nameSpaceName);
-	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view nameSpaceName, std::string_view name);
-	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name);
+	CCT_REFLECTION_API const Class* GetClassByName(std::string_view nameSpaceName, std::string_view name);
+	CCT_REFLECTION_API const Class* GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name);
 
 	/**
-	 * 
+	 *
 	 * @param name The name of the class, it can be prefixed with the namespace, GetClassByName("cct::refl::Object")
 	 * @return nullptr if the class could not be found
 	 */
-	std::shared_ptr<const Class> CCT_REFLECTION_API GetClassByName(std::string_view name);
+	CCT_REFLECTION_API const Class* GetClassByName(std::string_view name);
 
 }
 

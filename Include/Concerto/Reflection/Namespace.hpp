@@ -15,7 +15,7 @@
 namespace cct::refl
 {
 	class Class;
-	class CCT_REFLECTION_API Namespace : public std::enable_shared_from_this<Namespace>
+	class CCT_REFLECTION_API Namespace
 	{
 	public:
 		Namespace(std::string name);
@@ -33,33 +33,28 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetClassCount() const;
 		[[nodiscard]] inline std::size_t GetNamespaceCount() const;
 
-		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::size_t index) const;
-		[[nodiscard]] inline std::shared_ptr<const Class> GetClass(std::string_view name) const;
+		[[nodiscard]] inline const Class* GetClass(std::size_t index) const;
+		[[nodiscard]] inline const Class* GetClass(std::string_view name) const;
 
-		[[nodiscard]] inline std::shared_ptr<Namespace> GetNamespace(std::size_t index) const;
-		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::string_view name) const;
-		[[nodiscard]] std::shared_ptr<Namespace> GetNamespace(std::span<std::string_view> namespaces) const;
+		[[nodiscard]] inline Namespace* GetNamespace(std::size_t index) const;
+		[[nodiscard]] Namespace* GetNamespace(std::string_view name) const;
+		[[nodiscard]] Namespace* GetNamespace(std::span<std::string_view> namespaces) const;
 
-		[[nodiscard]] bool HasClass(std::string_view name) const;
-
-		static std::shared_ptr<Namespace> GetGlobalNamespace();
+		[[nodiscard]] inline bool HasClass(std::string_view name) const;
 
 		//should be private
-		void AddClass(std::shared_ptr<Class> klass);
-		void AddNamespace(std::shared_ptr<Namespace> nameSpace);
+		void AddClass(std::unique_ptr<Class> klass);
+		void AddNamespace(std::unique_ptr<Namespace> nameSpace);
 		virtual void LoadNamespaces() = 0;
 		virtual void LoadClasses() = 0;
 		virtual void InitializeClasses() = 0;
 
 	protected:
 		std::string _name;
-		std::vector<std::shared_ptr<Class>> _classes;
-		std::vector<std::shared_ptr<Namespace>> _namespaces;
+		std::vector<std::unique_ptr<Class>> _classes;
+		std::vector<std::unique_ptr<Namespace>> _namespaces;
 		std::size_t _hash;
-	private:
-		static std::shared_ptr<Namespace> _globalNamespace;
 	};
-
 }
 
 #include "Concerto/Reflection/Namespace.inl"

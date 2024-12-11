@@ -22,8 +22,8 @@ namespace cct::refl
 	class CCT_REFLECTION_API Method
 	{
 	public:
-		Method(std::string_view name, std::shared_ptr<const Class> returnValue, std::vector<std::shared_ptr<const Class>> parameters, std::size_t index);
-		~Method() = default;
+		Method(std::string_view name, const Class* returnValue, std::vector<const Class*> parameters, std::size_t index);
+		virtual ~Method() = default;
 
 		Method(const Method&) = delete;
 		Method(Method&&) = default;
@@ -32,8 +32,8 @@ namespace cct::refl
 		Method& operator=(Method&&) = default;
 
 		[[nodiscard]] std::string_view GetName() const;
-		[[nodiscard]] std::shared_ptr<const Class> GetReturnValue() const;
-		[[nodiscard]] std::vector<std::shared_ptr<const Class>> GetParameters() const;
+		[[nodiscard]] const Class* GetReturnValue() const;
+		[[nodiscard]] std::vector<const Class*> GetParameters() const;
 		[[nodiscard]] inline std::size_t GetIndex() const;
 
 		template<typename T, typename ...Args>
@@ -49,8 +49,8 @@ namespace cct::refl
 	private:
 		virtual cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		std::string _name;
-		std::shared_ptr<const Class> _returnValue;
-		std::vector<std::shared_ptr<const Class>> _parameters;
+		const Class* _returnValue;
+		std::vector<const Class*> _parameters;
 		std::size_t _index;
 		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
 	};
