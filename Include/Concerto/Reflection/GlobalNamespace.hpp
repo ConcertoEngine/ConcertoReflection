@@ -23,6 +23,9 @@ namespace cct::refl
 		GlobalNamespace() = default;
 		static GlobalNamespace& Get();
 
+		std::size_t GetNamespaceCount() const;
+		std::size_t GetClassCount() const;
+
 		Namespace* GetNamespaceByName(std::string_view nameSpaceName) const;
 		Namespace* GetNamespaceByName(std::span<std::string_view> names) const;
 
@@ -32,6 +35,8 @@ namespace cct::refl
 		void InitializeClasses() const;
 		void AddNamespace(Namespace* namespace_);
 		void AddClass(const Class* klass);
+		void RemoveNamespace(std::string_view name);
+		void RemoveClass(std::string_view name);
 	private:
 		std::vector<Namespace*> _namespaces;
 		std::vector<const Class*> _classes;

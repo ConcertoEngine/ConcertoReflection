@@ -21,6 +21,21 @@ namespace cct::refl
 		return *_globalNamespace;
 	}
 
+	std::size_t GlobalNamespace::GetNamespaceCount() const
+	{
+		return _namespaces.size();
+	}
+
+	std::size_t GlobalNamespace::GetClassCount() const
+	{
+		std::size_t count = _classes.size();
+		for (auto* ns : _namespaces)
+		{
+			count += ns->GetClassCount();
+		}
+		return count;
+	}
+
 	Namespace* GlobalNamespace::GetNamespaceByName(std::string_view name) const
 	{
 		using namespace std::string_view_literals;
@@ -105,5 +120,21 @@ namespace cct::refl
 	void GlobalNamespace::AddClass(const Class* klass)
 	{
 		_classes.push_back(klass);
+	}
+
+	void GlobalNamespace::RemoveNamespace(std::string_view name)
+	{
+		std::erase_if(_namespaces, [&](const Namespace* ns)
+		{
+			return ns->GetName() == name;
+		});
+	}
+
+	void GlobalNamespace::RemoveClass(std::string_view name)
+	{
+		std::erase_if(_classes, [&](const Class* ns)
+		{
+			return ns->GetName() == name;
+		});
 	}
 }

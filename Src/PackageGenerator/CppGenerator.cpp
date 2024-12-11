@@ -292,6 +292,10 @@ namespace cct
 			Write("~Internal{}Package() override", pkg.name);
 			EnterScope();
 			{
+				for (auto& klass : pkg.classes)
+					Write("GlobalNamespace::Get().RemoveClass(\"{}\"sv);", klass.name);
+				for (auto& ns: pkg.namepsaces)
+					Write("GlobalNamespace::Get().RemoveNamespace(\"{}\"sv);", ns.name);
 				Write("_namespaces.clear();");
 			}
 			LeaveScope();
