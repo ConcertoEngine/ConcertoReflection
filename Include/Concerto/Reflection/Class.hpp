@@ -41,10 +41,12 @@ namespace cct::refl
 		[[nodiscard]] std::size_t GetMemberVariableCount() const;
 		[[nodiscard]] std::size_t GetMethodCount() const;
 
+		[[nodiscard]] const Class* GetBaseClass() const;
+
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::size_t index) const;
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::string_view name) const;
 
-		virtual [[nodiscard]] cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const = 0;
+		[[nodiscard]] virtual cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const = 0;
 		[[nodiscard]] cct::refl::Object* GetMemberVariable(std::string_view name, cct::refl::Object& self) const;
 
 		[[nodiscard]] const Method* GetMethod(std::size_t index) const;

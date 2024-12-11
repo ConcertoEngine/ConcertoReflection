@@ -65,6 +65,11 @@ namespace cct::refl
 		return _methods.size();
 	}
 
+	const Class* Class::GetBaseClass() const
+	{
+		return _baseClass;
+	}
+
 	const MemberVariable* Class::GetMemberVariable(std::size_t index) const
 	{
 		if (_memberVariables.empty())

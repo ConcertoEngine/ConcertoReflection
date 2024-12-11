@@ -34,7 +34,7 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetNamespaceCount() const;
 
 		[[nodiscard]] inline const Class* GetClass(std::size_t index) const;
-		[[nodiscard]] inline const Class* GetClass(std::string_view name) const;
+		[[nodiscard]] const Class* GetClass(std::string_view name) const;
 
 		[[nodiscard]] inline Namespace* GetNamespace(std::size_t index) const;
 		[[nodiscard]] Namespace* GetNamespace(std::string_view name) const;

@@ -42,6 +42,13 @@ namespace cct::refl
 		return _namespaces.size();
 	}
 
+	inline const Class* Namespace::GetClass(std::size_t index) const
+	{
+		if (index > GetClassCount())
+			return nullptr;
+		return _classes[index].get();
+	}
+
 	inline bool Namespace::HasClass(std::string_view name) const
 	{
 		return GetClass(name) != nullptr;

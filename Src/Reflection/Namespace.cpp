@@ -15,13 +15,6 @@ namespace cct::refl
 {
 	using namespace std::string_literals;
 
-	const Class* Namespace::GetClass(std::size_t index) const
-	{
-		if (index > GetClassCount())
-			return nullptr;
-		return _classes[index].get();
-	}
-
 	const Class* Namespace::GetClass(std::string_view name) const
 	{
 		using namespace std::string_view_literals;

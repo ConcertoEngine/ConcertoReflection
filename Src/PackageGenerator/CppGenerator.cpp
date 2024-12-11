@@ -130,7 +130,7 @@ namespace cct
 					Write("SetBaseClass(GetClassByName(\"{}\"sv));", klass.base);
 				NewLine();
 				for (auto& member : klass.members)
-					Write("AddMemberVariable(\"{}\", cct::refl::GetClassByName(\"{}\"));", member.name, member.type);
+					Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"));)", member.name, member.type);
 				NewLine();
 				std::size_t i = 0;
 				for (auto& method : klass.methods)

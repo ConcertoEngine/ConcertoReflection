@@ -23,7 +23,11 @@ namespace cct::refl
 	class CCT_REFLECTION_API Object
 	{
 	public:
+		Object() = default;
 		virtual ~Object() = default;
+
+		static bool IsInstanceOf(const Class& klass);
+
 		CCT_OBJECT(Object);
 	};
 
@@ -33,12 +37,14 @@ namespace cct::refl
 		virtual ~Int8() = default;
 		CCT_OBJECT(Int8);
 	};
+
 	class CCT_REFLECTION_API Int16 : public Object
 	{
 	public:
 		virtual ~Int16() = default;
 		CCT_OBJECT(Int16);
 	};
+
 	class CCT_REFLECTION_API Int32 : public Object
 	{
 	public:
@@ -49,6 +55,7 @@ namespace cct::refl
 	private:
 		cct::Int32 _value;
 	};
+
 	class CCT_REFLECTION_API Int64 : public Object
 	{
 	public:

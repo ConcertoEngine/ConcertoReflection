@@ -1,6 +1,7 @@
 #include <iostream>
 #include <format>
 #include <filesystem>
+#include <cstring>
 
 #include <pugixml.hpp>
 

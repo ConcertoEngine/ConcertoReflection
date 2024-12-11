@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <span>
+#include <memory>
 
 #include <Concerto/Core/Assert.hpp>
 
