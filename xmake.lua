@@ -2,7 +2,6 @@ add_rules("mode.debug", "mode.release")
 add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
 add_requires("concerto-core", "pugixml", "eventpp", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
-add_requires("concerto-reflection", {configs = {debug = is_mode("debug"), with_symbols = true, std_lib = false}})
 
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -21,6 +20,8 @@ target("concerto-pkg-generator")
     add_packages("concerto-core", "pugixml")
 
 if has_config("std_lib") then
+    add_requires("concerto-reflection", {configs = {debug = is_mode("debug"), with_symbols = true, std_lib = true}})
+
     target("concerto-reflection")
         set_kind("shared")
         set_languages("cxx20")
