@@ -155,7 +155,7 @@ namespace cct::refl
 		//not using "contains", because it does not support std::string_view
 		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
 			{
-				return "attribute" == value.first;
+				return attribute == value.first;
 			});
 		return it != _attributes.end();
 	}
