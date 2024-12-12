@@ -1,8 +1,7 @@
 add_rules("mode.debug", "mode.release")
 add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
-add_repositories("local-repo build")
 
-add_requires("concerto-core", "pugixml", "eventpp", "concerto-pkg-generator", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
+add_requires("concerto-core", "pugixml", "eventpp", "concerto-reflection", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
 
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -18,21 +17,7 @@ target("concerto-pkg-generator")
     add_includedirs("Include/", { public = true })
     add_packages("concerto-core", "pugixml")
 
-rule("find_cct_pkg_generator")
-    on_config(function (target)
-        import("core.project.project")
-        import("lib.detect.find_tool")
-
-        local cctPkgGen = project.required_package("concerto-pkg-generator")
-        local dir
-        if cctPkgGen then
-            dir = path.join(cctPkgGen:installdir(), "bin")
-        end
-        local program = find_tool("concerto-pkg-generator", {version = false, paths = dir})
-        target:data_set("concerto-pkg-generator", program)
-    end)
-
-rule("xml")
+rule("xml-reflect")
     set_extensions(".xml")
     add_deps("find_cct_pkg_generator")
     on_config(function (target)
