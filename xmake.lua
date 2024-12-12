@@ -10,7 +10,7 @@ if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
 
-option("std-lib", {showmenu = true,  default = true})
+option("std_lib", {showmenu = true,  default = true})
 
 target("concerto-pkg-generator")
     set_kind("binary")
