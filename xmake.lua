@@ -18,6 +18,7 @@ target("concerto-pkg-generator")
     add_headerfiles("Include/(Concerto/PackageGenerator/**.hpp)", "Include/(Concerto/PackageGenerator/**.inl)")
     add_includedirs("Include/", { public = true })
     add_packages("concerto-core", "pugixml")
+target_end()
 
 if has_config("std_lib") then
     add_requires("concerto-reflection", {configs = {debug = is_mode("debug"), with_symbols = true, std_lib = true}})
@@ -31,6 +32,7 @@ if has_config("std_lib") then
         add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
         add_packages("concerto-core", { public = true })
         add_rules("xml")
+    target_end()
 
     target("concerto-reflection-tests")
         set_kind("binary")
@@ -44,4 +46,5 @@ if has_config("std_lib") then
         if is_plat("windows") then
             add_cxflags("/Zc:preprocessor")
         end
+    target_end()
 end
