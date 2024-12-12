@@ -24,6 +24,7 @@ jobs:
 
     steps:
     - name: Set gcc/g++ to 13
+      if: runner.os == 'Linux'
       run: |
           ln -s /usr/bin/g++-13 /usr/local/bin/g++
           ln -s /usr/bin/gcc-13 /usr/local/bin/gcc
