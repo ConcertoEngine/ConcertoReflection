@@ -27,6 +27,8 @@ namespace cct::refl
 		std::size_t GetNamespaceCount() const;
 		std::size_t GetClassCount() const;
 
+		const Class* GetClassByName(std::string_view name) const;
+
 		Namespace* GetNamespaceByName(std::string_view nameSpaceName) const;
 		Namespace* GetNamespaceByName(std::span<std::string_view> names) const;
 

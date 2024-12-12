@@ -36,6 +36,16 @@ namespace cct::refl
 		return count;
 	}
 
+	const Class* GlobalNamespace::GetClassByName(std::string_view name) const
+	{
+		for (const Class* klass : _classes)
+		{
+			if (klass->GetName() == name)
+				return klass;
+		}
+		return nullptr;
+	}
+
 	Namespace* GlobalNamespace::GetNamespaceByName(std::string_view name) const
 	{
 		using namespace std::string_view_literals;
