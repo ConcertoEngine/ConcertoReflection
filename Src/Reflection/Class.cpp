@@ -217,11 +217,8 @@ namespace cct::refl
 	{
 		const auto nameSpace = GlobalNamespace::Get().GetNamespaceByName(nameSpaceName);
 		if (nameSpace)
-		{
 			return nameSpace->GetClass(name);
-		}
-		CCT_ASSERT_FALSE("Should not happen");
-		return nullptr;
+		return GetClassByName(name);
 	}
 
 	const Class* GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name)
