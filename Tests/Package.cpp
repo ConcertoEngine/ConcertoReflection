@@ -7,60 +7,67 @@
 #include "CorePackage.hpp"
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 
-SCENARIO("Package can be created")
+SCENARIO("Package initialization and destruction")
 {
 	using namespace std::string_view_literals;
-	GIVEN("The core package")
+
+	GIVEN("The core package is initialized")
 	{
-		WHEN("The package is initialized")
+		auto pkg = CreateCorePackage();
+		REQUIRE(pkg);
+
+		pkg->LoadNamespaces();
+		pkg->InitializeNamespaces();
+		pkg->InitializeClasses();
+
+		THEN("It must have the namespace 'cct'")
 		{
-			auto pkg = CreateCorePackage();
-			REQUIRE(pkg);
-			CHECK(pkg->GetName() == "Core"sv);
+			CHECK(pkg->GetNamespaceCount() == 1);
+			auto* cctNamespace = pkg->GetNamespace("cct"sv);
+			REQUIRE(cctNamespace);
+			CHECK(cctNamespace->GetName() == "cct"sv);
+		}
 
-			pkg->LoadNamespaces();
-			pkg->InitializeNamespaces();
-			pkg->InitializeClasses();
+		AND_THEN("The GlobalNamespace must also have the namespace 'cct'")
+		{
+			auto* cctNamespaceG = cct::refl::GlobalNamespace::Get().GetNamespaceByName("cct");
+			REQUIRE(cctNamespaceG);
+			CHECK(cctNamespaceG->GetName() == "cct"sv);
+		}
 
-			cct::refl::Namespace* cctNamespace;
-			THEN("It must have the namespace cct")
+		AND_THEN("The namespace 'cct' must contain the namespace 'refl'")
+		{
+			auto* cctNamespace = pkg->GetNamespace("cct"sv);
+			REQUIRE(cctNamespace);
+			CHECK(cctNamespace->GetNamespaceCount() == 1);
+
+			auto* reflNamespace = cctNamespace->GetNamespace("refl"sv);
+			REQUIRE(reflNamespace);
+			CHECK(reflNamespace->GetName() == "refl"sv);
+		}
+
+		AND_THEN("The namespace 'refl' must contain the class 'Object'")
+		{
+			auto* cctNamespace = pkg->GetNamespace("cct"sv);
+			REQUIRE(cctNamespace);
+
+			auto* reflNamespace = cctNamespace->GetNamespace("refl"sv);
+			REQUIRE(reflNamespace);
+
+			CHECK(reflNamespace->GetClassCount() >= 1);
+			auto* objClass = reflNamespace->GetClass("Object"sv);
+			REQUIRE(objClass);
+			CHECK(objClass->GetName() == "Object"sv);
+			CHECK(objClass->GetNamespaceName() == "refl"sv);
+		}
+
+		WHEN("The package is destroyed")
+		{
+			pkg = nullptr;
+
+			THEN("GlobalNamespace should be empty")
 			{
-				CHECK(pkg->GetNamespaceCount() == 1);
-				cctNamespace = pkg->GetNamespace("cct"sv);
-				REQUIRE(cctNamespace);
-				CHECK(cctNamespace->GetName() == "cct"sv);
-			}
-
-			AND_THEN("The GlobalNamespace must also have the namespace cct")
-			{
-				auto* cctNamespaceG = cct::refl::GlobalNamespace::Get().GetNamespaceByName("cct");
-				REQUIRE(cctNamespaceG);
-				CHECK(cctNamespace == cctNamespaceG);
-			}
-
-			cct::refl::Namespace* reflNamespace;
-			AND_THEN("The namespace refl must be in the namespace cct")
-			{
-				CHECK(cctNamespace->GetNamespaceCount() == 1);
-				reflNamespace = cctNamespace->GetNamespace("refl"sv);
-				REQUIRE(reflNamespace);
-				CHECK(reflNamespace->GetName() == "refl"sv);
-			}
-
-			AND_THEN("It must have Object class")
-			{
-				CHECK(reflNamespace->GetClassCount() >= 1);
-				auto objClass = reflNamespace->GetClass("Object"sv);
-				REQUIRE(objClass);
-				CHECK(objClass->GetName() == "Object"sv);
-				CHECK(objClass->GetNamespaceName() == "refl"sv);
-			}
-
-			AND_THEN("The package is destroyed")
-			{
-				pkg = nullptr;
-				auto* ns = cct::refl::GlobalNamespace::Get().GetNamespaceByName("cct");
-				CHECK(ns == nullptr);
+				CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceByName("cct") == nullptr);
 				CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 0);
 				CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 0);
 				CHECK(cct::refl::Object::GetClass() == nullptr);
