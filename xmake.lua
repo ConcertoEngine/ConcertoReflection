@@ -5,6 +5,8 @@ add_requires("concerto-core", "pugixml", "eventpp", "catch2", {configs = {debug 
 
 add_rules("plugin.vsxmake.autoupdate")
 
+option("tests", { default = false, description = "Enable unit tests"})
+
 if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
@@ -31,15 +33,18 @@ target("concerto-reflection")
     add_rules("xml_reflect")
     add_deps("concerto-pkg-generator")
 
-target("concerto-reflection-tests")
-    set_kind("binary")
-    set_languages("cxx20")
-    add_files("Tests/*.cpp", "Tests/*.xml")
-    add_packages("catch2")
-    add_deps("concerto-reflection")
-    add_rules("xml_reflect")
-    add_includedirs("Tests/", { public = true })
-    add_headerfiles("Tests/**.hpp")
-    if is_plat("windows") then
-        add_cxflags("/Zc:preprocessor")
-    end
+
+if has_config("tests") then
+    target("concerto-reflection-tests")
+        set_kind("binary")
+        set_languages("cxx20")
+        add_files("Tests/*.cpp", "Tests/*.xml")
+        add_packages("catch2")
+        add_deps("concerto-reflection")
+        add_rules("xml_reflect")
+        add_includedirs("Tests/", { public = true })
+        add_headerfiles("Tests/**.hpp")
+        if is_plat("windows") then
+            add_cxflags("/Zc:preprocessor")
+        end
+end

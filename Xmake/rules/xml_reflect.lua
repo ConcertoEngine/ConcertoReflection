@@ -5,7 +5,6 @@ rule("xml_reflect")
         for _, filepath in ipairs(target:sourcebatches()["xml_reflect"].sourcefiles) do
             local generatedFile = path.join(target:autogendir(), "Reflection", path.basename(filepath))
             target:add("headerfiles", path.join(target:autogendir(), "(Reflection", path.basename(filepath) ..".hpp)"))
-            print("Generated file: " .. path.join(target:autogendir(), "Reflection"))
             target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
             target:add("files", generatedFile .. ".cpp", {always_added = true})
             target:add("headerfiles", filepath)
