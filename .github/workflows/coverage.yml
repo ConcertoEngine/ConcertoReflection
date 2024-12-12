@@ -15,13 +15,19 @@ jobs:
       matrix:
         config:
         - { name: "Windows x64",   os: windows-latest, plat: windows, arch: x64 }
-        - { name: "Ubuntu x86_64", os: ubuntu-latest,  plat: linux,   arch: x86_64 }
+        - { name: "Ubuntu x86_64", os: ubuntu-24.04,  plat: linux,   arch: x86_64 }
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     if: ${{ !contains(github.event.head_commit.message, 'coverage skip') }}
 
+
     steps:
+    - name: Set gcc/g++ to 13
+      run: |
+          ln -s /usr/bin/g++-13 /usr/local/bin/g++
+          ln -s /usr/bin/gcc-13 /usr/local/bin/gcc
+
     - name: Get current date as package key
       id: cache_key
       run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
