@@ -3,42 +3,25 @@ rule("find_cct_pkg_generator")
         import("core.project.project")
         import("lib.detect.find_tool")
 
-        local envs
-		if is_plat("windows") then
-			local msvc = target:toolchain("msvc")
-			if msvc and msvc:check() then
-				envs = msvc:runenvs()
-			end
-		elseif is_plat("mingw") then
-			local mingw = target:toolchain("mingw")
-			if mingw and mingw:check() then
-				envs = mingw:runenvs()
-			end
-		end
-
         local cctPkgGen = project.required_package("concerto-reflection")
         local dir
+		local envs = {}
         if cctPkgGen then
             dir = path.join(cctPkgGen:installdir(), "bin")
         else
             cctPkgGen = project.target("concerto-pkg-generator")
             if cctPkgGen then
                 dir = cctPkgGen:targetdir()
-            end
-        end
-
-        local osenvs = os.getenvs()
-        envs = envs or {}
-        if cctPkgGen then
-			for env, values in pairs(cctPkgGen:get("envs")) do
-				local flatval = path.joinenv(values)
-				local oldenv = envs[env] or osenvs[env]
-				if not oldenv or oldenv == "" then
-					envs[env] = flatval
-				elseif not oldenv:startswith(flatval) then
-					envs[env] = flatval .. path.envsep() .. oldenv
+				for _, pkg in ipairs(cctPkgGen:orderpkgs()) do
+					local installDir = path.join(pkg:installdir(), "lib")
+					if os.host() == "linux" or os.host() == "macosx" then
+						envs.LD_LIBRARY_PATH = installDir .. path.envsep() .. (envs.LD_LIBRARY_PATH or "")
+					else
+						envs.PATH = installDir .. path.envsep() .. (envs.PATH or "")
+					end
 				end
-			end
+
+            end
         end
         local program = find_tool("concerto-pkg-generator", {version = false, paths = dir, envs = envs})
         target:data_set("concerto-pkg-generator", program)
