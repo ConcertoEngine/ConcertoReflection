@@ -5,22 +5,14 @@ rule("find_cct_pkg_generator")
 
         local cctPkgGen = project.required_package("concerto-reflection")
         local dir
-		local envs = {}
+		local envs
         if cctPkgGen then
             dir = path.join(cctPkgGen:installdir(), "bin")
         else
             cctPkgGen = project.target("concerto-pkg-generator")
             if cctPkgGen then
                 dir = cctPkgGen:targetdir()
-				for _, pkg in ipairs(cctPkgGen:orderpkgs()) do
-					local installDir = path.join(pkg:installdir(), "lib")
-					if os.host() == "linux" or os.host() == "macosx" then
-						envs.LD_LIBRARY_PATH = installDir .. path.envsep() .. (envs.LD_LIBRARY_PATH or "")
-					else
-						envs.PATH = installDir .. path.envsep() .. (envs.PATH or "")
-					end
-				end
-
+                envs = cctPkgGen:get("runenvs")
             end
         end
         local program = find_tool("concerto-pkg-generator", {version = false, paths = dir, envs = envs})
