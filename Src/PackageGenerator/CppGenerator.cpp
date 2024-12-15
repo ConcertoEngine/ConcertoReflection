@@ -49,64 +49,69 @@ namespace cct
 				GenerateClass(namepsaceChain + "::"s + std::string(ns.name), klass);
 		}
 		LeaveScope();
-		Write("class Internal{}Namespace : public cct::refl::Namespace", ns.name);
+		Write("namespace");
 		EnterScope();
 		{
-			Write("public:");
-			Write("Internal{}Namespace() : cct::refl::Namespace(\"{}\"s) {{}}", ns.name, ns.name);
-			NewLine();
-			Write("~Internal{}Namespace() override", ns.name);
+			Write("class Internal{}Namespace : public cct::refl::Namespace", ns.name);
 			EnterScope();
 			{
-				Write("_classes.clear();");
-				Write("_namespaces.clear();");
-			}
-			LeaveScope();
-			NewLine();
-			Write("void LoadNamespaces() override");
-			EnterScope();
-			{
-				for (auto& nestedNs : ns.namespaces)
-					Write("AddNamespace(Create{}NamespaceInstance());", nestedNs.name);
-				Write("for (auto& ns : _namespaces)");
+				Write("public:");
+				Write("Internal{}Namespace() : cct::refl::Namespace(\"{}\"s) {{}}", ns.name, ns.name);
+				NewLine();
+				Write("~Internal{}Namespace() override", ns.name);
 				EnterScope();
 				{
-					Write("ns->LoadNamespaces();");
+					Write("_classes.clear();");
+					Write("_namespaces.clear();");
 				}
 				LeaveScope();
-			}
-			LeaveScope();
-			NewLine();
-			Write("void LoadClasses() override");
-			EnterScope();
-			{
-				Write("for(auto& ns : _namespaces)");
+				NewLine();
+				Write("void LoadNamespaces() override");
 				EnterScope();
-				Write("ns->LoadClasses();");
+				{
+					for (auto& nestedNs : ns.namespaces)
+						Write("AddNamespace(Create{}NamespaceInstance());", nestedNs.name);
+					Write("for (auto& ns : _namespaces)");
+					EnterScope();
+					{
+						Write("ns->LoadNamespaces();");
+					}
+					LeaveScope();
+				}
 				LeaveScope();
-				for (auto& klass : ns.classes)
-					Write("AddClass(std::make_unique<Internal{}Class>());", klass.name);
-					
-			}
-			LeaveScope();
-			NewLine();
-			Write("void InitializeClasses() override");
-			EnterScope();
-			{
-				Write("for (auto& ns : _namespaces)");
+				NewLine();
+				Write("void LoadClasses() override");
 				EnterScope();
-				Write("ns->InitializeClasses();");
+				{
+					Write("for(auto& ns : _namespaces)");
+					EnterScope();
+					Write("ns->LoadClasses();");
+					LeaveScope();
+					for (auto& klass : ns.classes)
+						Write("AddClass(std::make_unique<Internal{}Class>());", klass.name);
+
+				}
 				LeaveScope();
-				Write("for (auto& klass : _classes)");
+				NewLine();
+				Write("void InitializeClasses() override");
 				EnterScope();
-				Write("klass->Initialize();");
+				{
+					Write("for (auto& ns : _namespaces)");
+					EnterScope();
+					Write("ns->InitializeClasses();");
+					LeaveScope();
+					Write("for (auto& klass : _classes)");
+					EnterScope();
+					Write("klass->Initialize();");
+					LeaveScope();
+				}
 				LeaveScope();
+				NewLine();
 			}
-			LeaveScope();
-			NewLine();
+			LeaveScope(";"sv);
+			Write("std::unique_ptr<cct::refl::Namespace> Create{}NamespaceInstance(){{return std::make_unique<Internal{}Namespace>();}}", ns.name, ns.name);
 		}
-		LeaveScope(";"sv);
-		Write("std::unique_ptr<cct::refl::Namespace> Create{}NamespaceInstance(){{return std::make_unique<Internal{}Namespace>();}}", ns.name, ns.name);
+		LeaveScope();
 	}
 
 	void CppGenerator::GenerateClass(std::string_view ns, const Class& klass)
@@ -245,7 +250,7 @@ namespace cct
 			Write("switch(value)");
 			EnterScope();
 			{
-				
+
 				for (auto& elem : enum_.elements)
 				{
 					Write("case {}::{}:", enum_.name, elem.name);
@@ -287,7 +292,7 @@ namespace cct
 			{
 				for (auto& klass : pkg.classes)
 					Write("GlobalNamespace::Get().RemoveClass(\"{}\"sv);", klass.name);
-				for (auto& ns: pkg.namepsaces)
+				for (auto& ns : pkg.namepsaces)
 					Write("GlobalNamespace::Get().RemoveNamespace(\"{}\"sv);", ns.name);
 				Write("_namespaces.clear();");
 			}
