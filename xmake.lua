@@ -11,6 +11,12 @@ if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
 
+if is_mode("coverage") then
+	if not is_plat("windows") then
+		add_links("gcov")
+	end
+end
+
 includes("Xmake/rules/**.lua")
 
 target("concerto-pkg-generator")
