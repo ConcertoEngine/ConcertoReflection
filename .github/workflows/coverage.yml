@@ -100,7 +100,7 @@ jobs:
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "Include\Reflection\*" --sources "Src\Reflection\*" --modules "build" --cover_children -- xmake run concerto-reflection-tests
+        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "Include\Reflection\*" --sources "Src\Reflection\*" --excluded_sources "Tests\*" --modules "build" --cover_children -- xmake run concerto-reflection-tests
 
     - name: Upload Coverage Report to Codecov
       uses: codecov/codecov-action@v5
