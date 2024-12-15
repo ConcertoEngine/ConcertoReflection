@@ -1,0 +1,77 @@
+#from https://github.com/NazaraEngine/NazaraEngine/blob/main/.github/workflows/windows-build.yml
+name: Ubuntu build
+
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/macos.yml'
+      - '.github/workflows/windows.yml'
+      - '.github/workflows/coverage.yml'
+    branches: [ "main" ]
+  pull_request:
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+        arch: [x86_64, arm64]
+        confs:
+        - { mode: debug }
+        - { mode: release }
+        - { mode: releasedbg }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set gcc/g++ to 13
+        run: |
+          ln -s /usr/bin/g++-13 /usr/local/bin/g++
+          ln -s /usr/bin/gcc-13 /usr/local/bin/gcc
+
+      - name: Get current date as package key
+        id: cache_key
+        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
+
+      - name: Set xmake env
+        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: branch@dev
+          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
+
+      - name: Update xmake repo
+        run: xmake repo --update
+
+      - name: Retrieve dependencies hash
+        id: dep_hash
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+
+      - name: Restore cached xmake dependencies
+        id: restore-depcache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: Linux-${{ matrix.arch }}-${{ matrix.confs.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+
+      - name: Configure xmake and install dependencies
+        run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.confs.mode }} ${{ matrix.confs.config }} --tests=y --yes
+
+      - name: Save cached xmake dependencies
+        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
+
+      - name: Build
+        run: xmake --yes -v
+
+      - name: Run unit tests
+        run: xmake run concerto-reflection-tests
