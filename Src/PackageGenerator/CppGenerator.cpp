@@ -60,8 +60,6 @@ namespace cct
 			{
 				Write("_classes.clear();");
 				Write("_namespaces.clear();");
-				for (auto& klass : ns.classes)
-					Write("Internal{}Class::DestroyClassInstance();", klass.name);
 			}
 			LeaveScope();
 			NewLine();
@@ -69,7 +67,7 @@ namespace cct
 			EnterScope();
 			{
 				for (auto& nestedNs : ns.namespaces)
-					Write("AddNamespace(Internal{}Namespace::CreateNamespaceInstance());", nestedNs.name);
+					Write("AddNamespace(Create{}NamespaceInstance());", nestedNs.name);
 				Write("for (auto& ns : _namespaces)");
 				EnterScope();
 				{
@@ -87,7 +85,7 @@ namespace cct
 				Write("ns->LoadClasses();");
 				LeaveScope();
 				for (auto& klass : ns.classes)
-					Write("AddClass(Internal{}Class::CreateClassInstance());", klass.name);
+					Write("AddClass(std::make_unique<Internal{}Class>());", klass.name);
 					
 			}
 			LeaveScope();
@@ -106,9 +104,9 @@ namespace cct
 			}
 			LeaveScope();
 			NewLine();
-			Write("static std::unique_ptr<cct::refl::Namespace> CreateNamespaceInstance(){{return std::make_unique<Internal{}Namespace>();}}", ns.name);
 		}
 		LeaveScope(";"sv);
+		Write("std::unique_ptr<cct::refl::Namespace> Create{}NamespaceInstance(){{return std::make_unique<Internal{}Namespace>();}}", ns.name, ns.name);
 	}
 
 	void CppGenerator::GenerateClass(std::string_view ns, const Class& klass)
@@ -120,7 +118,25 @@ namespace cct
 		EnterScope();
 		{
 			Write("public:");
-			Write("Internal{0}Class() : cct::refl::Class(nullptr, \"{0}\"s, nullptr) {{}}", klass.name);
+			Write("Internal{0}Class() : cct::refl::Class(nullptr, \"{0}\"s, nullptr)", klass.name);
+			EnterScope();
+			{
+				Write("if ({}::_class != nullptr)", klass.name);
+				EnterScope();
+				{
+					Write("CCT_ASSERT_FALSE(\"Class already created\");");
+					Write("return;");
+				}
+				LeaveScope();
+				Write("{}::_class = this;", klass.name);
+			}
+			LeaveScope();
+			Write("~Internal{}Class()", klass.name);
+			EnterScope();
+			{
+				Write("{}::_class = nullptr;", klass.name);
+			}
+			LeaveScope();
 			NewLine();
 			Write("void Initialize() override");
 			EnterScope();
@@ -169,32 +185,9 @@ namespace cct
 			}
 			LeaveScope();
 			NewLine();
-
-			Write("static std::unique_ptr<cct::refl::Class> CreateClassInstance()");
-			EnterScope();
-			{
-				Write("if ({}::_class != nullptr)", klass.name);
-				EnterScope();
-				{
-					Write("CCT_ASSERT_FALSE(\"Class already created\");");
-					Write("return nullptr;");
-				}
-				LeaveScope();
-				Write("auto ptr = std::make_unique<Internal{}Class>();", klass.name, klass.name);
-				Write("{}::_class = ptr.get();", klass.name);
-				Write("return std::move(ptr);", klass.name);
-			}
-			LeaveScope();
-			NewLine();
-
-			Write("static void DestroyClassInstance()");
-			EnterScope();
-			{
-				Write("{}::_class = nullptr;", klass.name, klass.name);
-			}
-			LeaveScope();
 		}
 		LeaveScope(";"sv);
+		NewLine();
 		Write("const cct::refl::Class* {}::_class = nullptr;", klass.name);
 		NewLine();
 	}
@@ -305,7 +298,7 @@ namespace cct
 			EnterScope();
 			{
 				for (auto& ns : pkg.namepsaces)
-					Write("AddNamespace(Internal{}Namespace::CreateNamespaceInstance());", ns.name);
+					Write("AddNamespace(Create{}NamespaceInstance());", ns.name);
 				Write("for (auto& ns : _namespaces)");
 				EnterScope();
 				{
@@ -321,7 +314,7 @@ namespace cct
 				for (auto& klass : pkg.classes)
 				{
 					EnterScope();
-					Write("AddClass(Internal{}Class::CreateClassInstance());", klass.name);
+					Write("AddClass(std::make_unique<Internal{}Class>());", klass.name);
 					LeaveScope();
 				}
 				NewLine();
