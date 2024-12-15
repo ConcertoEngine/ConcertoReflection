@@ -94,13 +94,13 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         xmake run concerto-reflection-tests
-        gcovr -x coverage.out -s -f "include/.*" -f "Src/.*"
+        gcovr -x coverage.out -s -f "Include/.*" -f "Src/.*" build/.objs/
 
     - name: Run unit tests and generate coverage output (Windows)
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "include/.*" "Src/.*" --cover_children -- xmake run concerto-reflection-tests
+        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "include\.*" "Src\.*" --cover_children -- xmake run concerto-reflection-tests
 
     - name: Upload Coverage Report to Codecov
       uses: codecov/codecov-action@v5
