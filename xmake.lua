@@ -1,4 +1,4 @@
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug", "mode.release", "mode.coverage")
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
 add_requires("concerto-core", "pugixml", "eventpp", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
