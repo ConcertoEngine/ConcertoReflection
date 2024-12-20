@@ -199,7 +199,7 @@ namespace cct
 
 	void CppGenerator::GenerateClassMethod(std::string_view className, const Class::Method& method)
 	{
-		Write("class {}{}Method : public cct::refl::Method", className, method.name);
+		Write("class {}{}Method : public {}", className, method.name, method.base);
 		EnterScope();
 		{
 			Write("public:");
@@ -211,33 +211,36 @@ namespace cct
 				Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			LeaveScope();
 			NewLine();
-			Write("cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
-			EnterScope();
+			if (method.overrideInvoke)
 			{
-				Write("CCT_ASSERT(parameters.size() == {}, \"Invalid parameters size\");", method.params.size());
-				std::size_t i = 0;
-				std::string callArgs;
-				for (auto& param : method.params)
+				Write("cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
+				EnterScope();
 				{
-					if (i != 0 && i < method.params.size())
-						callArgs += ", ";
-					Write("{}& {} = parameters[{}].As<{}&>();", param.type, param.name, i, param.type);
-					callArgs += param.name;
-					++i;
+					Write("CCT_ASSERT(parameters.size() == {}, \"Invalid parameters size\");", method.params.size());
+					std::size_t i = 0;
+					std::string callArgs;
+					for (auto& param : method.params)
+					{
+						if (i != 0 && i < method.params.size())
+							callArgs += ", ";
+						Write("{}& {} = parameters[{}].As<{}&>();", param.type, param.name, i, param.type);
+						callArgs += param.name;
+						++i;
+					}
+					NewLine();
+					if (method.returnValue == "void")
+					{
+						Write("static_cast<{}&>(self).{}({});", className, method.name, callArgs);
+						Write("return {{}};");
+					}
+					else
+					{
+						Write("auto res = static_cast<{}&>(self).{}({});", className, method.name, callArgs);
+						Write("return cct::Any::Make<{}>(res);", method.returnValue);
+					}
 				}
-				NewLine();
-				if (method.returnValue == "void")
-				{
-					Write("static_cast<{}&>(self).{}({});", className, method.name, callArgs);
-					Write("return {{}};");
-				}
-				else
-				{
-					Write("auto res = static_cast<{}&>(self).{}({});", className, method.name, callArgs);
-					Write("return cct::Any::Make<{}>(res);", method.returnValue);
-				}
+				LeaveScope();
 			}
-			LeaveScope();
 		}
 		LeaveScope(";"sv);
 	}

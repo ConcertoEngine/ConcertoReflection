@@ -49,9 +49,11 @@ struct Class
 			std::string_view type;
 			Attributes attributes;
 		};
+		std::string_view base;
 		std::string_view name;
 		std::string_view returnValue;
 		std::vector<Params> params;
+		bool overrideInvoke;
 		Attributes attributes;
 	};
 
