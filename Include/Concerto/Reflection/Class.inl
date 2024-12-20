@@ -2,6 +2,9 @@
 // Created by arthur on 10/11/2024.
 //
 
+#ifndef CONCERTO_REFLECTION_CLASS_INL
+#define CONCERTO_REFLECTION_CLASS_INL
+
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Reflection/Class.hpp"
@@ -33,3 +36,5 @@ namespace cct::refl
 		return std::unique_ptr<T>(reinterpret_cast<T*>(obj));
 	}
 }
+
+#endif // CONCERTO_REFLECTION_CLASS_INL

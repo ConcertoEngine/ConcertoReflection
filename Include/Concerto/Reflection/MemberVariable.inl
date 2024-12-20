@@ -2,6 +2,9 @@
 // Created by arthur on 10/11/2024.
 //
 
+#ifndef CONCERTO_REFLECTION_MEMBERVARIABLE_INL
+#define CONCERTO_REFLECTION_MEMBERVARIABLE_INL
+
 #include "Concerto/Reflection/MemberVariable.hpp"
 
 namespace cct::refl
@@ -16,3 +19,5 @@ namespace cct::refl
 		return _index;
 	}
 }
+
+#endif //CONCERTO_REFLECTION_MEMBERVARIABLE_INL

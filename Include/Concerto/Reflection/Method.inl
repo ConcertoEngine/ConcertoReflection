@@ -2,6 +2,9 @@
 // Created by arthur on 10/11/2024.
 //
 
+#ifndef CONCERTO_REFLECTION_METHOD_INL
+#define CONCERTO_REFLECTION_METHOD_INL
+
 #include "Concerto/Reflection/Method.hpp"
 
 namespace cct::refl
@@ -57,3 +60,5 @@ namespace cct::refl
 		_attributes.emplace(std::move(name), std::move(value));
 	}
 }
+
+#endif //CONCERTO_REFLECTION_METHOD_INL
