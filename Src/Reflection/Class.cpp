@@ -130,7 +130,7 @@ namespace cct::refl
 	{
 		if (!_baseClass)
 		{
-			CCT_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
+			CCT_ASSERT_FALSE("Invalid base class, it should at least derive from cct::refl::Object");
 			return false;
 		}
 		if (other == *_baseClass)
@@ -142,7 +142,7 @@ namespace cct::refl
 	{
 		if (!_baseClass)
 		{
-			CCT_ASSERT_FALSE("Invalid base class, it should at least derive frol cct::refl::Object");
+			CCT_ASSERT_FALSE("Invalid base class, it should at least derive from cct::refl::Object");
 			return false;
 		}
 		if (_baseClass->GetName() == name)

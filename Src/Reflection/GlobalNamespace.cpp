@@ -91,7 +91,11 @@ namespace cct::refl
 		for (auto* ns : _namespaces)
 		{
 			if (ns->GetName() == names[0])
-				return ns->GetNamespace(names.subspan(1));
+			{
+				Namespace* nestedNs =ns->GetNamespace(names.subspan(1));
+				if (nestedNs)
+					return nestedNs;
+			}
 		}
 		return nullptr;
 	}

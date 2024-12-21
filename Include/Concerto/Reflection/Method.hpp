@@ -63,7 +63,7 @@ namespace cct::refl
 	Result<T, std::string> Method::Invoke(Object& self, Args... args) const
 	{
 		constexpr auto size = sizeof...(Args);
-		std::array<cct::Any, size> erasedArgs = {(cct::Any::Make<Args>(args) + ...)};
+		std::array<cct::Any, size> erasedArgs = { (cct::Any::Make<Args>(args))... };
 
 		if constexpr (std::is_void_v<T>)
 		{
