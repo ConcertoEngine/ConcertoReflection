@@ -267,7 +267,7 @@ namespace cct
 					{
 						Write("if (GetCustomInvoker() == nullptr)");
 						EnterScope();
-						Write("return {{\"Invalid invoker pointer\"s}}");
+						Write("return {{\"Invalid invoker pointer\"s}};");
 						LeaveScope();
 						Write("auto res = reinterpret_cast<{}(*)({})>(GetCustomInvoker())({});", method.returnValue, callArgsTypes, callArgs);
 						Write("return cct::Any::Make<{}>(res);", method.returnValue);
