@@ -255,7 +255,8 @@ namespace cct
 						EnterScope();
 						Write("return {{\"Invalid invoker pointer\"s}};");
 						LeaveScope();
-						Write("reinterpret_cast<void(*)({})>(GetCustomInvoker())({});", callArgsTypes, callArgs);
+						Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+						Write("func({});", callArgsTypes, callArgs);
 					}
 					else
 						Write("static_cast<{}&>(self).{}({});", className, method.name, callArgs);
@@ -269,7 +270,8 @@ namespace cct
 						EnterScope();
 						Write("return {{\"Invalid invoker pointer\"s}};");
 						LeaveScope();
-						Write("auto res = reinterpret_cast<{}(*)({})>(GetCustomInvoker())({});", method.returnValue, callArgsTypes, callArgs);
+						Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+						Write("auto res = func({});", callArgs);
 						Write("return cct::Any::Make<{}>(res);", method.returnValue);
 					}
 					else
