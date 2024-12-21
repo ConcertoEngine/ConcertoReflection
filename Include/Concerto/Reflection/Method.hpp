@@ -46,8 +46,8 @@ namespace cct::refl
 		virtual void Initialize() = 0;
 	protected:
 		void AddAttribute(std::string name, std::string value);
-	private:
 		virtual cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
+	private:
 		std::string _name;
 		const Class* _returnValue;
 		std::vector<const Class*> _parameters;
