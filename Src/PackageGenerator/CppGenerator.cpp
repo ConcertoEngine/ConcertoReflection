@@ -199,7 +199,7 @@ namespace cct
 
 	void CppGenerator::GenerateClassMethod(std::string_view className, const Class::Method& method)
 	{
-		Write("class {}{}Method : public {}", className, method.name, method.base);
+		Write("class {}{}Method : public {}", className, method.name, method.base.empty() ? "cct::refl::Method"sv : method.base);
 		EnterScope();
 		{
 			Write("public:");
@@ -211,7 +211,7 @@ namespace cct
 				Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			LeaveScope();
 			NewLine();
-			if (method.overrideInvoke)
+			if (!method.overrideInvoke)
 			{
 				Write("cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
 				EnterScope();
@@ -219,24 +219,46 @@ namespace cct
 					Write("CCT_ASSERT(parameters.size() == {}, \"Invalid parameters size\");", method.params.size());
 					std::size_t i = 0;
 					std::string callArgs;
+					std::string callArgsTypes;
 					for (auto& param : method.params)
 					{
 						if (i != 0 && i < method.params.size())
+						{
 							callArgs += ", ";
+							callArgsTypes += ", ";
+						}
 						Write("{}& {} = parameters[{}].As<{}&>();", param.type, param.name, i, param.type);
 						callArgs += param.name;
+						callArgsTypes += param.type;
+						callArgsTypes += "&"sv;
 						++i;
 					}
 					NewLine();
 					if (method.returnValue == "void")
 					{
+						Write("if (GetCustomInvoker() == nullptr)");
+						EnterScope();
 						Write("static_cast<{}&>(self).{}({});", className, method.name, callArgs);
+						LeaveScope();
+						Write("else");
+						EnterScope();
+						Write("reinterpret_cast<void(*)({})>(GetCustomInvoker())({});", callArgsTypes, callArgs);
+						LeaveScope();
 						Write("return {{}};");
 					}
 					else
 					{
+						Write("if (GetCustomInvoker() == nullptr)");
+						EnterScope();
 						Write("auto res = static_cast<{}&>(self).{}({});", className, method.name, callArgs);
 						Write("return cct::Any::Make<{}>(res);", method.returnValue);
+						LeaveScope();
+						Write("else");
+						EnterScope();
+						Write("auto res = reinterpret_cast<{}(*)({})>(GetCustomInvoker())({});", method.returnValue, callArgsTypes, callArgs);
+						Write("return cct::Any::Make<{}>(res);", method.returnValue);
+						LeaveScope();
+						Write("return {{}};");
 					}
 				}
 				LeaveScope();

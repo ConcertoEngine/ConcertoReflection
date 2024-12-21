@@ -59,6 +59,11 @@ namespace cct::refl
 		CCT_ASSERT(HasAttribute(name), "Class attribute already exist");
 		_attributes.emplace(std::move(name), std::move(value));
 	}
+
+	inline void* Method::GetCustomInvoker() const
+	{
+		return _customInvoker;
+	}
 }
 
 #endif //CONCERTO_REFLECTION_METHOD_INL
