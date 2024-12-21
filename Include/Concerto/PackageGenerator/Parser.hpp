@@ -7,9 +7,9 @@
 
 #include <string_view>
 #include <pugixml.hpp>
+#include <Concerto/Core/Result.hpp>
 
 #include "Concerto/PackageGenerator/Defines.hpp"
-#include "Result.hpp"
 
 namespace cct
 {
@@ -70,7 +70,7 @@ namespace cct
 		static inline const std::string ClassMethodNameAttr = "name"s;
 		static inline const std::string ClassMethodReturnAttr = "return"s;
 		static inline const std::string ClassMethodBaseAttr = "base"s;
-		static inline const std::string ClassMethodOverrideInvokeAttr = "overrideInvoke"s;
+		static inline const std::string ClassMethodCustomInvokerAttr = "customInvoke"s;
 
 		static inline const std::string ClassMethodParamNameAttr = "name"s;
 		static inline const std::string ClassMethodParamTypeAttr = "type"s;

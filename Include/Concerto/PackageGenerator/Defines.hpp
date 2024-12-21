@@ -53,7 +53,7 @@ struct Class
 		std::string_view name;
 		std::string_view returnValue;
 		std::vector<Params> params;
-		bool overrideInvoke;
+		bool customInvoker;
 		Attributes attributes;
 	};
 

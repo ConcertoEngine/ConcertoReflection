@@ -253,7 +253,7 @@ namespace cct
 		CCT_TRY_DECLARE_ATTR(methodName, node, ClassMethodNameAttr);
 		CCT_TRY_DECLARE_ATTR(returnType, node, ClassMethodReturnAttr);
 		const auto* base = node.attribute(ClassBaseAttr.c_str()).value();
-		const auto* overrideInvoke = node.attribute(ClassMethodOverrideInvokeAttr.c_str()).value();
+		const auto* customInvoker = node.attribute(ClassMethodCustomInvokerAttr.c_str()).value();
 
 		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
 		
@@ -279,7 +279,7 @@ namespace cct
 			.name = CCT_MAKE_SV(methodName),
 			.returnValue = CCT_MAKE_SV(returnType),
 			.params = std::move(params),
-			.overrideInvoke = overrideInvoke ? CCT_MAKE_SV(overrideInvoke) == "true"sv : false,
+			.customInvoker = customInvoker ? CCT_MAKE_SV(customInvoker) == "true"sv : false,
 			.attributes = std::move(attributes).GetValue()
 		};
 	}

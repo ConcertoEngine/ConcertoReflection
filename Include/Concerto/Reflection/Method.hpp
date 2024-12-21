@@ -13,6 +13,7 @@
 
 #include <Concerto/Core/Any.hpp>
 
+#include <Concerto/Core/Result.hpp>
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Reflection/Object.hpp"
 
@@ -37,7 +38,7 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetIndex() const;
 
 		template<typename T, typename ...Args>
-		T Invoke(Object& self, Args... args) const;
+		Result<T, std::string> Invoke(Object& self, Args... args) const;
 
 		inline bool HasAttribute(std::string_view attribute) const;
 		inline std::string_view GetAttribute(std::string_view attribute);
@@ -46,7 +47,7 @@ namespace cct::refl
 		virtual void Initialize() = 0;
 	protected:
 		void AddAttribute(std::string name, std::string value);
-		virtual cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
+		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		inline void* GetCustomInvoker() const;
 		inline void SetCustomInvoker(void* invoker);
 	private:
@@ -59,20 +60,24 @@ namespace cct::refl
 	};
 
 	template <typename T, typename... Args>
-	T Method::Invoke(Object& self, Args... args) const
+	Result<T, std::string> Method::Invoke(Object& self, Args... args) const
 	{
 		constexpr auto size = sizeof...(Args);
 		std::array<cct::Any, size> erasedArgs = {(cct::Any::Make<Args>(args) + ...)};
 
 		if constexpr (std::is_void_v<T>)
 		{
-			Invoke(self, erasedArgs);
-			return;
+			Result<Any, std::string> result = Invoke(self, erasedArgs);
+			if (result.IsError())
+				return std::move(result).GetError();
+			return {};
 		}
 		else
 		{
-			auto result = Invoke(self, erasedArgs);
-			return result.template As<T>();
+			Result<Any, std::string> result = Invoke(self, erasedArgs);
+			if (result.IsOk())
+				return std::move(result).GetValue().template As<T>();
+			return std::move(result).GetError();
 		}
 	}
 }
