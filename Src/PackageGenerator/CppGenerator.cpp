@@ -88,7 +88,7 @@ namespace cct
 					Write("ns->LoadClasses();");
 					LeaveScope();
 					for (auto& klass : ns.classes)
-						Write("AddClass(std::make_unique<Internal{}Class>());", klass.name);
+						Write("AddClass(std::make_unique<{}::Internal{}Class>());", ns.name, klass.name);
 
 				}
 				LeaveScope();
@@ -253,7 +253,7 @@ namespace cct
 					{
 						Write("if (GetCustomInvoker() == nullptr)");
 						EnterScope();
-						Write("return {{\"Invalid invoker pointer\"s}}");
+						Write("return {{\"Invalid invoker pointer\"s}};");
 						LeaveScope();
 						Write("reinterpret_cast<void(*)({})>(GetCustomInvoker())({});", callArgsTypes, callArgs);
 					}
