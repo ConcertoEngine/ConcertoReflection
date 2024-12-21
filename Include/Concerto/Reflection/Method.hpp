@@ -48,6 +48,7 @@ namespace cct::refl
 		void AddAttribute(std::string name, std::string value);
 		virtual cct::Any Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		inline void* GetCustomInvoker() const;
+		inline void SetCustomInvoker(void* invoker);
 	private:
 		std::string _name;
 		const Class* _returnValue;

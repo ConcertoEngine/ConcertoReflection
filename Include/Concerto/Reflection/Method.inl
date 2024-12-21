@@ -64,6 +64,11 @@ namespace cct::refl
 	{
 		return _customInvoker;
 	}
+
+	inline void Method::SetCustomInvoker(void* invoker)
+	{
+		_customInvoker = invoker;
+	}
 }
 
 #endif //CONCERTO_REFLECTION_METHOD_INL
