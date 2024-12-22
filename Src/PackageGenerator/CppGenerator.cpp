@@ -240,10 +240,11 @@ namespace cct
 						Write("return {{\"Expected '{}' in argument {}\"s}};", param.type, i);
 					}
 					LeaveScope();
-					Write("{}& {} = parameters[{}].As<{}&>();", param.type, param.name, i, param.type);
+					Write("using Param{0} = std::conditional_t<std::is_pointer_v<{1}>, {1}, std::add_lvalue_reference_t<{1}>>;", i, param.type);
+					Write("Param{0} {1} = parameters[{0}].As<Param{0}>();", i, param.name);
+					NewLine();
 					callArgs += param.name;
 					callArgsTypes += param.type;
-					callArgsTypes += "&"sv;
 					++i;
 				}
 				NewLine();
