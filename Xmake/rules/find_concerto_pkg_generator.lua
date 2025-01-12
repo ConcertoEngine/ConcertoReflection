@@ -22,9 +22,8 @@ rule("find_cct_pkg_generator")
 
         else
             cctPkgGen = project.target("concerto-pkg-generator")
-
             if cctPkgGen then
-                dir = cctPkgGen:installdir("bin")
+                dir = cctPkgGen:targetdir()
                 envs = {}
                 for _, pkg in ipairs(cctPkgGen:orderpkgs()) do
                     if os.host() == "linux" or os.host() == "macosx" then
