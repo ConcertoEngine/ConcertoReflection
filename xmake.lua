@@ -1,9 +1,9 @@
 add_rules("mode.debug", "mode.release", "mode.coverage")
+add_rules("plugin.vsxmake.autoupdate")
+
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
-add_requires("concerto-core", "pugixml", "eventpp", "catch2", {configs = {debug = is_mode("debug"), with_symbols = true}})
-
-add_rules("plugin.vsxmake.autoupdate")
+add_requires("concerto-core", "pugixml", {configs = {debug = is_mode("debug"), with_symbols = true}})
 
 option("tests", { default = false, description = "Enable unit tests"})
 
@@ -41,6 +41,8 @@ target("concerto-reflection")
 
 
 if has_config("tests") then
+    add_requires("catch2")
+
     target("concerto-reflection-tests")
         set_kind("binary")
         set_languages("cxx20")

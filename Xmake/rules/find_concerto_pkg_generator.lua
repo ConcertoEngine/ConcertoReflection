@@ -28,7 +28,7 @@ rule("find_cct_pkg_generator")
                 end
             end
         end
-        print(envs)
+
         local program = find_tool("concerto-pkg-generator", {version = false, paths = dir, envs = envs})
         target:data_set("concerto-pkg-generator", program)
         target:data_set("concerto-pkg-generator-envs", envs)
