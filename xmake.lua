@@ -7,6 +7,10 @@ add_requires("concerto-core", "pugixml", {configs = {debug = is_mode("debug"), w
 
 option("tests", { default = false, description = "Enable unit tests"})
 
+if has_config("tests") then
+    add_requires("catch2")
+end
+
 if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
@@ -49,8 +53,6 @@ target("concerto-reflection")
 
 
 if has_config("tests") then
-    add_requires("catch2")
-
     target("concerto-reflection-tests")
         set_kind("binary")
         set_languages("cxx20")
