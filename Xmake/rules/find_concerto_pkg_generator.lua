@@ -13,13 +13,11 @@ rule("find_cct_pkg_generator")
             for _, lib_file in ipairs(cctPkgGen:get("libfiles")) do
                 local installDir = path.absolute(path.new(lib_file):directory():directory())
                 if os.host() == "linux" or os.host() == "macosx" then
-                    envs.LD_LIBRARY_PATH = installDir .. path.envsep() .. (envs.LD_LIBRARY_PATH or "")
+                    envs.LD_LIBRARY_PATH = path.join(installDir, "lib") .. path.envsep() .. (envs.LD_LIBRARY_PATH or "")
                 elseif os.host() == "windows" then
-                    local installDir = path.join(cctPkgGen:installdir(), "bin")
-                    envs.PATH = installDir .. path.envsep() .. (envs.PATH or "")
+                    envs.PATH = path.join(installDir, "bin") .. path.envsep() .. (envs.PATH or "")
                 end
             end
-
         else
             cctPkgGen = project.target("concerto-pkg-generator")
             if cctPkgGen then
@@ -41,6 +39,7 @@ rule("find_cct_pkg_generator")
         end
 
         local program = find_tool("concerto-pkg-generator", {version = false, paths = dir, envs = envs})
+
         target:data_set("concerto-pkg-generator", program)
         target:data_set("concerto-pkg-generator-envs", envs)
     end)
