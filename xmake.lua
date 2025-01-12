@@ -3,7 +3,7 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
-add_requires("concerto-core", "pugixml", {configs = {debug = is_mode("debug"), with_symbols = true}})
+add_requires("concerto-core", "pugixml", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
 
 option("tests", { default = false, description = "Enable unit tests"})
 
@@ -28,6 +28,10 @@ target("concerto-pkg-generator")
     add_packages("concerto-core", "pugixml")
     set_policy("build.fence", true)
 
+    if is_mode("debug") then
+        set_symbols("debug")
+    end
+
 target("concerto-reflection")
     set_kind("shared")
     set_languages("cxx20")
@@ -38,6 +42,10 @@ target("concerto-reflection")
     add_packages("concerto-core", { public = true })
     add_rules("xml_reflect")
     add_deps("concerto-pkg-generator")
+    
+    if is_mode("debug") then
+        set_symbols("debug")
+    end
 
 
 if has_config("tests") then
@@ -52,7 +60,12 @@ if has_config("tests") then
         add_rules("xml_reflect")
         add_includedirs("Tests/", { public = true })
         add_headerfiles("Tests/**.hpp")
+
         if is_plat("windows") then
             add_cxflags("/Zc:preprocessor")
+        end
+
+        if is_mode("debug") then
+            set_symbols("debug")
         end
 end
