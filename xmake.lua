@@ -16,9 +16,9 @@ if is_plat("windows") then
 end
 
 if is_mode("coverage") then
-	if not is_plat("windows") then
-		add_links("gcov")
-	end
+    if not is_plat("windows") then
+        add_links("gcov")
+    end
 end
 
 includes("Xmake/rules/**.lua")

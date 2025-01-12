@@ -8,14 +8,23 @@ rule("find_cct_pkg_generator")
 		local envs
         if cctPkgGen then
             dir = path.join(cctPkgGen:installdir(), "bin")
+            envs = {}
+
+            for _, lib_file in ipairs(cctPkgGen:get("libfiles")) do
+                local installDir = path.absolute(path.new(lib_file):directory():directory())
+                if os.host() == "linux" or os.host() == "macosx" then
+                    envs.LD_LIBRARY_PATH = installDir .. path.envsep() .. (envs.LD_LIBRARY_PATH or "")
+                elseif os.host() == "windows" then
+                    local installDir = path.join(cctPkgGen:installdir(), "bin")
+                    envs.PATH = installDir .. path.envsep() .. (envs.PATH or "")
+                end
+            end
+
         else
             cctPkgGen = project.target("concerto-pkg-generator")
-        end
 
-        if cctPkgGen then
-            dir = cctPkgGen:targetdir()
-            envs = cctPkgGen:get("runenvs")
-            if not envs then
+            if cctPkgGen then
+                dir = cctPkgGen:installdir("bin")
                 envs = {}
                 for _, pkg in ipairs(cctPkgGen:orderpkgs()) do
                     if os.host() == "linux" or os.host() == "macosx" then
@@ -26,7 +35,10 @@ rule("find_cct_pkg_generator")
                         envs.PATH = installDir .. path.envsep() .. (envs.PATH or "")
                     end
                 end
+            else
+                raise("Concerto Reflection package not found")
             end
+
         end
 
         local program = find_tool("concerto-pkg-generator", {version = false, paths = dir, envs = envs})
