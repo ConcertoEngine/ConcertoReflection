@@ -17,9 +17,9 @@ SCENARIO("Package loader")
 		auto pkg = CreateCorePackage();
 		REQUIRE(pkg);
 
-		cct::refl::PackageLoader packageLoader;
-		packageLoader.AddPackage(std::move(pkg));
-		packageLoader.LoadPackages();
+		pkg->LoadNamespaces();
+		pkg->InitializeNamespaces();
+		pkg->InitializeClasses();
 
 		THEN("It must have the namespace 'cct'")
 		{
