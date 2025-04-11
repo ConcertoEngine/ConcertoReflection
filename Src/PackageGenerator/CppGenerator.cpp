@@ -20,12 +20,6 @@ namespace cct
 		Write("using namespace cct;");
 		Write("using namespace cct::refl;");
 
-		for (auto& include : package.includes)
-		{
-			if (include.isPublic)
-				continue;
-			Write("#include \"{}\"", include.file);
-		}
 		for (auto& enum_ : package.enums)
 			GenerateEnum(enum_);
 		for (auto& klass : package.classes)

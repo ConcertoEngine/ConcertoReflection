@@ -5,9 +5,8 @@
 #ifndef CONCERTO_REFLECTION_OBJECT_HPP
 #define CONCERTO_REFLECTION_OBJECT_HPP
 
-#include <memory>
-
 #include "Concerto/Reflection/Defines.hpp"
+#include <memory>
 
 #define CCT_OBJECT(className)						\
 	public:											\
@@ -20,7 +19,8 @@
 namespace cct::refl
 {
 	class Class;
-	class CCT_REFLECTION_API Object
+	
+	class [[cct::Class]] CCT_REFLECTION_API Object
 	{
 	public:
 		Object() = default;
@@ -31,21 +31,21 @@ namespace cct::refl
 		CCT_OBJECT(Object);
 	};
 
-	class CCT_REFLECTION_API Int8 : public Object
+	class [[cct::Class]] CCT_REFLECTION_API Int8 : public Object
 	{
 	public:
 		virtual ~Int8() = default;
 		CCT_OBJECT(Int8);
 	};
 
-	class CCT_REFLECTION_API Int16 : public Object
+	class [[cct::Class]] CCT_REFLECTION_API Int16 : public Object
 	{
 	public:
 		virtual ~Int16() = default;
 		CCT_OBJECT(Int16);
 	};
 
-	class CCT_REFLECTION_API Int32 : public Object
+	class [[cct::Class]] CCT_REFLECTION_API Int32 : public Object
 	{
 	public:
 		Int32() = default;
@@ -56,7 +56,7 @@ namespace cct::refl
 		cct::Int32 _value;
 	};
 
-	class CCT_REFLECTION_API Int64 : public Object
+	class [[cct::Class]] CCT_REFLECTION_API Int64 : public Object
 	{
 	public:
 		virtual ~Int64() = default;

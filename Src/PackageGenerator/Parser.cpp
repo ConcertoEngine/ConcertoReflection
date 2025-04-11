@@ -5,306 +5,520 @@
 #include <cstring>
 #include <format>
 #include <iostream>
+#include <filesystem>
 
 #include <Concerto/Core/Assert.hpp>
+#include <cppast/visitor.hpp>
+#include <toml.hpp>
 
 #include "Concerto/PackageGenerator/Parser.hpp"
 
-#define CCT_TRY_DECLARE_ATTR(varName, node, attrName)													\
-	const auto* varName = (node).attribute((attrName).c_str()).value();									\
-	if ((varName) == nullptr)																			\
-	{																									\
-		CCT_ASSERT_FALSE("");																			\
-		return std::format("Package {} does not have required attribute: '{}'", node.name(), attrName);	\
+#include <ranges>
+
+
+#define CCT_TRY_DECLARE(varName, func, param)				\
+	auto varName##_result = func(param);					\
+	if (varName##_result.IsError())							\
+	{														\
+		CCT_ASSERT_FALSE("");								\
+		return std::move(varName##_result).GetError();		\
+	}														\
+	auto varName = std::move(varName##_result).GetValue();
+
+
+#define CCT_TRY_GET_ATTRIBUTE(attributes, attributeName, attributeNameStr, type, parentAttribute)						\
+	auto attributeName##_optional = toml::find<std::optional<type>>(attributes, std::string(attributeNameStr));			\
+	if (!(attributeName##_optional))																					\
+		return std::format("Missing attribute '{}' in {}::{}", attributeNameStr, BaseAttributeName, parentAttribute);	\
+	auto attributeName = std::move(attributeName##_optional).value()
+
+#define CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, attributeName, attributeNameStr, type, parentAttribute, defaultV)	\
+	auto attributeName##_optional = toml::find<std::optional<type>>(attributes, std::string(attributeNameStr));			\
+	auto attributeName = defaultV;																						\
+	if (attributeName##_optional)																						\
+		attributeName = std::move(attributeName##_optional).value()
+
+//#define CCT_MAKE_SV(var) std::string_view(var, std::strlen(var))
+using namespace std::string_view_literals;
+
+namespace
+{
+	std::string FindSourceFileForHeader(const std::vector<std::string>& files, const std::filesystem::path& header)
+	{
+		for (auto& f : files)
+		{
+			std::filesystem::path p(f);
+
+			if (p.filename().replace_extension() == header.filename().replace_extension())
+				return f;
+		}
+		return {};
 	}
 
-#define CCT_TRY_DECLARE(varName, func, node)	\
-	auto varName = func(node);					\
-	if (varName.IsError())						\
-	{											\
-		CCT_ASSERT_FALSE("");					\
-		return std::move(varName).GetError();	\
+	//template<typename T>
+	//T GetAndRemoveAttributeOrDefault(Attributes& attributes, const std::string& name, T defaultValue)
+	//{
+	//	auto it = attributes.find(name);
+	//	if (it != attributes.end())
+	//	{
+	//		T attrib;
+	//		if constexpr (std::is_same_v<bool, T>)
+	//			attrib = it->second == "true"sv;
+	//		else
+	//			 attrib = T(it->second);
+	//		attributes.erase(it);
+	//		return attrib;
+	//	}
+
+	//	return T(defaultValue);
+	//}
+
+	std::string GetFullType(const cppast::cpp_type& type)
+	{
+		std::string fullTpe;
+
+		switch (type.kind())
+		{
+		case cppast::cpp_type_kind::builtin_t:
+		{
+			const auto& builtin = static_cast<const cppast::cpp_builtin_type&>(type);
+			fullTpe = cppast::to_string(builtin);
+			break;
+		}
+		case cppast::cpp_type_kind::user_defined_t:
+		{
+			const auto& userDefined = static_cast<const cppast::cpp_user_defined_type&>(type);
+			fullTpe = userDefined.entity().name();
+			break;
+		}
+		case cppast::cpp_type_kind::auto_t:
+		case cppast::cpp_type_kind::decltype_t:
+		case cppast::cpp_type_kind::decltype_auto_t:
+			break;
+		case cppast::cpp_type_kind::cv_qualified_t:
+		{
+			auto& cvQualified = static_cast<const cppast::cpp_cv_qualified_type&>(type);
+			fullTpe = GetFullType(cvQualified.type());
+			break;
+		}
+		case cppast::cpp_type_kind::pointer_t:
+		{
+			auto& pointer = static_cast<const cppast::cpp_pointer_type&>(type);
+			fullTpe = GetFullType(pointer.pointee());
+			break;
+		}
+		case cppast::cpp_type_kind::reference_t:
+		{
+			const auto& reference = static_cast<const cppast::cpp_reference_type&>(type);
+			fullTpe = GetFullType(reference.referee());
+			break;
+		}
+		case cppast::cpp_type_kind::array_t:
+		case cppast::cpp_type_kind::function_t:
+		case cppast::cpp_type_kind::member_function_t:
+		case cppast::cpp_type_kind::member_object_t:
+		case cppast::cpp_type_kind::template_parameter_t:
+		case cppast::cpp_type_kind::template_instantiation_t:
+		case cppast::cpp_type_kind::dependent_t:
+		case cppast::cpp_type_kind::unexposed_t:
+			break;
+		}
+		return fullTpe;
 	}
-
-#define CCT_MAKE_SV(var) std::string_view(var, std::strlen(var))
-
+}
 namespace cct
 {
-	using namespace std::string_view_literals;
-
-	Result<Package, std::string> Parser::TryParse(const pugi::xml_document& doc)
+//	using namespace std::string_view_literals;
+//
+	Result<Package, std::string> Parser::TryParse(const cppast::libclang_compilation_database& database, cppast::stderr_diagnostic_logger& logger)
 	{
-		auto packageElement = doc.child(PackageElement.c_str());
-		if (!packageElement)
-			return std::format("Xml document does not have root element {}", PackageElement);
-
-		CCT_TRY_DECLARE_ATTR(packageName, packageElement, PackageNameAttrib);
-		CCT_TRY_DECLARE_ATTR(packageDescription, packageElement, PackageDescriptionAttrib);
-		CCT_TRY_DECLARE_ATTR(packageVersion, packageElement, PackageVersionAttrib);
-
-		Package package = {
-			.name = CCT_MAKE_SV(packageName),
-			.version = CCT_MAKE_SV(packageDescription),
-			.description = CCT_MAKE_SV(packageVersion),
-			.includes = {},
-			.classes = {},
-			.namepsaces = {},
-			.enums = {},
-		};
-
-		for (auto child : packageElement)
+		std::vector<std::string> databaseFiles;
+		cppast::detail::for_each_file(database, &databaseFiles, [](void* data, std::string path)
 		{
-			const auto* name = child.name();
-			if (name == IncludeElement)
+			auto* files = static_cast<std::vector<std::string>*>(data);
+			if (!files)
+				return;
+			files->push_back(std::move(path));
+		});
+
+		Package package = {};
+		for (auto& headerFile : std::filesystem::recursive_directory_iterator("C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoReflection/Tests"))
+		{
+			if (!headerFile.is_regular_file() || headerFile.path().extension() != ".hpp")
+				continue;
+			std::string path = headerFile.path().string();
+			cppast::cpp_entity_index index;
+			auto src = FindSourceFileForHeader(databaseFiles, headerFile.path());
+			if (src.empty())
 			{
-				CCT_TRY_DECLARE(include, TryParseInclude, child);
-				package.includes.push_back(std::move(include).GetValue());
+				std::cerr << "Could not find corresponding source file for " + path + '\n';
+				continue;
 			}
-			else if (name == ClassElement)
+			cppast::libclang_compile_config config(database, src);
+			config.write_preprocessed(true);
+			cppast::libclang_parser parser(type_safe::ref(logger));
+			auto file = parser.parse(index, path, config);
+			if (parser.error())
 			{
-				CCT_TRY_DECLARE(klass, TryParseClass, child);
-				package.classes.push_back(std::move(klass).GetValue());
+				std::cerr << "Could not parse file " + path << '\n';
+				continue;
 			}
-			else if (name == NamespaceElement)
+			if (!file)
+				continue;
+
+			std::vector<Namespace> namespaces;
+			Namespace* currentNameSpace = nullptr;
+			std::unique_ptr<Class> currentClass = {};
+			std::string currentError;
+			cppast::visit(*file, [&](const cppast::cpp_entity& e, cppast::visitor_info info)
 			{
-				CCT_TRY_DECLARE(nameSpace, TryParseNamespace, child);
-				package.namepsaces.push_back(std::move(nameSpace).GetValue());
-			}
-			else if (name == EnumElement)
-			{
-				CCT_TRY_DECLARE(nameSpace, TryParseEnum, child);
-				package.enums.push_back(std::move(nameSpace).GetValue());
-			}
-			else
-			{
-				return std::format("Unknown element '{}'", name);
-			}
+				if (info.event == cppast::visitor_info::container_entity_enter)
+				{
+					switch (e.kind())
+					{
+					case cppast::cpp_entity_kind::file_t:
+						return true;
+					case cppast::cpp_entity_kind::class_t:
+					{
+						const auto& classType = static_cast<const cppast::cpp_class&>(e);
+						if (!classType.is_definition())
+							return true;
+						if (classType.class_kind() == cppast::cpp_class_kind::struct_t)
+						{
+							if (!package.name.empty())
+							{
+								currentError = std::format("Package has been already defined before with name: '{}'", package.name);
+								return false;
+							}
+							auto result = TryParsePackage(classType);
+							if (!result)
+							{
+								std::string err = std::move(result).GetError();
+								if (err == NotApplicable)
+									break;
+								currentError = std::move(err);
+								return false;
+							}
+							package = result.GetValue();
+							break;
+						}
+						auto res = TryParseClass(classType);
+						if (!res)
+						{
+							currentError = std::move(res).GetError();
+							return false;
+						}
+						currentClass = std::make_unique<Class>(std::move(res).GetValue());
+						break;
+					}
+					case cppast::cpp_entity_kind::enum_t:
+					{
+						const auto& enumType = static_cast<const cppast::cpp_enum&>(e);
+						if (!enumType.is_definition())
+							return true;
+						auto res = TryParseEnum(enumType);
+						if (!res)
+						{
+							currentError = std::move(res).GetError();
+							return false;
+						}
+						currentNameSpace->enums.push_back(std::move(res).GetValue());
+						break;
+					}
+					case cppast::cpp_entity_kind::namespace_t:
+					{
+						const auto& nsType = static_cast<const cppast::cpp_namespace&>(e);
+						auto res = TryParseNamespace(nsType);
+						if (!res)
+						{
+							currentError = std::move(res).GetError();
+							return false;
+						}
+
+						if (currentNameSpace)
+						{
+							currentNameSpace->namespaces.push_back(std::move(res).GetValue());
+							currentNameSpace = &currentNameSpace->namespaces.back();
+						}
+						else
+						{
+							namespaces.push_back(std::move(res).GetValue());
+							currentNameSpace = &namespaces.back();
+						}
+						break;
+					}
+					default:
+						break;
+					}
+				}
+				else if (info.event == cppast::visitor_info::leaf_entity)
+				{
+					switch (e.kind())
+					{
+					case cppast::cpp_entity_kind::member_function_t:
+					{
+						const auto& functionType = static_cast<const cppast::cpp_member_function&>(e);
+						auto result = TryParseClassMethod(functionType);
+						if (result.IsError())
+						{
+							std::string err = std::move(result).GetError();
+							if (err == NotApplicable)
+								break;
+							currentError = std::move(result).GetError();
+							return false;
+						}
+						currentClass->methods.push_back(std::move(result).GetValue());
+						break;
+					}
+					case cppast::cpp_entity_kind::member_variable_t:
+					{
+						const auto& memberVariable = static_cast<const cppast::cpp_member_variable&>(e);
+						auto result = TryParseClassMember(memberVariable);
+						if (!result)
+						{
+							std::string err = std::move(result).GetError();
+							if (err == NotApplicable)
+								break;
+							currentError = std::move(err);
+							return false;
+						}
+						currentClass->members.push_back(std::move(result).GetValue());
+						break;
+					}
+					default:
+						break;
+					}
+				}
+				else if (info.event == cppast::visitor_info::container_entity_exit)
+				{
+					switch (e.kind())
+					{
+					case cppast::cpp_entity_kind::namespace_t:
+					{
+						currentNameSpace = nullptr;
+						break;
+					}
+					case cppast::cpp_entity_kind::class_t:
+					{
+						if (!currentClass)
+							break;
+						currentNameSpace->classes.push_back(*currentClass);
+						currentClass = nullptr;
+						break;
+					}
+					default:
+						break;
+					}
+				}
+				return true;
+			});
+			if (!currentError.empty())
+				return std::move(currentError);
+			package.namepsaces = std::move(namespaces);
 		}
 		return std::move(package);
 	}
 
-	Result<Include, std::string> Parser::TryParseInclude(const pugi::xml_node& node)
+	Result<Package, std::string> Parser::TryParsePackage(const cppast::cpp_class& klass)
 	{
-		if (!node.children().empty())
-			return std::format("Include '{}' must not have child elements", node.name());
-
-		CCT_TRY_DECLARE_ATTR(isPublic, node, IncludeIsPublicAttr);
-		CCT_TRY_DECLARE_ATTR(file, node, IncludeFileAttr);
-
-		if (isPublic != "true"sv && isPublic != "false"sv)
-			return std::format("Include '{}' has an invalid {} attribute: '{}'", node.name(), IncludeIsPublicAttr, isPublic);
+		if (!IsValidEntity(klass, PackageAttributeName))
+			return std::string(NotApplicable);
+		CCT_TRY_DECLARE(attributes, GetAttributes, klass.attributes());
 		
-		return Include {
-			.isPublic = isPublic == "true"sv,
-			.file = CCT_MAKE_SV(file)
-		};
+		if (!attributes.is_table())
+			return std::format("Invalid attributes found for {}::{}", BaseAttributeName, PackageAttributeName);
+
+		CCT_TRY_GET_ATTRIBUTE(attributes, version, VersionAttributeName, std::string, PackageAttributeName);
+		CCT_TRY_GET_ATTRIBUTE(attributes, description, DescriptionAttributeName, std::string, PackageAttributeName);
+
+		if (version.empty())
+			return std::format("Attribute '{}' must not be an empty string in {}::{}", VersionAttributeName, BaseAttributeName, PackageAttributeName);
+		if (description.empty())
+			return std::format("Attribute '{}' must not be an empty string in {}::{}", DescriptionAttributeName, BaseAttributeName, PackageAttributeName);
+
+		Package package = {};
+		package.name = klass.name();
+		package.version = std::move(version);
+		package.description = std::move(description);
+		return package;
 	}
 
-	Result<Namespace, std::string> Parser::TryParseNamespace(const pugi::xml_node& node)
+	Result<Namespace, std::string> Parser::TryParseNamespace(const cppast::cpp_namespace& nameSpace)
 	{
-		CCT_TRY_DECLARE_ATTR(namespaceName, node, NamespaceNameAttr);
-
 		Namespace ns = {};
-		ns.name = CCT_MAKE_SV(namespaceName);
+		ns.name = nameSpace.name();
 
-		for (auto child : node)
-		{
-			const auto* name = child.name();
-			if (name == ClassElement)
-			{
-				CCT_TRY_DECLARE(klass, TryParseClass, child);
-				ns.classes.push_back(std::move(klass).GetValue());
-			}
-			else if (name == NamespaceElement)
-			{
-				CCT_TRY_DECLARE(nameSpace, TryParseNamespace, child);
-				ns.namespaces.push_back(std::move(nameSpace).GetValue());
-			}
-			else if (name == EnumElement)
-			{
-				CCT_TRY_DECLARE(nameSpace, TryParseEnum, child);
-				ns.enums.push_back(std::move(nameSpace).GetValue());
-			}
-			else
-			{
-				CCT_ASSERT_FALSE("");
-				std::cout << std::format("Unknown element '{}' in namespace '{}'", name, namespaceName) << '\n';
-			}
-		}
-		return std::move(ns);
+		return ns;
 	}
 
-	Result<Enum, std::string> Parser::TryParseEnum(const pugi::xml_node& node)
+	Result<Enum, std::string> Parser::TryParseEnum(const cppast::cpp_enum& enumeration)
 	{
-		CCT_TRY_DECLARE_ATTR(enumName, node, EnumNameAttr);
-		CCT_TRY_DECLARE_ATTR(enumBase, node, EnumBaseAttr);
-		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
+		if (!IsValidEntity(enumeration, EnumAttributeName))
+			return std::string(NotApplicable);
+
+		CCT_TRY_DECLARE(attributes, GetAttributes, enumeration.attributes())
 
 		Enum enumA = {
-			.name = CCT_MAKE_SV(enumName),
-			.base = CCT_MAKE_SV(enumBase),
+			.name = enumeration.name(),
+			.base = GetFullType(enumeration.underlying_type()),
 			.elements = {},
-			.attributes = std::move(attributes).GetValue()
+			.attributes = GetAttributes(attributes),
+			.tomlAttributes = std::move(attributes)
 		};
 
-		for (auto child : node)
+		int i = 0;
+		for (const auto& enumValue : enumeration)
 		{
-			const auto* name = child.name();
-			if (name == AttributeElement)
-				continue;
-			if (name != EnumMemberElement)
-			{
-				CCT_ASSERT_FALSE("");
-				std::cout << std::format("Unknown element '{}' in enum '{}'", name, enumName);
-				continue;
-			}
-			CCT_TRY_DECLARE_ATTR(memberName, child, EnumMemberNameAttr);
-			CCT_TRY_DECLARE_ATTR(memberValue, child, EnumMemberValueAttr);
-			CCT_TRY_DECLARE(elemAttributes, TryParseAttributes, node);
+			CCT_TRY_DECLARE(enumValueAttributes, GetAttributes, enumValue.attributes())
 
 			Enum::Element enumElement = {
-				.name = CCT_MAKE_SV(memberName),
-				.value = CCT_MAKE_SV(memberValue),
-				.attributes = std::move(elemAttributes.GetValue())
+				.name = enumValue.name(),
+				.value = std::to_string(i),
+				.attributes = GetAttributes(enumValueAttributes),
+				.tomlAttributes = std::move(enumValueAttributes)
 			};
 
-			for (auto elementAttr : child.attributes())
-			{
-				if (elementAttr.name() == EnumMemberNameAttr)
-					continue;
-				if (elementAttr.name() == EnumMemberValueAttr)
-					continue;
-				enumElement.attributes.emplace(CCT_MAKE_SV(elementAttr.name()), CCT_MAKE_SV(elementAttr.value()));
-			}
-
 			enumA.elements.push_back(std::move(enumElement));
+			++i;
 		}
 		return std::move(enumA);
 	}
 
-	Result<Class, std::string> Parser::TryParseClass(const pugi::xml_node& node)
+	Result<Class, std::string> Parser::TryParseClass(const cppast::cpp_class& cppClass)
 	{
-		CCT_TRY_DECLARE_ATTR(className, node, EnumNameAttr);
-		const auto* base = node.attribute(ClassBaseAttr.c_str()).value();
-		const auto* autoGenerated = node.attribute(ClassAutoGeneratedAttr.c_str()).value();
+		if (cppClass.class_kind() != cppast::cpp_class_kind::class_t)
+			return std::string(NotApplicable);
+		if (!IsValidEntity(cppClass, ClassAttributeName))
+			return std::string(NotApplicable);
 
-		if (autoGenerated && autoGenerated != "true"sv && autoGenerated != "false"sv)
-			return std::format("Class {} has an invalid {} attribute: {}", className, ClassAutoGeneratedAttr, autoGenerated);
-		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
+		std::string base;
+		for (auto& b : cppClass.bases())
+		{
+			base = b.name(); // Fixme the base class must always be in the first position
+			break;
+		}
+
+		CCT_TRY_DECLARE(attributes, GetAttributes, cppClass.attributes())
 
 		Class klass = {
-			.name = CCT_MAKE_SV(className),
-			.base = CCT_MAKE_SV(base),
-			.autoGenerated = autoGenerated ? autoGenerated == "true"sv : false,
+			.name = cppClass.name(),
+			.base = std::move(base),
 			.methods = {},
 			.members = {},
-			.attributes = std::move(attributes).GetValue()
+			.attributes = GetAttributes(attributes),
+			.tomlAttributes = std::move(attributes)
 		};
-
-		for (auto child : node)
-		{
-			const auto* name = child.name();
-			if (name == ClassMemberElement)
-			{
-				CCT_TRY_DECLARE(member, TryParseClassMember, child);
-				klass.members.push_back(std::move(member).GetValue());
-			}
-			else if (name == ClassMethodElement)
-			{
-				CCT_TRY_DECLARE(method, TryParseClassMethod, child);
-				klass.methods.push_back(std::move(method).GetValue());
-			}
-			else if (name == AttributeElement)
-			{
-				continue;
-			}
-			else
-			{
-				CCT_ASSERT_FALSE("");
-				std::cout << std::format("Unknown element '{}' in class '{}'", name, className) << '\n';
-			}
-		}
 		return std::move(klass);
 	}
 
-	Result<Class::Member, std::string> Parser::TryParseClassMember(const pugi::xml_node& node)
+	Result<Class::Member, std::string> Parser::TryParseClassMember(const cppast::cpp_member_variable& memberVariable)
 	{
-		CCT_TRY_DECLARE_ATTR(memberName, node, ClassMemberNameAttr);
-		CCT_TRY_DECLARE_ATTR(memberType, node, ClassTypeNameAttr);
-		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
-
-		for (auto child : node)
-		{
-			if (child.name() == AttributeElement)
-				continue;
-			CCT_ASSERT_FALSE("");
-			return std::format("Class::Member {} has an invalid element: {}", node.name(), child.name());
-		}
+		if (IsValidEntity(memberVariable, MemberAttributeName))
+			return std::string(NotApplicable);
+		CCT_TRY_DECLARE(attributes, GetAttributes, memberVariable.attributes())
 
 		return Class::Member{
-			.name = CCT_MAKE_SV(memberName),
-			.type = CCT_MAKE_SV(memberType),
-			.attributes = std::move(attributes).GetValue()
+			.name = memberVariable.name(),
+			.type = GetFullType(memberVariable.type()),
+			.attributes = GetAttributes(attributes),
+			.tomlAttributes = std::move(attributes)
 		};
 	}
 
-	Result<Class::Method, std::string> Parser::TryParseClassMethod(const pugi::xml_node& node)
+	Result<Class::Method, std::string> Parser::TryParseClassMethod(const cppast::cpp_member_function& function)
 	{
-		CCT_TRY_DECLARE_ATTR(methodName, node, ClassMethodNameAttr);
-		CCT_TRY_DECLARE_ATTR(returnType, node, ClassMethodReturnAttr);
-		const auto* base = node.attribute(ClassBaseAttr.c_str()).value();
-		const auto* customInvoker = node.attribute(ClassMethodCustomInvokerAttr.c_str()).value();
+		if (!IsValidEntity(function, MethodAttributeName))
+			return std::string(NotApplicable);
 
-		CCT_TRY_DECLARE(attributes, TryParseAttributes, node);
-		
+		CCT_TRY_DECLARE(attributes, GetAttributes, function.attributes())
 
 		std::vector<Class::Method::Params> params;
-
-		for (auto child : node)
+		for (const auto& funcParam: function.parameters())
 		{
-			if (child.name() == AttributeElement)
-				continue;
-			if (child.name() != ClassMethodParamElement)
-				return std::format("Class:Method has an invalid element: '{}'", child.name());
+			CCT_TRY_DECLARE(paramAttributes, GetAttributes, funcParam.attributes())
 
-			CCT_TRY_DECLARE_ATTR(paramName, child, ClassMethodParamNameAttr);
-			CCT_TRY_DECLARE_ATTR(paramType, child, ClassMethodParamTypeAttr);
-			CCT_TRY_DECLARE(paramAttributes, TryParseAttributes, node);
-
-			params.emplace_back(CCT_MAKE_SV(paramName), CCT_MAKE_SV(paramType), std::move(paramAttributes).GetValue());
+			auto& param = params.emplace_back();
+			param.name = funcParam.name();
+			param.type = GetFullType(funcParam.type());
+			param.attributes = GetAttributes(paramAttributes);
+			param.tomlAttributes = std::move(paramAttributes);
 		}
 
-		return Class::Method{
-			.base = base ? CCT_MAKE_SV(base) : "cct::refl::Method"sv,
-			.name = CCT_MAKE_SV(methodName),
-			.returnValue = CCT_MAKE_SV(returnType),
-			.params = std::move(params),
-			.customInvoker = customInvoker ? CCT_MAKE_SV(customInvoker) == "true"sv : false,
-			.attributes = std::move(attributes).GetValue()
-		};
+		CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, base, ClassBaseAttr, std::string, ClassAttributeName, "cct::refl::Method"s);
+		CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, customInvoker, ClassBaseAttr, bool, ClassAttributeName, false);
+
+		Class::Method method;
+		method.base = std::move(base);
+		method.name = function.name();
+		method.returnValue = GetFullType(function.return_type());
+		method.params = std::move(params);
+		method.customInvoker = customInvoker;
+		method.attributes = GetAttributes(method.attributes);
+		method.tomlAttributes = std::move(attributes);
+		return method;
 	}
 
-	Result<Attributes, std::string> Parser::TryParseAttributes(const pugi::xml_node& node)
+	Result<TomlAttributes, std::string> Parser::GetAttributes(const cppast::cpp_attribute_list& cppAttributes)
 	{
-		Attributes attributes;
-		for (auto child : node)
+		for (auto child : cppAttributes)
 		{
-			if (child.name() != AttributeElement)
+			if (child.scope() != AttributeScopeElement)
 				continue;
-			if (!child.children().empty())
-				return std::format("Attribute '{}' must not have child elements in element: {}", child.name(), node.name());
-			CCT_TRY_DECLARE_ATTR(name, child, AttributeMemberNameAttr);
-			CCT_TRY_DECLARE_ATTR(value, child, AttributeMemberValueAttr);
-			for (auto attribute : child.attributes())
+			const type_safe::optional<cppast::cpp_token_string>& arg = child.arguments();
+			if (!arg)
+				continue;
+			const auto &tokens= arg.value();
+			std::string res;
+
+			bool isInsideBrackets = false;
+			for (const auto& token : tokens)
 			{
-				if (attribute.name() == AttributeMemberNameAttr)
-					continue;
-				if (attribute.name() == AttributeMemberValueAttr)
-					continue;
-				return std::format("Attribute element must only have two attributes ({}, {}) but '{}' was found in parent element {}", AttributeMemberNameAttr, AttributeMemberValueAttr, child.name(), node.name());
+				if (token.kind == cppast::cpp_token_kind::punctuation && (token.spelling == "{" || token.spelling == "["))
+					isInsideBrackets = true;
+				if (token.kind == cppast::cpp_token_kind::punctuation && (token.spelling == "}" || token.spelling == "]"))
+					isInsideBrackets = false;
+				if (isInsideBrackets)
+				{
+					res += token.spelling;
+				}
+				else
+				{
+					if (token.kind == cppast::cpp_token_kind::punctuation && token.spelling == ",")
+						res += '\n';
+					else res += token.spelling; 
+				}
 			}
-			attributes.emplace(CCT_MAKE_SV(name), CCT_MAKE_SV(value));
+			auto result = toml::try_parse_str(res);
+			if (result.is_err())
+				return std::string(result.as_err()[0].title());
+			return TomlAttributes(result.as_ok());
 		}
-		return std::move(attributes);
+		return {};
 	}
+
+
+	bool Parser::IsValidEntity(const cppast::cpp_entity& e, std::string_view expected)
+	{
+		if (e.attributes().empty())
+			return false;
+		for (auto& attrib : e.attributes())
+		{
+			if (attrib.scope() == BaseAttributeName && attrib.name() == expected)
+				return true;
+		}
+		return false;
+	}
+
+	Attributes Parser::GetAttributes(TomlAttributes attributes)
+	{
+		try
+		{
+			return toml::get<Attributes>(attributes.at(std::string(AttributesAttr)));
+		}
+		catch (...)
+		{
+			return {};
+		}
+	}
+
 }

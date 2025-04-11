@@ -2,8 +2,16 @@
 #include <format>
 #include <filesystem>
 #include <cstring>
+#include <iostream>
+#include <Concerto/Core/Assert.hpp>
 
-#include <pugixml.hpp>
+#include <cppast/libclang_parser.hpp>
+#include <cppast/visitor.hpp>
+#include <cppast/cpp_enum.hpp>
+#include <cppast/cpp_token.hpp>
+
+#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Logger.hpp>
 
 #include "Concerto/PackageGenerator/CppGenerator.hpp"
 #include "Concerto/PackageGenerator/HeaderGenerator.hpp"
@@ -12,8 +20,9 @@
 
 void PrintHelp()
 {
-	std::cout << "Usage: ./concerto-pkg-generator input.xml outputDir";
+	std::cout << "Usage: ./concerto-pkg-generator compile_commands outputDir";
 }
+
 
 
 int main(int argc, const char** argv)
@@ -24,25 +33,17 @@ int main(int argc, const char** argv)
 		std::cout << "concerto-pkg-generator version 1.0.0";
 		return EXIT_SUCCESS;
 	}
+	//if (argc < 3)
+	//{
+	//	PrintHelp();
+	//	return EXIT_FAILURE;
+	//}
 
-	if (argc < 3)
-	{
-		PrintHelp();
-		return EXIT_FAILURE;
-	}
+	cppast::libclang_compilation_database database("C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoReflection");
 
-	pugi::xml_document doc;
-	{
-		pugi::xml_parse_result result = doc.load_file(argv[1]);
-
-		if (!result)
-		{
-			std::cerr << std::format("Invalid xml document: {}\n", result.description());
-			return EXIT_FAILURE;
-		}
-	}
-
-	auto result = cct::Parser::TryParse(doc);
+	cppast::stderr_diagnostic_logger logger;
+	logger.set_verbose(true);
+	auto result = cct::Parser::TryParse(database, logger);
 
 	if (result.IsError())
 	{
