@@ -50,6 +50,7 @@ target("concerto-reflection")
     if is_mode("debug") then
         set_symbols("debug")
     end
+    set_policy("build.across_targets_in_parallel", false)
 
 
 if has_config("tests") then
