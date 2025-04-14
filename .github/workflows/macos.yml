@@ -68,7 +68,7 @@ jobs:
         key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
     - name: Build
-      run: xmake --yes -v
+      run: xmake --yes -vD
 
     - name: Run unit tests
       run: xmake run concerto-reflection-tests
