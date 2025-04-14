@@ -3,7 +3,7 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
-add_requires("concerto-core", "pugixml", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
+add_requires("concerto-core", "pugixml")
 
 option("tests", { default = false, description = "Enable unit tests"})
 
