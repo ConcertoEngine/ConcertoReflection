@@ -14,7 +14,6 @@ rule("xml_reflect")
 
     before_buildcmd_file(function (target, batchcmds, xmlFile, opt)
         local cctPkgGen = target:data("concerto-pkg-generator")
-        local envs = target:data("concerto-pkg-generator-envs")
         assert(cctPkgGen, "concerto-pkg-generator not found!")
         local outputFolder = path.join(target:autogendir(), "Reflection")
         local outputCppFile = path.join(outputFolder, path.basename(xmlFile) .. ".cpp")
@@ -22,7 +21,7 @@ rule("xml_reflect")
         local exePrefix = target:is_plat("mingw", "windows") and ".exe" or ""
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection %s", xmlFile)
-        batchcmds:vrunv(cctPkgGen.program, {xmlFile, path.join(target:autogendir(), "Reflection")}, {envs = envs})
+        batchcmds:vrunv(cctPkgGen.program, {xmlFile, path.join(target:autogendir(), "Reflection")})
 
         batchcmds:add_depfiles(xmlFile)
         --batchcmds:add_depvalues() todo add version from cabal
