@@ -24,8 +24,8 @@ rule("xml_reflect")
         for _, header in ipairs(headers.sourcefiles) do
             table.insert(args, header)
         end
+    
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
-
         batchcmds:add_depfiles(xmlFile)
         --batchcmds:add_depvalues() todo add version from cabal
         batchcmds:set_depmtime(os.mtime(outputCppFile))
