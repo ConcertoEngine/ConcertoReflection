@@ -14,7 +14,7 @@ namespace cct
 		Write("//This file was automatically generated, do not edit");
 		Write("#include <Concerto/Core/Assert.hpp>");
 		Write("#include \"Concerto/Reflection/GlobalNamespace.hpp\"");
-		Write("#include \"{}Package.hpp\"", package.name);
+		Write("#include \"{}Package.gen.hpp\"", package.name);
 		Write("using namespace std::string_view_literals;");
 		Write("using namespace std::string_literals;");
 		Write("using namespace cct;");

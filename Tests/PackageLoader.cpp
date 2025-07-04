@@ -4,11 +4,12 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include <ConcertoReflectionTestsPackage.hpp>
+#include <ConcertoReflectionPackage.gen.hpp>
+#include <ConcertoReflectionTestsPackage.gen.hpp>
+
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 #include "Concerto/Reflection/PackageLoader.hpp"
 
-#include <ConcertoReflectionPackage.hpp>
 
 
 SCENARIO("Package loader")
