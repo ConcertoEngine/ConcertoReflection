@@ -327,10 +327,10 @@ std::optional<Class> Parser::ParseClass()
 
 						if (!pendingAttr.empty())
 						{
-							auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+							auto [scope, attributes] = ConvertTomlAttributes(pendingAttr);
 							isMethodScope = scope == "cct::Method";
 							if (isMethodScope)
-								method.tomlAttributes = std::move(attributes);
+								method.tomlAttributes = attributes.as_table().find("Attributes")->second;
 							pendingAttr.clear();
 						}
 						if (isMethodScope)
@@ -358,9 +358,9 @@ std::optional<Class> Parser::ParseClass()
 						member.name = name;
 						if (!pendingAttr.empty())
 						{
-							auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+							auto [scope, attributes] = ConvertTomlAttributes(pendingAttr);
 							isMemberScope = scope == "cct::Member";
-							member.tomlAttributes = std::move(attributes);
+							member.tomlAttributes = isMemberScope ? attributes.as_table().find("Attributes")->second : TomlAttributes{};
 							pendingAttr.clear();
 						}
 						if (isMemberScope)

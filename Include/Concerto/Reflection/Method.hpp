@@ -23,7 +23,7 @@ namespace cct::refl
 	class CCT_REFLECTION_API Method
 	{
 	public:
-		Method(std::string_view name, const Class* returnValue, std::vector<const Class*> parameters, std::size_t index, void* customInvoker = nullptr);
+		Method(std::string_view name, const Class* returnValue, std::vector<const Class*> parameters, std::size_t index, void* delegate = nullptr);
 		virtual ~Method() = default;
 
 		Method(const Method&) = delete;
@@ -48,15 +48,15 @@ namespace cct::refl
 	protected:
 		void AddAttribute(std::string name, std::string value);
 		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
-		inline void* GetCustomInvoker() const;
-		inline void SetCustomInvoker(void* invoker);
+		inline void* GetCustomDelegate() const;
+		inline void SetCustomDelegate(void* delegate);
 	private:
 		std::string _name;
 		const Class* _returnValue;
 		std::vector<const Class*> _parameters;
 		std::size_t _index;
 		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
-		void* _customInvoker;
+		void* _customDelegate;
 	};
 
 	template <typename T, typename... Args>

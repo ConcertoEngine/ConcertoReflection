@@ -31,8 +31,9 @@ int main(int argc, const char** argv)
 	std::vector<std::string_view> args;
 	args.reserve(argc - 2);
 
-
+	//std::this_thread::sleep_for(std::chrono::seconds(10));
 	std::vector<Token> tokens;
+	tokens.reserve(0xFFFF);
 	for (int i = 2; i < argc; ++i)
 	{
 		std::ifstream t(argv[i]);

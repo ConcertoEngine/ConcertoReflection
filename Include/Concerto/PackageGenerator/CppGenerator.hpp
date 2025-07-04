@@ -17,7 +17,7 @@ namespace cct
 	private:
 		void GenerateNamespace(const Namespace& ns, const std::string& namespaceChain = "");
 		void GenerateClass(std::string_view ns, const Class& klass);
-		void GenerateClassMethod(std::string_view className, const Class::Method& method);
+		void GenerateClassMethod(std::string_view className, const Class::Method& method, std::string_view ns, std::size_t methodIndex);
 		void GenerateEnum(const Enum& enum_);
 		void GeneratePackage(const Package& pkg);
 	};

@@ -30,17 +30,17 @@ namespace cct
 		return true;
 	}
 
-	void CppGenerator::GenerateNamespace(const Namespace& ns, const std::string& namepsaceChain)
+	void CppGenerator::GenerateNamespace(const Namespace& ns, const std::string& namespaceChain)
 	{
 		Write("namespace {}", ns.name);
 		EnterScope();
 		{
 			for (auto& nestedNs : ns.namespaces)
-				GenerateNamespace(nestedNs, namepsaceChain + "::"s + std::string(ns.name));
+				GenerateNamespace(nestedNs, namespaceChain + "::"s + std::string(ns.name));
 			for (auto& enum_ : ns.enums)
 				GenerateEnum(enum_);
 			for (auto& klass : ns.classes)
-				GenerateClass(namepsaceChain + "::"s + std::string(ns.name), klass);
+				GenerateClass(namespaceChain + "::"s + std::string(ns.name), klass);
 		}
 		LeaveScope();
 		Write("namespace");
@@ -110,8 +110,12 @@ namespace cct
 
 	void CppGenerator::GenerateClass(std::string_view ns, const Class& klass)
 	{
+		std::size_t methodIndex = 0;
 		for (auto& method : klass.methods)
-			GenerateClassMethod(klass.name, method);
+		{
+			GenerateClassMethod(klass.name, method, ns, methodIndex);
+			++methodIndex;
+		}
 		NewLine();
 		Write("class Internal{}Class : public cct::refl::Class", klass.name);
 		EnterScope();
@@ -178,7 +182,7 @@ namespace cct
 					Write("if (index == {})", i);
 					EnterScope();
 					{
-						Write("return &static_cast<{}&>(self)._{};", klass.name, member.name);
+						Write("return &static_cast<{}&>(self).{};", klass.name, member.name);
 					}
 					LeaveScope();
 					++i;
@@ -195,7 +199,7 @@ namespace cct
 		NewLine();
 	}
 
-	void CppGenerator::GenerateClassMethod(std::string_view className, const Class::Method& method)
+	void CppGenerator::GenerateClassMethod(std::string_view className, const Class::Method& method, std::string_view ns, std::size_t methodIndex)
 	{
 		auto baseClass = method.base.empty() ? "cct::refl::Method"sv : method.base;
 		Write("class {}{}Method : public {}", className, method.name, baseClass);
@@ -248,14 +252,23 @@ namespace cct
 				NewLine();
 				if (method.returnValue == "void")
 				{
-					if (method.customInvoker)
+					if (method.tomlAttributes.as_table().contains("Delegate"))
 					{
-						Write("if (GetCustomInvoker() == nullptr)");
-						EnterScope();
-						Write("return {{\"Invalid invoker pointer\"s}};");
-						LeaveScope();
-						Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
-						Write("func({});", callArgsTypes, callArgs);
+						auto it = method.tomlAttributes.as_table().find("Delegate");
+						if (it->second.is_boolean())
+						{
+							Write("if (GetCustomInvoker() == nullptr)");
+							EnterScope();
+							Write("return {{\"Invalid invoker pointer\"s}};");
+							LeaveScope();
+							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+							Write("func({});", callArgs);
+						}
+						else if (it->second.is_string())
+						{
+							auto delegateName = it->second.as_string();
+							Write("{}({});", delegateName, callArgs);
+						}
 					}
 					else
 						Write("static_cast<{}&>(self).{}({});", className, method.name, callArgs);
@@ -263,15 +276,23 @@ namespace cct
 				}
 				else
 				{
-					if (method.customInvoker)
+					if (method.tomlAttributes.as_table().contains("Delegate"))
 					{
-						Write("if (GetCustomInvoker() == nullptr)");
-						EnterScope();
-						Write("return {{\"Invalid invoker pointer\"s}};");
-						LeaveScope();
-						Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
-						Write("auto res = func({});", callArgs);
-						Write("return cct::Any::Make<{}>(res);", method.returnValue);
+						auto it = method.tomlAttributes.as_table().find("Delegate");
+						if (it->second.is_boolean())
+						{
+							Write("if (GetCustomInvoker() == nullptr)");
+							EnterScope();
+							Write("return {{\"Invalid invoker pointer\"s}};");
+							LeaveScope();
+							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+							Write("return Any::Make<{}>(func({}));", method.returnValue, callArgs);
+						}
+						else if (it->second.is_string())
+						{
+							auto delegateName = it->second.as_string();
+							Write("return Any::Make<{}>({}({}));", method.returnValue, delegateName, callArgs);
+						}
 					}
 					else
 					{
@@ -283,6 +304,49 @@ namespace cct
 			}
 		}
 		LeaveScope(";"sv);
+
+		//if (method.tomlAttributes.as_table().contains("Delegate"))
+		//{
+		//	std::string methodParameterPrototype;
+		//	std::string callArgs;
+		//	std::string callArgsTypes;
+		//	std::size_t i = 0;
+		//	for (auto& param : method.params)
+		//	{
+		//		if (i != 0 && i < method.params.size())
+		//		{
+		//			methodParameterPrototype += ", ";
+		//			callArgs += ", ";
+		//			callArgsTypes += ", ";
+		//		}
+		//		methodParameterPrototype += param.type + ' ' + param.name;
+		//		callArgs += param.name;
+		//		callArgsTypes += param.type;
+		//		++i;
+		//	}
+		//	if (ns.starts_with("::"sv))
+		//		ns.remove_prefix(2);
+		//	Write("{} {}::{}::{}({})", method.returnValue, ns, className, method.name, methodParameterPrototype);
+		//	EnterScope();
+		//	auto delegateIt = method.tomlAttributes.as_table().find("Delegate");
+		//	if (delegateIt->second.is_string())
+		//	{
+		//		auto functionName = method.tomlAttributes.as_table().find("Delegate")->second.as_string();
+		//		Write("{}({});", functionName, callArgs);
+		//	}
+		//	else if (delegateIt->second.is_boolean())
+		//	{
+		//		Write("if (GetCustomInvoker() == nullptr)");
+		//		EnterScope(),
+		//		Write("return {{ \"Invalid invoker pointer\"s }};");
+		//		LeaveScope();
+		//		Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+		//		if (method.returnValue != "void"s)
+		//			Write("return");
+		//		Write("func({});", callArgs);
+		//	}
+			//LeaveScope();
+		//}
 	}
 
 	void CppGenerator::GenerateEnum(const Enum& enum_)

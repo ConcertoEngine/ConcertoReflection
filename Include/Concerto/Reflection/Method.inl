@@ -60,14 +60,14 @@ namespace cct::refl
 		_attributes.emplace(std::move(name), std::move(value));
 	}
 
-	inline void* Method::GetCustomInvoker() const
+	inline void* Method::GetCustomDelegate() const
 	{
-		return _customInvoker;
+		return _customDelegate;
 	}
 
-	inline void Method::SetCustomInvoker(void* invoker)
+	inline void Method::SetCustomDelegate(void* delegate)
 	{
-		_customInvoker = invoker;
+		_customDelegate = delegate;
 	}
 }
 

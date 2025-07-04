@@ -9,12 +9,12 @@
 
 namespace cct::refl
 {
-	Method::Method(std::string_view name, const Class* returnValue, std::vector<const Class*> parameters, std::size_t index, void* customInvoker) :
+	Method::Method(std::string_view name, const Class* returnValue, std::vector<const Class*> parameters, std::size_t index, void* delegate) :
 		_name(name),
 		_returnValue(returnValue),
 		_parameters(std::move(parameters)),
 		_index(index),
-		_customInvoker(customInvoker)
+		_customDelegate(delegate)
 	{
 	}
 }
