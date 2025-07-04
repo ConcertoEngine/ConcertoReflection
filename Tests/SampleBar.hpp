@@ -5,11 +5,10 @@
 #include "Concerto/Reflection/Object.hpp"
 
 
+struct [[cct::Package(version = "1.0", description = "Sample Package description", serialize = ["JSON", "YML"])]] ConcertoReflectionTests {};
+
 namespace cct::sample
 {
-	struct [[cct::Package(version="1.0", description="Sample Package description", serialize=["JSON", "YML"])]] SamplePackage {};
-
-	
 	enum class [[cct::Enum]] SampleEnum : cct::UInt32
 	{
 		Foo = 0,
@@ -17,7 +16,7 @@ namespace cct::sample
 	};
 
 	class [[cct::Class(attributes={Test="test"})]] SampleBar : public cct::refl::Object
-	{
+	{ 
 	public:
 		[[cct::Method(attributes={Test="test"})]]
 		int* Foo(const cct::refl::Int32& bar)
@@ -30,7 +29,7 @@ namespace cct::sample
 		{
 		 	return 22;
 		}
-		//CCT_OBJECT(SampleBar);
+		CCT_OBJECT(SampleBar);
 	private:
 		[[cct::Member(attributes={Test="test"})]]
 		refl::Int32 _bar;

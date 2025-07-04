@@ -4,7 +4,8 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include "CorePackage.hpp"
+#include <ConcertoReflectionPackage.hpp>
+#include <ConcertoReflectionTestsPackage.hpp>
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 
 SCENARIO("Namespace")
@@ -14,15 +15,13 @@ SCENARIO("Namespace")
 	{
 		WHEN("The package is initialized")
 		{
-			auto pkg = CreateCorePackage();
-			REQUIRE(pkg);
+			cct::refl::PackageLoader packageLoader;
+			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionPackage()));
+			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
+			packageLoader.LoadPackages();
 
-			pkg->LoadNamespaces();
-			pkg->InitializeNamespaces();
-			pkg->InitializeClasses();
-
-			CHECK(pkg->GetClassCount() == 5);
-			CHECK(pkg->GetNamespaceCount() == 1);
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 6);
+			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are getting the cct namespace")
 			{

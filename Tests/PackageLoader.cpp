@@ -4,9 +4,12 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include "CorePackage.hpp"
+#include <ConcertoReflectionTestsPackage.hpp>
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 #include "Concerto/Reflection/PackageLoader.hpp"
+
+#include <ConcertoReflectionPackage.hpp>
+
 
 SCENARIO("Package loader")
 {
@@ -14,12 +17,12 @@ SCENARIO("Package loader")
 
 	GIVEN("A package")
 	{
-		auto pkg = CreateCorePackage();
+		cct::refl::PackageLoader packageLoader;
+		REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionPackage()));
+		auto* pkg = packageLoader.AddPackage(CreateConcertoReflectionTestsPackage());
 		REQUIRE(pkg);
 
-		pkg->LoadNamespaces();
-		pkg->InitializeNamespaces();
-		pkg->InitializeClasses();
+		packageLoader.LoadPackages();
 
 		THEN("It must have the namespace 'cct'")
 		{
@@ -38,7 +41,7 @@ SCENARIO("Package loader")
 
 		WHEN("The package is destroyed")
 		{
-			pkg = nullptr;
+			packageLoader = {};
 
 			THEN("GlobalNamespace should be empty")
 			{

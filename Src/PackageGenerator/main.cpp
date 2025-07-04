@@ -1,29 +1,18 @@
 #include <iostream>
-#include <format>
 #include <filesystem>
 #include <cstring>
-#include <iostream>
-#include <Concerto/Core/Assert.hpp>
+#include <thread>
 
-#include <cppast/libclang_parser.hpp>
-#include <cppast/visitor.hpp>
-#include <cppast/cpp_enum.hpp>
-#include <cppast/cpp_token.hpp>
-
-#include <Concerto/Core/Types.hpp>
-#include <Concerto/Core/Logger.hpp>
 
 #include "Concerto/PackageGenerator/CppGenerator.hpp"
 #include "Concerto/PackageGenerator/HeaderGenerator.hpp"
+#include "Concerto/PackageGenerator/Lexer.hpp"
 #include "Concerto/PackageGenerator/Parser.hpp"
-
 
 void PrintHelp()
 {
-	std::cout << "Usage: ./concerto-pkg-generator compile_commands outputDir";
+	std::cout << "Usage: ./concerto-pkg-generator target_name [file_list]";
 }
-
-
 
 int main(int argc, const char** argv)
 {
@@ -33,35 +22,46 @@ int main(int argc, const char** argv)
 		std::cout << "concerto-pkg-generator version 1.0.0";
 		return EXIT_SUCCESS;
 	}
-	//if (argc < 3)
-	//{
-	//	PrintHelp();
-	//	return EXIT_FAILURE;
-	//}
-
-	cppast::libclang_compilation_database database("C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoReflection");
-
-	cppast::stderr_diagnostic_logger logger;
-	logger.set_verbose(true);
-	auto result = cct::Parser::TryParse(database, logger);
-
-	if (result.IsError())
+	if (argc < 3)
 	{
-		std::cerr << result.GetError() << '\n';
+		PrintHelp();
 		return EXIT_FAILURE;
 	}
+
+	std::vector<std::string_view> args;
+	args.reserve(argc - 2);
+
+
+	std::vector<Token> tokens;
+	for (int i = 2; i < argc; ++i)
+	{
+		std::ifstream t(argv[i]);
+		if (!t.is_open())
+			continue;
+		std::stringstream buffer;
+		buffer << t.rdbuf();
+
+		Lexer lexer(buffer.str());
+		auto fileTokens = lexer.tokenize();
+		tokens.insert(tokens.end(), fileTokens.begin(), fileTokens.end());
+		std::string_view str(argv[i], std::strlen(argv[i]));
+		auto pos = str.find('\\');
+		if (pos != std::string_view::npos)
+			str.remove_prefix(pos + 1);
+		args.emplace_back(str);
+	}
+	
+	Parser parser(std::move(tokens));
+	auto package = parser.ParsePackage();
 	try
 	{
 		std::filesystem::path file(argv[1]);
-		file = file.filename().replace_extension();
-		std::filesystem::path path = argv[2] / file.filename();
-		path = std::filesystem::absolute(path);
-		std::filesystem::create_directories(path.parent_path());
+		std::filesystem::create_directories(file.parent_path());
 
-		cct::HeaderGenerator headerGenerator(path.string() + ".hpp");
-		headerGenerator.Generate(result.GetValue());
-		cct::CppGenerator cppGenerator(path.string() + ".cpp");
-		cppGenerator.Generate(result.GetValue());
+		cct::HeaderGenerator headerGenerator(file.string() + "Package.hpp");
+		headerGenerator.Generate(package, args);
+		cct::CppGenerator cppGenerator(file.string() + "Package.cpp");
+		cppGenerator.Generate(package, args);
 	}
 	catch (const std::exception& e)
 	{

@@ -1,58 +1,57 @@
-//
-// Created by arthur on 09/12/2024.
-//
+#pragma once
 
-#ifndef CONCERTO_PKGGENERATOR_PARSER_HPP
-#define CONCERTO_PKGGENERATOR_PARSER_HPP
+#include <ranges>
+#include <Concerto/Core/Logger.hpp>
+#include <toml11/parser.hpp>
 
-#include <string_view>
-#include <Concerto/Core/Result.hpp>
+#include "Defines.hpp"
+#include "Concerto/PackageGenerator/Lexer.hpp"
 
-#include <cppast/libclang_parser.hpp>
-#include <cppast/cpp_namespace.hpp>
-#include <cppast/cpp_enum.hpp>
-#include <cppast/cpp_function.hpp>
-#include <cppast/cpp_member_function.hpp>
-#include <cppast/cpp_member_variable.hpp>
-#include <cppast/cpp_token.hpp>
-#include <cppast/cpp_attribute.hpp>
-
-#include "Concerto/PackageGenerator/Defines.hpp"
-
-namespace cct
+class Parser
 {
-	using namespace std::string_literals;
-	using namespace std::string_view_literals;
-	class Parser
+public:
+	Parser(std::vector<Token> tokens)
+		: tokens(std::move(tokens)), index(0)
 	{
-	public:
-		static Result<Package, std::string> TryParse(const cppast::libclang_compilation_database& database, cppast::stderr_diagnostic_logger& logger);
-		static Result<Package, std::string> TryParsePackage(const cppast::cpp_class& klass);
-		static Result<Namespace, std::string> TryParseNamespace(const cppast::cpp_namespace&);
-		static Result<Enum, std::string> TryParseEnum(const cppast::cpp_enum&);
-		static Result<Class, std::string> TryParseClass(const cppast::cpp_class& klass);
-		static Result<Class::Member, std::string> TryParseClassMember(const cppast::cpp_member_variable&);
-		static Result<Class::Method, std::string> TryParseClassMethod(const cppast::cpp_member_function&);
-		static Result<TomlAttributes, std::string> GetAttributes(const cppast::cpp_attribute_list& cppAttributes);
-		static bool IsValidEntity(const cppast::cpp_entity& e, std::string_view expected);
-		static Attributes GetAttributes(TomlAttributes attributes);
-	private:
-		static constexpr std::string_view BaseAttributeName = "cct"sv;
-		static constexpr std::string_view ClassAttributeName = "Class"sv;
-		static constexpr std::string_view MethodAttributeName = "Method"sv;
-		static constexpr std::string_view PackageAttributeName = "Package"sv;
-		static constexpr std::string_view MemberAttributeName = "Member"sv;
-		static constexpr std::string_view EnumAttributeName = "Enum"sv;
+	}
 
-		static constexpr std::string_view VersionAttributeName = "version"sv;
-		static constexpr std::string_view DescriptionAttributeName = "description"sv;
-		static constexpr std::string_view ClassBaseAttr = "base"sv;
-		static constexpr std::string_view AttributesAttr = "attributes"sv;
+	Package ParsePackage();
 
-		static constexpr std::string_view NotApplicable = "N/A"sv;
-		static constexpr std::string_view AttributeScopeElement = "cct"sv;
+private:
+	std::vector<Token> tokens;
+	size_t index;
+	std::string pendingAttr;
 
-	};
-}
+	bool IsAtEnd() const
+	{
+		return index >= tokens.size() || tokens[index].type == TokenType::EndOfFile;
+	}
 
-#endif // CONCERTO_PKGGENERATOR_PARSER_HPP
+	const Token& Peek() const
+	{
+		return tokens[index];
+	}
+
+	const Token& Advance()
+	{
+		return tokens[index++];
+	}
+
+	bool Match(const std::string& expected)
+	{
+		if (!IsAtEnd() && tokens[index].lexeme == expected)
+		{
+			Advance();
+			return true;
+		}
+		return false;
+	}
+
+	std::optional<Namespace> ParseNamespace();
+
+	std::optional<Class> ParseClass();
+
+	std::vector<Class::Method::Params> ParseMethodParameters();
+
+	Enum ParseEnum();
+};

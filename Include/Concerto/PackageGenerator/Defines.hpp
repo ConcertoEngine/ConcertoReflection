@@ -28,13 +28,11 @@ struct Enum
 	{
 		std::string name;
 		std::string value;
-		Attributes attributes;
 		TomlAttributes tomlAttributes;
 	};
 	std::string name;
 	std::string base;
 	std::vector<Element> elements;
-	Attributes attributes;
 	TomlAttributes tomlAttributes;
 };
 
@@ -44,7 +42,6 @@ struct Class
 	{
 		std::string name;
 		std::string type;
-		Attributes attributes;
 		TomlAttributes tomlAttributes;
 	};
 	struct Method
@@ -53,7 +50,7 @@ struct Class
 		{
 			std::string name;
 			std::string type;
-			Attributes attributes;
+
 			TomlAttributes tomlAttributes;
 		};
 		std::string base;
@@ -61,15 +58,14 @@ struct Class
 		std::string returnValue;
 		std::vector<Params> params;
 		bool customInvoker;
-		Attributes attributes;
 		TomlAttributes tomlAttributes;
 	};
 
 	std::string name;
 	std::string base;
+	std::string scope;
 	std::vector<Method> methods;
 	std::vector<Member> members;
-	Attributes attributes;
 	TomlAttributes tomlAttributes;
 };
 

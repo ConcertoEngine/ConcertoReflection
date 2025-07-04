@@ -9,7 +9,7 @@ namespace cct
 	using namespace std::string_view_literals;
 	using namespace std::string_literals;
 
-	bool CppGenerator::Generate(const Package& package)
+	bool CppGenerator::Generate(const Package& package, std::span<std::string_view> args)
 	{
 		Write("//This file was automatically generated, do not edit");
 		Write("#include <Concerto/Core/Assert.hpp>");
@@ -142,7 +142,11 @@ namespace cct
 			{
 				Write("SetNamespace(GlobalNamespace::Get().GetNamespaceByName(\"{}\"sv));", ns);
 				if (!klass.base.empty())
-					Write("SetBaseClass(GetClassByName(\"{}\"sv));", klass.base);
+				{
+					Write("const Class* baseClass = GetClassByName(\"{}\"sv);", klass.base);
+					Write("CCT_ASSERT(baseClass != nullptr, \"Could not find class '{}'\");", klass.base);
+					Write("SetBaseClass(baseClass);");
+				}
 				NewLine();
 				for (auto& member : klass.members)
 					Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"));)", member.name, member.type);
@@ -158,8 +162,8 @@ namespace cct
 					++i;
 				}
 
-				for (auto& [name, value] : klass.attributes)
-					Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
+				//for (auto& [name, value] : klass.attributes)
+				//	Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			}
 			LeaveScope();
 			NewLine();
@@ -203,8 +207,8 @@ namespace cct
 			NewLine();
 			Write("void Initialize() override");
 			EnterScope();
-			for (auto& [name, value] : method.attributes)
-				Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
+			//for (auto& [name, value] : method.attributes)
+			//	Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			LeaveScope();
 			NewLine();
 			Write("cct::Result<cct::Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
@@ -320,6 +324,8 @@ namespace cct
 
 	void CppGenerator::GeneratePackage(const Package& pkg)
 	{
+		if (pkg.name.empty())
+			return;
 		Write("class Internal{}Package : public cct::refl::Package", pkg.name);
 		EnterScope();
 		{

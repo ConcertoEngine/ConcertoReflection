@@ -4,7 +4,8 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include "CorePackage.hpp"
+#include <ConcertoReflectionPackage.hpp>
+#include <ConcertoReflectionTestsPackage.hpp>
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 
 SCENARIO("Class metadata verification")
@@ -14,15 +15,13 @@ SCENARIO("Class metadata verification")
 	{
 		WHEN("The package is initialized")
 		{
-			auto pkg = CreateCorePackage();
-			REQUIRE(pkg);
-
-			pkg->LoadNamespaces();
-			pkg->InitializeNamespaces();
-			pkg->InitializeClasses();
-
-			CHECK(pkg->GetClassCount() == 5);
-			CHECK(pkg->GetNamespaceCount() == 1);
+			cct::refl::PackageLoader packageLoader;
+			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionPackage()));
+			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
+			packageLoader.LoadPackages();
+			
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 6);
+			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are getting the class Object")
 			{

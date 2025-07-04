@@ -10,7 +10,7 @@
 
 namespace cct
 {
-	bool HeaderGenerator::Generate(const Package& package)
+	bool HeaderGenerator::Generate(const Package& package, std::span<std::string_view> args)
 	{
 		std::string upperPackageName(package.name);
 		std::ranges::transform(upperPackageName, upperPackageName.begin(), [](char c)
@@ -29,6 +29,13 @@ namespace cct
 		Write("#include <Concerto/Reflection/Method.hpp>");
 		Write("#include <Concerto/Reflection/Package.hpp>");
 		NewLine();
+
+		for (auto header : args)
+		{
+			Write("#include \"{}\"", header);
+		}
+
+		NewLine();
 		Write("#ifdef {}PACKAGE_BUILD", upperPackageName);
 		Write("#define {}PACKAGE_API CCT_EXPORT", upperPackageName);
 		Write("#else");
@@ -43,7 +50,7 @@ namespace cct
 
 		for (auto& klass : package.classes)
 		{
-			//GenerateClass(klass, api);
+			GenerateClass(klass, api);
 			NewLine();
 		}
 
@@ -104,12 +111,6 @@ namespace cct
 
 	void HeaderGenerator::GenerateEnum(const Enum& enum_, const std::string& api)
 	{
-		Write("enum class {} : {}", enum_.name, enum_.base);
-		EnterScope();
-		for (auto& elem : enum_.elements)
-			Write("{} = {},", elem.name, elem.value);
-		LeaveScope(";");
-		NewLine();
 		Write("{} std::string_view {}ToString({} value);", api, Capitalize(enum_.name), enum_.name);
 		Write("{} {} {}FromString(std::string_view str);", api, enum_.name, Capitalize(enum_.name));
 	}

@@ -2,523 +2,523 @@
 // Created by arthur on 09/12/2024.
 //
 
-#include <cstring>
-#include <format>
-#include <iostream>
-#include <filesystem>
-
-#include <Concerto/Core/Assert.hpp>
-#include <cppast/visitor.hpp>
-#include <toml.hpp>
-
 #include "Concerto/PackageGenerator/Parser.hpp"
-
-#include <ranges>
-
-
-#define CCT_TRY_DECLARE(varName, func, param)				\
-	auto varName##_result = func(param);					\
-	if (varName##_result.IsError())							\
-	{														\
-		CCT_ASSERT_FALSE("");								\
-		return std::move(varName##_result).GetError();		\
-	}														\
-	auto varName = std::move(varName##_result).GetValue();
-
-
-#define CCT_TRY_GET_ATTRIBUTE(attributes, attributeName, attributeNameStr, type, parentAttribute)						\
-	auto attributeName##_optional = toml::find<std::optional<type>>(attributes, std::string(attributeNameStr));			\
-	if (!(attributeName##_optional))																					\
-		return std::format("Missing attribute '{}' in {}::{}", attributeNameStr, BaseAttributeName, parentAttribute);	\
-	auto attributeName = std::move(attributeName##_optional).value()
-
-#define CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, attributeName, attributeNameStr, type, parentAttribute, defaultV)	\
-	auto attributeName##_optional = toml::find<std::optional<type>>(attributes, std::string(attributeNameStr));			\
-	auto attributeName = defaultV;																						\
-	if (attributeName##_optional)																						\
-		attributeName = std::move(attributeName##_optional).value()
-
-//#define CCT_MAKE_SV(var) std::string_view(var, std::strlen(var))
-using namespace std::string_view_literals;
 
 namespace
 {
-	std::string FindSourceFileForHeader(const std::vector<std::string>& files, const std::filesystem::path& header)
+	std::string Trim(const std::string& s)
 	{
-		for (auto& f : files)
-		{
-			std::filesystem::path p(f);
-
-			if (p.filename().replace_extension() == header.filename().replace_extension())
-				return f;
+		size_t start = 0;
+		while (start < s.size() && std::isspace(s[start])) {
+			++start;
 		}
-		return {};
+		size_t end = s.size();
+		while (end > start && std::isspace(s[end - 1])) {
+			--end;
+		}
+		return s.substr(start, end - start);
 	}
 
-	//template<typename T>
-	//T GetAndRemoveAttributeOrDefault(Attributes& attributes, const std::string& name, T defaultValue)
-	//{
-	//	auto it = attributes.find(name);
-	//	if (it != attributes.end())
-	//	{
-	//		T attrib;
-	//		if constexpr (std::is_same_v<bool, T>)
-	//			attrib = it->second == "true"sv;
-	//		else
-	//			 attrib = T(it->second);
-	//		attributes.erase(it);
-	//		return attrib;
-	//	}
-
-	//	return T(defaultValue);
-	//}
-
-	std::string GetFullType(const cppast::cpp_type& type)
+	std::string InlineTomlToMultiple(const std::string& input)
 	{
-		std::string fullTpe;
+		std::vector<std::string> tokens;
+		std::string token;
 
-		switch (type.kind())
-		{
-		case cppast::cpp_type_kind::builtin_t:
-		{
-			const auto& builtin = static_cast<const cppast::cpp_builtin_type&>(type);
-			fullTpe = cppast::to_string(builtin);
-			break;
+		bool in_quotes = false;  // Tracks whether we are inside quotes.
+		int bracket_level = 0;   // Tracks nesting level for brackets (arrays).
+
+		for (size_t i = 0; i < input.size(); ++i) {
+			char c = input[i];
+
+			// Toggle the in_quotes flag when a non-escaped double quote is encountered.
+			if (c == '"') {
+				in_quotes = !in_quotes;
+				token.push_back(c);
+				continue;
+			}
+
+			// Only check for brackets and delimiters when not in quotes.
+			if (!in_quotes) {
+				if (c == '[') {
+					++bracket_level;
+				}
+				else if (c == ']') {
+					--bracket_level;
+				}
+
+				// When a comma appears and we're not inside an array, it marks the end of a key-value pair.
+				if (c == ',' && bracket_level == 0) {
+					tokens.push_back(Trim(token));
+					token.clear();
+					continue; // Do not include the comma.
+				}
+			}
+
+			token.push_back(c);
 		}
-		case cppast::cpp_type_kind::user_defined_t:
+
+		// Add the remaining token if any.
+		if (!token.empty()) {
+			tokens.push_back(Trim(token));
+		}
+
+		// Build the output string with each key-value pair on a new line.
+		std::ostringstream oss;
+		for (size_t i = 0; i < tokens.size(); ++i) {
+			oss << tokens[i];
+			if (i != tokens.size() - 1) {
+				oss << "\n";
+			}
+		}
+
+		return oss.str();
+	}
+
+	Attributes ConvertAttributes(const std::string& attrStr)
+	{
+		Attributes attr;
+		// For demo purposes, we simply store the raw string under a "raw" key.
+		attr.emplace("raw", attrStr);
+		return attr;
+	}
+
+	std::pair<std::string /*Attribute scope (Package, Enum, Class, Member, Method)*/, TomlAttributes> ConvertTomlAttributes(const std::string& attrStr)
+	{
+		auto firstParenthesis = attrStr.find('(');
+		if (firstParenthesis == std::string::npos)
+			return { attrStr, {} };
+		std::string scope = attrStr.substr(0, firstParenthesis);
+		std::string toml = attrStr.substr(firstParenthesis + 1, attrStr.size() - firstParenthesis - 2);
+		toml = InlineTomlToMultiple(toml);
+
+		auto result = toml::try_parse_str(toml);
+		if (result.is_err())
 		{
-			const auto& userDefined = static_cast<const cppast::cpp_user_defined_type&>(type);
-			fullTpe = userDefined.entity().name();
-			break;
+			for (auto& err : result.as_err())
+				cct::Logger::Error("{}\n\t{}", err.title(), err.suffix());
+			return {};
 		}
-		case cppast::cpp_type_kind::auto_t:
-		case cppast::cpp_type_kind::decltype_t:
-		case cppast::cpp_type_kind::decltype_auto_t:
-			break;
-		case cppast::cpp_type_kind::cv_qualified_t:
-		{
-			auto& cvQualified = static_cast<const cppast::cpp_cv_qualified_type&>(type);
-			fullTpe = GetFullType(cvQualified.type());
-			break;
-		}
-		case cppast::cpp_type_kind::pointer_t:
-		{
-			auto& pointer = static_cast<const cppast::cpp_pointer_type&>(type);
-			fullTpe = GetFullType(pointer.pointee());
-			break;
-		}
-		case cppast::cpp_type_kind::reference_t:
-		{
-			const auto& reference = static_cast<const cppast::cpp_reference_type&>(type);
-			fullTpe = GetFullType(reference.referee());
-			break;
-		}
-		case cppast::cpp_type_kind::array_t:
-		case cppast::cpp_type_kind::function_t:
-		case cppast::cpp_type_kind::member_function_t:
-		case cppast::cpp_type_kind::member_object_t:
-		case cppast::cpp_type_kind::template_parameter_t:
-		case cppast::cpp_type_kind::template_instantiation_t:
-		case cppast::cpp_type_kind::dependent_t:
-		case cppast::cpp_type_kind::unexposed_t:
-			break;
-		}
-		return fullTpe;
+		return { scope, TomlAttributes(result.as_ok()) };
 	}
 }
-namespace cct
+
+
+Package Parser::ParsePackage()
 {
-//	using namespace std::string_view_literals;
-//
-	Result<Package, std::string> Parser::TryParse(const cppast::libclang_compilation_database& database, cppast::stderr_diagnostic_logger& logger)
+	Package pkg;
+
+	while (!IsAtEnd())
 	{
-		std::vector<std::string> databaseFiles;
-		cppast::detail::for_each_file(database, &databaseFiles, [](void* data, std::string path)
+		if (Peek().type == TokenType::Attribute)
 		{
-			auto* files = static_cast<std::vector<std::string>*>(data);
-			if (!files)
-				return;
-			files->push_back(std::move(path));
-		});
-
-		Package package = {};
-		for (auto& headerFile : std::filesystem::recursive_directory_iterator("C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoReflection/Tests"))
+			pendingAttr = Peek().lexeme;
+			Advance();
+			continue;
+		}
+		if (Peek().type == TokenType::Identifier)
 		{
-			if (!headerFile.is_regular_file() || headerFile.path().extension() != ".hpp")
-				continue;
-			std::string path = headerFile.path().string();
-			cppast::cpp_entity_index index;
-			auto src = FindSourceFileForHeader(databaseFiles, headerFile.path());
-			if (src.empty())
+			const std::string& kw = Peek().lexeme;
+			if (kw == "namespace")
 			{
-				std::cerr << "Could not find corresponding source file for " + path + '\n';
+				std::optional<Namespace> ns = ParseNamespace();
+				if (ns)
+					pkg.namepsaces.push_back(ns.value());
 				continue;
 			}
-			cppast::libclang_compile_config config(database, src);
-			config.write_preprocessed(true);
-			cppast::libclang_parser parser(type_safe::ref(logger));
-			auto file = parser.parse(index, path, config);
-			if (parser.error())
+			if (kw == "class" || kw == "struct")
 			{
-				std::cerr << "Could not parse file " + path << '\n';
-				continue;
-			}
-			if (!file)
-				continue;
-
-			std::vector<Namespace> namespaces;
-			Namespace* currentNameSpace = nullptr;
-			std::unique_ptr<Class> currentClass = {};
-			std::string currentError;
-			cppast::visit(*file, [&](const cppast::cpp_entity& e, cppast::visitor_info info)
-			{
-				if (info.event == cppast::visitor_info::container_entity_enter)
+				std::optional<Class> cls = ParseClass();
+				if (!cls)
+					continue;
+				if (cls->scope == "cct::Package")
 				{
-					switch (e.kind())
+					if (pkg.name.empty())
 					{
-					case cppast::cpp_entity_kind::file_t:
-						return true;
-					case cppast::cpp_entity_kind::class_t:
-					{
-						const auto& classType = static_cast<const cppast::cpp_class&>(e);
-						if (!classType.is_definition())
-							return true;
-						if (classType.class_kind() == cppast::cpp_class_kind::struct_t)
-						{
-							if (!package.name.empty())
-							{
-								currentError = std::format("Package has been already defined before with name: '{}'", package.name);
-								return false;
-							}
-							auto result = TryParsePackage(classType);
-							if (!result)
-							{
-								std::string err = std::move(result).GetError();
-								if (err == NotApplicable)
-									break;
-								currentError = std::move(err);
-								return false;
-							}
-							package = result.GetValue();
-							break;
-						}
-						auto res = TryParseClass(classType);
-						if (!res)
-						{
-							currentError = std::move(res).GetError();
-							return false;
-						}
-						currentClass = std::make_unique<Class>(std::move(res).GetValue());
-						break;
-					}
-					case cppast::cpp_entity_kind::enum_t:
-					{
-						const auto& enumType = static_cast<const cppast::cpp_enum&>(e);
-						if (!enumType.is_definition())
-							return true;
-						auto res = TryParseEnum(enumType);
-						if (!res)
-						{
-							currentError = std::move(res).GetError();
-							return false;
-						}
-						currentNameSpace->enums.push_back(std::move(res).GetValue());
-						break;
-					}
-					case cppast::cpp_entity_kind::namespace_t:
-					{
-						const auto& nsType = static_cast<const cppast::cpp_namespace&>(e);
-						auto res = TryParseNamespace(nsType);
-						if (!res)
-						{
-							currentError = std::move(res).GetError();
-							return false;
-						}
+						pkg.name = cls->name;
+						auto& attributesTable = cls->tomlAttributes.as_table();
 
-						if (currentNameSpace)
+						auto versionIt = attributesTable.find("version");
+						if (versionIt != attributesTable.end())
+							pkg.version = versionIt->second.as_string();
+						else pkg.version = "Undefined";
+
+						auto descriptionIt = attributesTable.find("description");
+						if (descriptionIt != attributesTable.end())
+							pkg.description = descriptionIt->second.as_string();
+						else pkg.description = "Undefined";
+					}
+					else if (pkg.name != cls->name)
+						cct::Logger::Error("Package has already been defined");
+				}
+				else
+					pkg.classes.push_back(cls.value());
+				continue;
+			}
+			if (kw == "enum")
+			{
+				Enum enm = ParseEnum();
+				pkg.enums.push_back(enm);
+				continue;
+			}
+		}
+		Advance();
+	}
+	return pkg;
+}
+
+std::optional<Namespace> Parser::ParseNamespace()
+{
+	Namespace ns;
+	// Consume the "namespace" keyword.
+	Advance(); // skip 'namespace'
+	if (!IsAtEnd() && tokens[index].type == TokenType::Identifier)
+	{
+		ns.name = tokens[index].lexeme;
+		Advance();
+	}
+	// In this simple parser, we do not store attributes on namespaces.
+	if (Match("{"))
+	{
+		// Parse declarations inside the namespace.
+		while (!IsAtEnd() && Peek().lexeme != "}")
+		{
+			if (Peek().type == TokenType::Attribute)
+			{
+				pendingAttr = Peek().lexeme;
+				Advance();
+				continue;
+			}
+			if (Peek().type == TokenType::Identifier)
+			{
+				const std::string& kw = Peek().lexeme;
+				if (kw == "namespace")
+				{
+					std::optional<Namespace> childNs = ParseNamespace();
+					if (childNs)
+						ns.namespaces.push_back(childNs.value());
+					continue;
+				}
+				else if (kw == "class" || kw == "struct")
+				{
+					std::optional<Class> cls = ParseClass();
+					if (cls && cls->scope == "cct::Class")
+						ns.classes.push_back(cls.value());
+					continue;
+				}
+				else if (kw == "enum")
+				{
+					Enum enm = ParseEnum();
+					ns.enums.push_back(enm);
+					continue;
+				}
+			}
+			Advance();
+		}
+		Match("}");
+	}
+
+	// Nested namespaces can be represented with "::" in the name.
+	if (ns.name.find("::") != std::string::npos)
+	{
+		using namespace std::string_view_literals;
+		auto split = ns.name | std::ranges::views::split("::"sv);
+		std::vector<std::string_view> res;
+		for (const auto elem : split)
+			res.emplace_back(elem.data(), elem.size());
+
+		Namespace parentNs;
+		parentNs.name = res.front();
+		parentNs.namespaces.reserve(res.size() - 1);
+
+		Namespace* last = &parentNs;
+
+		for (size_t i = 1; i < res.size(); ++i)
+		{
+			Namespace childNs;
+			childNs.name = res[i];
+			last->namespaces.push_back(childNs);
+			last = &last->namespaces.back();
+		}
+
+		last->classes = ns.classes;
+		last->enums = ns.enums;
+		last->namespaces = ns.namespaces;
+
+		if (ns.classes.empty() && ns.enums.empty() && ns.namespaces.empty())
+			return std::nullopt;
+		return parentNs;
+	}
+	if (ns.classes.empty() && ns.enums.empty() && ns.namespaces.empty())
+		return std::nullopt;
+	return ns;
+}
+
+std::optional<Class> Parser::ParseClass()
+{
+	Class cls;
+	// Consume the class/struct keyword.
+	Advance();
+	if (Peek().type == TokenType::Attribute)
+	{
+		auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+		if (scope != "cct::Class" && scope != "cct::Package")
+		{
+			cct::Logger::Warning("Invalid attribute scope for class: '{}'. Expected 'cct::Class' or 'cct::Package'.", scope);
+			return std::nullopt;
+		}
+		cls.scope = scope;
+		cls.tomlAttributes = std::move(attributes);
+		Advance();
+	}
+	else
+		return std::nullopt;
+	if (!IsAtEnd() && tokens[index].type == TokenType::Identifier)
+	{
+		cls.name = tokens[index].lexeme;
+		Advance();
+	}
+	if (Match(":"))
+	{
+		Match("public");
+		Match("private");
+		Match("protected");
+
+		if (!IsAtEnd() && tokens[index].type == TokenType::Identifier)
+		{
+			cls.base = tokens[index].lexeme;
+			Advance();
+		}
+	}
+
+	// Skip predeclared class
+	Match(";");
+
+	if (Match("{"))
+	{
+		while (!IsAtEnd() && Peek().lexeme != "}")
+		{
+			Match("public:");
+			Match("private:");
+			Match("protected:");
+			Match("virtual");
+			if (Peek().type == TokenType::Attribute)
+			{
+				pendingAttr = Peek().lexeme;
+				Advance();
+				continue;
+			}
+
+			if (Peek().type == TokenType::Identifier)
+			{
+				std::string typeOrReturn = Advance().lexeme;
+				while (Peek().type == TokenType::Symbol)
+					typeOrReturn += Advance().lexeme;
+				if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+				{
+					std::string name = Peek().lexeme;
+					Advance();
+					if (!IsAtEnd() && Peek().lexeme == "(")
+					{
+						bool isMethodScope = false;
+						Class::Method method;
+						method.returnValue = typeOrReturn;
+						method.name = name;
+						method.params = ParseMethodParameters();
+
+						if (!pendingAttr.empty())
 						{
-							currentNameSpace->namespaces.push_back(std::move(res).GetValue());
-							currentNameSpace = &currentNameSpace->namespaces.back();
+							auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+							isMethodScope = scope == "cct::Method";
+							if (isMethodScope)
+								method.tomlAttributes = std::move(attributes);
+							pendingAttr.clear();
+						}
+						if (isMethodScope)
+							cls.methods.push_back(method);
+						if (Match("{"))
+						{
+							int braceCount = 1;
+							while (!IsAtEnd() && braceCount > 0)
+							{
+								if (Peek().lexeme == "{") braceCount++;
+								if (Peek().lexeme == "}") braceCount--;
+								Advance();
+							}
 						}
 						else
 						{
-							namespaces.push_back(std::move(res).GetValue());
-							currentNameSpace = &namespaces.back();
+							Match(";");
 						}
-						break;
 					}
-					default:
-						break;
-					}
-				}
-				else if (info.event == cppast::visitor_info::leaf_entity)
-				{
-					switch (e.kind())
+					else
 					{
-					case cppast::cpp_entity_kind::member_function_t:
-					{
-						const auto& functionType = static_cast<const cppast::cpp_member_function&>(e);
-						auto result = TryParseClassMethod(functionType);
-						if (result.IsError())
+						bool isMemberScope = false;
+						Class::Member member;
+						member.type = typeOrReturn;
+						member.name = name;
+						if (!pendingAttr.empty())
 						{
-							std::string err = std::move(result).GetError();
-							if (err == NotApplicable)
-								break;
-							currentError = std::move(result).GetError();
-							return false;
+							auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+							isMemberScope = scope == "cct::Member";
+							member.tomlAttributes = std::move(attributes);
+							pendingAttr.clear();
 						}
-						currentClass->methods.push_back(std::move(result).GetValue());
-						break;
-					}
-					case cppast::cpp_entity_kind::member_variable_t:
-					{
-						const auto& memberVariable = static_cast<const cppast::cpp_member_variable&>(e);
-						auto result = TryParseClassMember(memberVariable);
-						if (!result)
+						if (isMemberScope)
+							cls.members.push_back(member);
+						while (!IsAtEnd() && Peek().lexeme != ";")
 						{
-							std::string err = std::move(result).GetError();
-							if (err == NotApplicable)
-								break;
-							currentError = std::move(err);
-							return false;
+							Advance();
 						}
-						currentClass->members.push_back(std::move(result).GetValue());
-						break;
+						Match(";");
 					}
-					default:
-						break;
-					}
-				}
-				else if (info.event == cppast::visitor_info::container_entity_exit)
-				{
-					switch (e.kind())
-					{
-					case cppast::cpp_entity_kind::namespace_t:
-					{
-						currentNameSpace = nullptr;
-						break;
-					}
-					case cppast::cpp_entity_kind::class_t:
-					{
-						if (!currentClass)
-							break;
-						currentNameSpace->classes.push_back(*currentClass);
-						currentClass = nullptr;
-						break;
-					}
-					default:
-						break;
-					}
-				}
-				return true;
-			});
-			if (!currentError.empty())
-				return std::move(currentError);
-			package.namepsaces = std::move(namespaces);
-		}
-		return std::move(package);
-	}
-
-	Result<Package, std::string> Parser::TryParsePackage(const cppast::cpp_class& klass)
-	{
-		if (!IsValidEntity(klass, PackageAttributeName))
-			return std::string(NotApplicable);
-		CCT_TRY_DECLARE(attributes, GetAttributes, klass.attributes());
-		
-		if (!attributes.is_table())
-			return std::format("Invalid attributes found for {}::{}", BaseAttributeName, PackageAttributeName);
-
-		CCT_TRY_GET_ATTRIBUTE(attributes, version, VersionAttributeName, std::string, PackageAttributeName);
-		CCT_TRY_GET_ATTRIBUTE(attributes, description, DescriptionAttributeName, std::string, PackageAttributeName);
-
-		if (version.empty())
-			return std::format("Attribute '{}' must not be an empty string in {}::{}", VersionAttributeName, BaseAttributeName, PackageAttributeName);
-		if (description.empty())
-			return std::format("Attribute '{}' must not be an empty string in {}::{}", DescriptionAttributeName, BaseAttributeName, PackageAttributeName);
-
-		Package package = {};
-		package.name = klass.name();
-		package.version = std::move(version);
-		package.description = std::move(description);
-		return package;
-	}
-
-	Result<Namespace, std::string> Parser::TryParseNamespace(const cppast::cpp_namespace& nameSpace)
-	{
-		Namespace ns = {};
-		ns.name = nameSpace.name();
-
-		return ns;
-	}
-
-	Result<Enum, std::string> Parser::TryParseEnum(const cppast::cpp_enum& enumeration)
-	{
-		if (!IsValidEntity(enumeration, EnumAttributeName))
-			return std::string(NotApplicable);
-
-		CCT_TRY_DECLARE(attributes, GetAttributes, enumeration.attributes())
-
-		Enum enumA = {
-			.name = enumeration.name(),
-			.base = GetFullType(enumeration.underlying_type()),
-			.elements = {},
-			.attributes = GetAttributes(attributes),
-			.tomlAttributes = std::move(attributes)
-		};
-
-		int i = 0;
-		for (const auto& enumValue : enumeration)
-		{
-			CCT_TRY_DECLARE(enumValueAttributes, GetAttributes, enumValue.attributes())
-
-			Enum::Element enumElement = {
-				.name = enumValue.name(),
-				.value = std::to_string(i),
-				.attributes = GetAttributes(enumValueAttributes),
-				.tomlAttributes = std::move(enumValueAttributes)
-			};
-
-			enumA.elements.push_back(std::move(enumElement));
-			++i;
-		}
-		return std::move(enumA);
-	}
-
-	Result<Class, std::string> Parser::TryParseClass(const cppast::cpp_class& cppClass)
-	{
-		if (cppClass.class_kind() != cppast::cpp_class_kind::class_t)
-			return std::string(NotApplicable);
-		if (!IsValidEntity(cppClass, ClassAttributeName))
-			return std::string(NotApplicable);
-
-		std::string base;
-		for (auto& b : cppClass.bases())
-		{
-			base = b.name(); // Fixme the base class must always be in the first position
-			break;
-		}
-
-		CCT_TRY_DECLARE(attributes, GetAttributes, cppClass.attributes())
-
-		Class klass = {
-			.name = cppClass.name(),
-			.base = std::move(base),
-			.methods = {},
-			.members = {},
-			.attributes = GetAttributes(attributes),
-			.tomlAttributes = std::move(attributes)
-		};
-		return std::move(klass);
-	}
-
-	Result<Class::Member, std::string> Parser::TryParseClassMember(const cppast::cpp_member_variable& memberVariable)
-	{
-		if (IsValidEntity(memberVariable, MemberAttributeName))
-			return std::string(NotApplicable);
-		CCT_TRY_DECLARE(attributes, GetAttributes, memberVariable.attributes())
-
-		return Class::Member{
-			.name = memberVariable.name(),
-			.type = GetFullType(memberVariable.type()),
-			.attributes = GetAttributes(attributes),
-			.tomlAttributes = std::move(attributes)
-		};
-	}
-
-	Result<Class::Method, std::string> Parser::TryParseClassMethod(const cppast::cpp_member_function& function)
-	{
-		if (!IsValidEntity(function, MethodAttributeName))
-			return std::string(NotApplicable);
-
-		CCT_TRY_DECLARE(attributes, GetAttributes, function.attributes())
-
-		std::vector<Class::Method::Params> params;
-		for (const auto& funcParam: function.parameters())
-		{
-			CCT_TRY_DECLARE(paramAttributes, GetAttributes, funcParam.attributes())
-
-			auto& param = params.emplace_back();
-			param.name = funcParam.name();
-			param.type = GetFullType(funcParam.type());
-			param.attributes = GetAttributes(paramAttributes);
-			param.tomlAttributes = std::move(paramAttributes);
-		}
-
-		CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, base, ClassBaseAttr, std::string, ClassAttributeName, "cct::refl::Method"s);
-		CCT_TRY_GET_ATTRIBUTE_OR_DEFAULT(attributes, customInvoker, ClassBaseAttr, bool, ClassAttributeName, false);
-
-		Class::Method method;
-		method.base = std::move(base);
-		method.name = function.name();
-		method.returnValue = GetFullType(function.return_type());
-		method.params = std::move(params);
-		method.customInvoker = customInvoker;
-		method.attributes = GetAttributes(method.attributes);
-		method.tomlAttributes = std::move(attributes);
-		return method;
-	}
-
-	Result<TomlAttributes, std::string> Parser::GetAttributes(const cppast::cpp_attribute_list& cppAttributes)
-	{
-		for (auto child : cppAttributes)
-		{
-			if (child.scope() != AttributeScopeElement)
-				continue;
-			const type_safe::optional<cppast::cpp_token_string>& arg = child.arguments();
-			if (!arg)
-				continue;
-			const auto &tokens= arg.value();
-			std::string res;
-
-			bool isInsideBrackets = false;
-			for (const auto& token : tokens)
-			{
-				if (token.kind == cppast::cpp_token_kind::punctuation && (token.spelling == "{" || token.spelling == "["))
-					isInsideBrackets = true;
-				if (token.kind == cppast::cpp_token_kind::punctuation && (token.spelling == "}" || token.spelling == "]"))
-					isInsideBrackets = false;
-				if (isInsideBrackets)
-				{
-					res += token.spelling;
-				}
-				else
-				{
-					if (token.kind == cppast::cpp_token_kind::punctuation && token.spelling == ",")
-						res += '\n';
-					else res += token.spelling; 
+					continue;
 				}
 			}
-			auto result = toml::try_parse_str(res);
-			if (result.is_err())
-				return std::string(result.as_err()[0].title());
-			return TomlAttributes(result.as_ok());
+			Match("default");
+			Match("delete");
+			Advance(); // skip any unrecognized tokens
 		}
-		return {};
+		Match("}"); // close class body
+		Match(";"); // optional semicolon after class definition
 	}
+	return cls;
+}
 
-
-	bool Parser::IsValidEntity(const cppast::cpp_entity& e, std::string_view expected)
+std::vector<Class::Method::Params> Parser::ParseMethodParameters()
+{
+	std::vector<Class::Method::Params> params;
+	if (!IsAtEnd() && Peek().lexeme == "(")
 	{
-		if (e.attributes().empty())
-			return false;
-		for (auto& attrib : e.attributes())
+		Advance(); // consume '('
+
+		if (!IsAtEnd() && Peek().lexeme == ")")
 		{
-			if (attrib.scope() == BaseAttributeName && attrib.name() == expected)
-				return true;
+			Advance(); // consume ')'
+			return params;
 		}
-		return false;
+
+		while (!IsAtEnd() && Peek().lexeme != ")")
+		{
+			Class::Method::Params param;
+
+			if (Peek().type == TokenType::Attribute)
+			{
+				Advance();
+			}
+
+			if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+			{
+				Match("const");
+				param.type = Peek().lexeme;
+				Advance();
+				//parse template
+				if (!IsAtEnd() && Peek().lexeme == "<")
+				{
+					while (!IsAtEnd() && Peek().lexeme != ">")
+					{
+						param.type += Advance().lexeme;
+					}
+					param.type += Advance().lexeme;
+				}
+
+				while (!IsAtEnd() && Peek().type == TokenType::Symbol
+					&& Peek().lexeme != "," && Peek().lexeme != ")")
+				{
+					Advance();
+				}
+			}
+
+			if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+			{
+				param.name = Peek().lexeme;
+				Advance();
+			}
+
+
+			params.push_back(param);
+
+			if (!IsAtEnd() && Peek().lexeme == ",")
+			{
+				Advance();
+			}
+			if (!IsAtEnd() && Peek().lexeme == ")")
+			{
+				Advance();
+				Match("const");
+				Match(";");
+				return params;
+			}
+			Advance(); // skip any unrecognized tokens
+		}
+
+		Match(")");
 	}
 
-	Attributes Parser::GetAttributes(TomlAttributes attributes)
+	return params;
+}
+
+Enum Parser::ParseEnum()
+{
+	Enum enm;
+	Advance(); // consume "enum"
+
+	if (!IsAtEnd() && (Peek().lexeme == "class" || Peek().lexeme == "struct"))
 	{
-		try
-		{
-			return toml::get<Attributes>(attributes.at(std::string(AttributesAttr)));
-		}
-		catch (...)
-		{
-			return {};
-		}
+		Advance();
 	}
 
+	bool isEnumScope = false;
+	if (Peek().type == TokenType::Attribute)
+	{
+		auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
+		isEnumScope = scope == "cct::Enum";
+		Advance();
+	}
+
+	if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+	{
+		enm.name = Peek().lexeme;
+		Advance();
+	}
+	// Optional base type.
+	if (Match(":"))
+	{
+		if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+		{
+			enm.base = Peek().lexeme;
+			Advance();
+		}
+	}
+	// Enum body.
+	if (Match("{"))
+	{
+		while (!IsAtEnd() && Peek().lexeme != "}")
+		{
+			Enum::Element element;
+			if (Peek().type == TokenType::Attribute)
+			{
+				Advance();
+			}
+			if (!IsAtEnd() && Peek().type == TokenType::Identifier)
+			{
+				element.name = Peek().lexeme;
+				Advance();
+			}
+			if (Match("="))
+			{
+				if (!IsAtEnd() && Peek().type == TokenType::Symbol)
+				{
+					element.value = Peek().lexeme;
+					Advance();
+				}
+			}
+			enm.elements.push_back(element);
+			Match(",");
+		}
+		Match("}");
+		Match(";");
+	}
+	if (isEnumScope)
+		return enm;
+	return {};
 }

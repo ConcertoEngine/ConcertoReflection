@@ -10,6 +10,7 @@
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 
 #include <ranges>
+#include <set>
 
 namespace cct::refl
 {
@@ -23,7 +24,10 @@ namespace cct::refl
 
 	std::size_t GlobalNamespace::GetNamespaceCount() const
 	{
-		return _namespaces.size();
+		std::set<std::string_view> namespaces;
+		for (auto& ns : _namespaces)
+			namespaces.emplace(ns->GetName());
+		return namespaces.size();
 	}
 
 	std::size_t GlobalNamespace::GetClassCount() const
