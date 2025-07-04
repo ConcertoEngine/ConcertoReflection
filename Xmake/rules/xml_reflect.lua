@@ -1,28 +1,31 @@
 rule("xml_reflect")
-    set_extensions(".xml")
     add_deps("find_cct_pkg_generator")
+    set_extensions(".hpp")
+
     on_config(function (target)
-        for _, filepath in ipairs(target:sourcebatches()["xml_reflect"].sourcefiles) do
-            local generatedFile = path.join(target:autogendir(), "Reflection", path.basename(filepath))
-            target:add("headerfiles", path.join(target:autogendir(), "(Reflection", path.basename(filepath) ..".hpp)"))
-            target:add("includedirs", path.join(target:autogendir(), "Reflection"), {public = true})
-            target:add("files", generatedFile .. ".cpp", {always_added = true})
-            target:add("headerfiles", filepath)
-            target:add("defines", path.basename(filepath):upper() .. "_BUILD")
-        end
+        local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
+        local generatedCpp = path.join(target:autogendir(), targetName .. "Package.cpp")
+
+        target:add("headerfiles", path.join(target:autogendir(), "(" .. targetName .. "/" .. targetName .. "Package.gen.hpp)"))
+        target:add("files", generatedCpp, {always_added = true})
+        target:add("includedirs", target:autogendir(), {public = true})
+        target:add("defines", path.basename(targetName):upper() .. "_BUILD")
     end)
 
-    before_buildcmd_file(function (target, batchcmds, xmlFile, opt)
+    before_buildcmd_files(function (target, batchcmds, headers, opt)
         local cctPkgGen = target:data("concerto-pkg-generator")
         assert(cctPkgGen, "concerto-pkg-generator not found!")
-        local outputFolder = path.join(target:autogendir(), "Reflection")
-        local outputCppFile = path.join(outputFolder, path.basename(xmlFile) .. ".cpp")
-        local outputHppFile = path.join(outputFolder, path.basename(xmlFile) .. ".hpp")
-        local exePrefix = target:is_plat("mingw", "windows") and ".exe" or ""
+        local envs = target:data("concerto-pkg-generator-envs")
+        local outputCppFile = path.join(target:autogendir(), target:name() .. ".cpp")
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection %s", xmlFile)
-        batchcmds:vrunv(cctPkgGen.program, {xmlFile, path.join(target:autogendir(), "Reflection")})
-
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection")
+        local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
+        local args = { path.join(target:autogendir(), targetName) }
+        for _, header in ipairs(headers.sourcefiles) do
+            table.insert(args, header)
+        end
+    
+        batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
         batchcmds:add_depfiles(xmlFile)
         --batchcmds:add_depvalues() todo add version from cabal
         batchcmds:set_depmtime(os.mtime(outputCppFile))

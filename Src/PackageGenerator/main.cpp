@@ -1,20 +1,18 @@
 #include <iostream>
-#include <format>
 #include <filesystem>
 #include <cstring>
+#include <thread>
 
-#include <pugixml.hpp>
 
 #include "Concerto/PackageGenerator/CppGenerator.hpp"
 #include "Concerto/PackageGenerator/HeaderGenerator.hpp"
+#include "Concerto/PackageGenerator/Lexer.hpp"
 #include "Concerto/PackageGenerator/Parser.hpp"
-
 
 void PrintHelp()
 {
-	std::cout << "Usage: ./concerto-pkg-generator input.xml outputDir";
+	std::cout << "Usage: ./concerto-pkg-generator target_name [file_list]";
 }
-
 
 int main(int argc, const char** argv)
 {
@@ -24,43 +22,50 @@ int main(int argc, const char** argv)
 		std::cout << "concerto-pkg-generator version 1.0.0";
 		return EXIT_SUCCESS;
 	}
-
 	if (argc < 3)
 	{
 		PrintHelp();
 		return EXIT_FAILURE;
 	}
 
-	pugi::xml_document doc;
+	std::vector<std::string_view> args;
+	args.reserve(argc - 2);
+
+	//std::this_thread::sleep_for(std::chrono::seconds(10));
+	std::vector<Token> tokens;
+	tokens.reserve(0xFFFF);
+	for (int i = 2; i < argc; ++i)
 	{
-		pugi::xml_parse_result result = doc.load_file(argv[1]);
+		std::ifstream t(argv[i]);
+		if (!t.is_open())
+			continue;
+		std::stringstream buffer;
+		buffer << t.rdbuf();
 
-		if (!result)
-		{
-			std::cerr << std::format("Invalid xml document: {}\n", result.description());
-			return EXIT_FAILURE;
-		}
+		Lexer lexer(buffer.str());
+		auto fileTokens = lexer.tokenize();
+		tokens.insert(tokens.end(), fileTokens.begin(), fileTokens.end());
+		std::string_view str(argv[i], std::strlen(argv[i]));
+		auto backSlashPos = str.find('\\');
+		if (backSlashPos != std::string_view::npos)
+			str.remove_prefix(backSlashPos + 1);
+		auto slashPos = str.find('/');
+		if (slashPos != std::string_view::npos)
+			str.remove_prefix(slashPos + 1);
+		args.emplace_back(str);
 	}
-
-	auto result = cct::Parser::TryParse(doc);
-
-	if (result.IsError())
-	{
-		std::cerr << result.GetError() << '\n';
-		return EXIT_FAILURE;
-	}
+	
+	Parser parser(std::move(tokens));
+	auto package = parser.ParsePackage();
 	try
 	{
 		std::filesystem::path file(argv[1]);
-		file = file.filename().replace_extension();
-		std::filesystem::path path = argv[2] / file.filename();
-		path = std::filesystem::absolute(path);
-		std::filesystem::create_directories(path.parent_path());
+		std::filesystem::create_directories(file.parent_path());
 
-		cct::HeaderGenerator headerGenerator(path.string() + ".hpp");
-		headerGenerator.Generate(result.GetValue());
-		cct::CppGenerator cppGenerator(path.string() + ".cpp");
-		cppGenerator.Generate(result.GetValue());
+		cct::HeaderGenerator headerGenerator(file.string() + "Package.hpp");
+		headerGenerator.Generate(package, args);
+		cct::CppGenerator cppGenerator(file.string() + "Package.cpp");
+		cppGenerator.Generate(package, args);
 	}
 	catch (const std::exception& e)
 	{

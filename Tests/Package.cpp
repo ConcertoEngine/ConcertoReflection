@@ -4,8 +4,8 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include "CorePackage.hpp"
 #include "Concerto/Reflection/GlobalNamespace.hpp"
+#include <ConcertoReflectionPackage.hpp>
 
 SCENARIO("Package initialization and destruction")
 {
@@ -13,7 +13,7 @@ SCENARIO("Package initialization and destruction")
 
 	GIVEN("The core package is initialized")
 	{
-		auto pkg = CreateCorePackage();
+		auto pkg = CreateConcertoReflectionPackage();
 		REQUIRE(pkg);
 
 		pkg->LoadNamespaces();

@@ -14,9 +14,11 @@
 
 namespace cct::refl
 {
-	void PackageLoader::AddPackage(std::unique_ptr<Package> package)
+	Package* PackageLoader::AddPackage(std::unique_ptr<Package> package)
 	{
+		Package* packagePtr = package.get();
 		_packages.emplace_back(std::move(package));
+		return packagePtr;
 	}
 
 	bool PackageLoader::AddDynamicPackage(std::string_view path)

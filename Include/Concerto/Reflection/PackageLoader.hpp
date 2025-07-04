@@ -26,7 +26,7 @@ namespace cct::refl
 		PackageLoader& operator=(PackageLoader&&) noexcept = default;
 		PackageLoader& operator=(const PackageLoader&) = delete;
 
-		void AddPackage(std::unique_ptr<Package> package);
+		Package* AddPackage(std::unique_ptr<Package> package);
 		bool AddDynamicPackage(std::string_view path);
 		bool AddDynamicFolder(std::string_view path);
 
