@@ -257,11 +257,11 @@ namespace cct
 						auto it = method.tomlAttributes.as_table().find("Delegate");
 						if (it->second.is_boolean())
 						{
-							Write("if (GetCustomInvoker() == nullptr)");
+							Write("if (GetCustomDelegate() == nullptr)");
 							EnterScope();
-							Write("return {{\"Invalid invoker pointer\"s}};");
+							Write("return {{\"Invalid delegate pointer\"s}};");
 							LeaveScope();
-							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomDelegate());", method.returnValue, callArgsTypes);
 							Write("func({});", callArgs);
 						}
 						else if (it->second.is_string())
