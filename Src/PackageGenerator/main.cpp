@@ -62,9 +62,9 @@ int main(int argc, const char** argv)
 		std::filesystem::path file(argv[1]);
 		std::filesystem::create_directories(file.parent_path());
 
-		cct::HeaderGenerator headerGenerator(file.string() + "Package.hpp");
+		cct::HeaderGenerator headerGenerator(file.string() + "Package.gen.hpp");
 		headerGenerator.Generate(package, args);
-		cct::CppGenerator cppGenerator(file.string() + "Package.cpp");
+		cct::CppGenerator cppGenerator(file.string() + "Package.gen.cpp");
 		cppGenerator.Generate(package, args);
 	}
 	catch (const std::exception& e)

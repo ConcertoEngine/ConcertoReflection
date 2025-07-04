@@ -4,8 +4,8 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch_test_macros.hpp>
 
-#include <ConcertoReflectionPackage.hpp>
-#include <ConcertoReflectionTestsPackage.hpp>
+#include <ConcertoReflectionPackage.gen.hpp>
+#include <ConcertoReflectionTestsPackage.gen.hpp>
 #include "Concerto/Reflection/GlobalNamespace.hpp"
 
 SCENARIO("Namespace")
