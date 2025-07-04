@@ -46,9 +46,12 @@ int main(int argc, const char** argv)
 		auto fileTokens = lexer.tokenize();
 		tokens.insert(tokens.end(), fileTokens.begin(), fileTokens.end());
 		std::string_view str(argv[i], std::strlen(argv[i]));
-		auto pos = str.find('\\');
-		if (pos != std::string_view::npos)
-			str.remove_prefix(pos + 1);
+		auto backSlashPos = str.find('\\');
+		if (backSlashPos != std::string_view::npos)
+			str.remove_prefix(backSlashPos + 1);
+		auto slashPos = str.find('/');
+		if (slashPos != std::string_view::npos)
+			str.remove_prefix(slashPos + 1);
 		args.emplace_back(str);
 	}
 	
