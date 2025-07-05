@@ -252,7 +252,7 @@ namespace cct
 				NewLine();
 				if (method.returnValue == "void")
 				{
-					if (method.tomlAttributes.as_table().contains("Delegate"))
+					if (method.tomlAttributes.is_table() && method.tomlAttributes.as_table().contains("Delegate"))
 					{
 						auto it = method.tomlAttributes.as_table().find("Delegate");
 						if (it->second.is_boolean())
@@ -276,7 +276,7 @@ namespace cct
 				}
 				else
 				{
-					if (method.tomlAttributes.as_table().contains("Delegate"))
+					if (method.tomlAttributes.is_table() && method.tomlAttributes.as_table().contains("Delegate"))
 					{
 						auto it = method.tomlAttributes.as_table().find("Delegate");
 						if (it->second.is_boolean())

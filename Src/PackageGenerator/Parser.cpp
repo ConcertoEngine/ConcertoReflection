@@ -74,14 +74,6 @@ namespace
 		return oss.str();
 	}
 
-	Attributes ConvertAttributes(const std::string& attrStr)
-	{
-		Attributes attr;
-		// For demo purposes, we simply store the raw string under a "raw" key.
-		attr.emplace("raw", attrStr);
-		return attr;
-	}
-
 	std::pair<std::string /*Attribute scope (Package, Enum, Class, Member, Method)*/, TomlAttributes> ConvertTomlAttributes(const std::string& attrStr)
 	{
 		auto firstParenthesis = attrStr.find('(');
@@ -99,6 +91,17 @@ namespace
 			return {};
 		}
 		return { scope, TomlAttributes(result.as_ok()) };
+	}
+
+	TomlAttributes GetAttributesOr(TomlAttributes attributes, TomlAttributes defaultValue)
+	{
+		if (attributes.is_table() == false)
+			return defaultValue;
+		auto& attributesTable = attributes.as_table();
+		auto it = attributesTable.find("Attributes");
+		if (it == attributesTable.end())
+			return defaultValue;
+		return it->second;
 	}
 }
 
@@ -267,7 +270,10 @@ std::optional<Class> Parser::ParseClass()
 			return std::nullopt;
 		}
 		cls.scope = scope;
-		cls.tomlAttributes = std::move(attributes);
+		if (scope == "cct::Class")
+			cls.tomlAttributes = GetAttributesOr(attributes, {});
+		else if (scope == "cct::Package")
+			cls.tomlAttributes = std::move(attributes);
 		Advance();
 	}
 	else
@@ -330,7 +336,7 @@ std::optional<Class> Parser::ParseClass()
 							auto [scope, attributes] = ConvertTomlAttributes(pendingAttr);
 							isMethodScope = scope == "cct::Method";
 							if (isMethodScope)
-								method.tomlAttributes = attributes.as_table().find("Attributes")->second;
+								method.tomlAttributes = GetAttributesOr(attributes, {});
 							pendingAttr.clear();
 						}
 						if (isMethodScope)
@@ -360,7 +366,8 @@ std::optional<Class> Parser::ParseClass()
 						{
 							auto [scope, attributes] = ConvertTomlAttributes(pendingAttr);
 							isMemberScope = scope == "cct::Member";
-							member.tomlAttributes = isMemberScope ? attributes.as_table().find("Attributes")->second : TomlAttributes{};
+							if (isMemberScope)
+								member.tomlAttributes = GetAttributesOr(attributes, {});
 							pendingAttr.clear();
 						}
 						if (isMemberScope)
@@ -472,6 +479,8 @@ Enum Parser::ParseEnum()
 	{
 		auto [scope, attributes] = ConvertTomlAttributes(Peek().lexeme);
 		isEnumScope = scope == "cct::Enum";
+		if (isEnumScope)
+			enm.tomlAttributes = GetAttributesOr(attributes, {});
 		Advance();
 	}
 
