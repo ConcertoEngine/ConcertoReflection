@@ -4,6 +4,8 @@
 
 #include "Concerto/PackageGenerator/CppGenerator.hpp"
 
+#include <Concerto/Core/Logger.hpp>
+
 namespace cct
 {
 	using namespace std::string_view_literals;
@@ -201,7 +203,20 @@ namespace cct
 
 	void CppGenerator::GenerateClassMethod(std::string_view className, const Class::Method& method, std::string_view ns, std::size_t methodIndex)
 	{
-		auto baseClass = method.base.empty() ? "cct::refl::Method"sv : method.base;
+		std::string base;
+		if (method.tomlAttributes.is_table() && method.tomlAttributes.as_table().contains("Base"))
+		{
+			auto it = method.tomlAttributes.as_table().find("Base");
+			if (it->second.is_string())
+			{
+				base = it->second.as_string();
+			}
+			else
+			{
+				cct::Logger::Error("Invalid base class for method: {}::{}", className, method.name);
+			}
+		}
+		auto baseClass = base.empty() ? "cct::refl::Method"sv : base;
 		Write("class {}{}Method : public {}", className, method.name, baseClass);
 		EnterScope();
 		{
