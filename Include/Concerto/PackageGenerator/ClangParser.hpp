@@ -22,10 +22,10 @@ namespace cct
 			const std::vector<std::string>& defines,
 			const std::vector<std::string>& sources);
 
-		void ProcessDeclaration(Namespace& currentNamespace, const clang::Decl* declaration);
-		void ProcessNamespace(Namespace& currentNamespace, const clang::NamespaceDecl* namespaceDeclaration);
-		void ProcessRecord(Namespace& currentNamespace, const clang::CXXRecordDecl* recordDeclaration);
-		void ProcessEnum(Namespace& currentNamespace, const clang::EnumDecl* enumDeclaration);
+		void ProcessDeclaration(const clang::Decl* declaration);
+		void ProcessNamespace(const clang::NamespaceDecl* namespaceDeclaration);
+		void ProcessRecord(const clang::CXXRecordDecl* recordDeclaration);
+		void ProcessEnum(const clang::EnumDecl* enumDeclaration);
 
 	private:
 		Package m_package;

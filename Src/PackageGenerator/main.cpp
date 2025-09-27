@@ -70,7 +70,7 @@ int main(int argc, const char** argv)
 
 		Package package = cct::ClangParser().Parse(includes, defines, sources);
 		std::filesystem::path file(outputFolder);
-		std::filesystem::create_directories(file.parent_path());
+		std::filesystem::create_directories(file);
 
 		cct::HeaderGenerator headerGenerator((file / (package.name + "Package.gen.hpp")).string());
 		headerGenerator.Generate(package, {});

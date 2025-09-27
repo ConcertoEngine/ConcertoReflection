@@ -5,9 +5,6 @@
 #include "Concerto/PackageGenerator/ClangParser.hpp"
 #include <Concerto/Core/Logger.hpp>
 #include <toml11/parser.hpp>
-
-#ifdef CCT_WITH_CLANG_TOOLING
-
 #include <algorithm>
 #include <optional>
 #include <sstream>
@@ -30,76 +27,6 @@ using namespace clang::tooling;
 
 namespace
 {
-	std::string Trim(const std::string& s)
-	{
-		size_t start = 0;
-		while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start])))
-			++start;
-		size_t end = s.size();
-		while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
-			--end;
-		return s.substr(start, end - start);
-	}
-
-	std::string InlineTomlToMultiple(const std::string& input)
-	{
-		std::vector<std::string> tokens;
-		std::string token;
-
-		bool in_quotes = false;
-		int bracket_level = 0;
-
-		for (size_t i = 0; i < input.size(); ++i)
-		{
-			char c = input[i];
-			if (c == '"')
-			{
-				in_quotes = !in_quotes;
-				token.push_back(c);
-				continue;
-			}
-			if (!in_quotes)
-			{
-				if (c == '[') ++bracket_level;
-				else if (c == ']') --bracket_level;
-				if (c == ',' && bracket_level == 0)
-				{
-					tokens.push_back(Trim(token));
-					token.clear();
-					continue;
-				}
-			}
-			token.push_back(c);
-		}
-		if (!token.empty()) tokens.push_back(Trim(token));
-
-		std::ostringstream oss;
-		for (size_t i = 0; i < tokens.size(); ++i)
-		{
-			oss << tokens[i];
-			if (i + 1 < tokens.size()) oss << '\n';
-		}
-		return oss.str();
-	}
-
-	std::pair<std::string, TomlAttributes> ConvertTomlAttributes(const std::string& attrStr)
-	{
-		auto firstParenthesis = attrStr.find('(');
-		if (firstParenthesis == std::string::npos)
-			return { attrStr, {} };
-		std::string scope = attrStr.substr(0, firstParenthesis);
-		std::string toml = attrStr.substr(firstParenthesis + 1, attrStr.size() - firstParenthesis - 2);
-		toml = InlineTomlToMultiple(toml);
-
-		auto result = toml::try_parse_str(toml);
-		if (result.is_err())
-		{
-			for (auto& err : result.as_err())
-				cct::Logger::Error("{}\n\t{}", err.title(), err.suffix());
-			return { scope, {} };
-		}
-		return { scope, TomlAttributes(result.as_ok()) };
-	}
 
 	TomlAttributes GetAttributesOr(TomlAttributes attributes, TomlAttributes defaultValue)
 	{
@@ -134,7 +61,7 @@ namespace
 			}
 			DC = DC->getParent();
 		}
-		std::reverse(chain.begin(), chain.end());
+		std::ranges::reverse(chain);
 		return chain;
 	}
 
@@ -144,7 +71,7 @@ namespace
 		auto* level = &pkg.namepsaces;
 		for (const auto& name : chain)
 		{
-			auto it = std::find_if(level->begin(), level->end(), [&](const Namespace& ns) { return ns.name == name; });
+			auto it = std::ranges::find_if(*level, [&](const Namespace& ns) { return ns.name == name; });
 			if (it == level->end())
 			{
 				Namespace ns;
@@ -169,9 +96,6 @@ namespace
 		const auto* AnnotateAttribute = dyn_cast<AnnotateAttr>(A);
 		if (AnnotateAttribute == nullptr)
 			return false;
-
-		if (attributeName == "annotate" && cct::IsDebuggerAttached())
-			CCT_BREAK_IN_DEBUGGER;
 
 		using namespace std::string_view_literals;
 
@@ -205,9 +129,7 @@ namespace
 		{
 			auto str = args->tryEvaluateString(astContext);
 			if (str)
-			{
 				tomlStr += *str + '\n';
-			}
 		}
 		tomlStr += '\n';
 		auto result = toml::try_parse_str(tomlStr);
@@ -221,11 +143,8 @@ namespace
 		outAttrs = result.as_ok();
 		return true;
 	}
-}
 
-namespace cct
-{
-	static void InsertClassIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Class& cls)
+	void InsertClassIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Class& cls)
 	{
 		if (nsChain.empty())
 		{
@@ -237,7 +156,7 @@ namespace cct
 			leaf->classes.push_back(cls);
 	}
 
-	static void InsertEnumIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Enum& enm)
+	void InsertEnumIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Enum& enm)
 	{
 		if (nsChain.empty())
 		{
@@ -248,7 +167,10 @@ namespace cct
 		if (leaf)
 			leaf->enums.push_back(enm);
 	}
+}
 
+namespace cct
+{
 	Package ClangParser::Parse(const std::vector<std::string>& includeDirs,
 		const std::vector<std::string>& defines,
 		const std::vector<std::string>& sources)
@@ -280,27 +202,18 @@ namespace cct
 		m_sourceManager = &m_astContext->getSourceManager();
 		m_langOptions = &m_astContext->getLangOpts();
 
-		//std::error_code err;
-		//llvm::raw_fd_ostream out("toto.json", err);
-		//m_astContext->getTranslationUnitDecl()->dump(out, false, ADOF_JSON);
-		//out.close();
-		Namespace globalNamespace;
-		globalNamespace.name = "Global";
 		const TranslationUnitDecl* TU = AST->getASTContext().getTranslationUnitDecl();
 		for (const auto* D : TU->decls())
-			ProcessDeclaration(globalNamespace, D);
+			ProcessDeclaration(D);
 
 		return m_package;
 	}
 
-	void ClangParser::ProcessRecord(Namespace& currentNamespace, const CXXRecordDecl* recordDeclaration)
+	void ClangParser::ProcessRecord(const CXXRecordDecl* recordDeclaration)
 	{
 		if (!recordDeclaration || !recordDeclaration->isThisDeclarationADefinition())
 			return;
-		cct::Logger::Info("Found record '{}'", recordDeclaration->getNameAsString());
-		if (recordDeclaration->getNameAsString() == "Int32" && cct::IsDebuggerAttached())
-			CCT_BREAK_IN_DEBUGGER;
-		// Look for cct::Class or cct::Package attributes on the class
+
 		std::optional<std::pair<std::string, TomlAttributes>> classAttr;
 		std::optional<std::pair<std::string, TomlAttributes>> packageAttr;
 		for (const auto* A : recordDeclaration->attrs())
@@ -411,12 +324,11 @@ namespace cct
 			cls.methods.push_back(std::move(mm));
 		}
 
-		// Where to put this class
 		std::vector<std::string> nsChain = GetNamespaceChain(recordDeclaration->getDeclContext());
 		InsertClassIntoPackage(m_package, nsChain, cls);
 	}
 
-	void ClangParser::ProcessEnum(Namespace& currentNamespace, const EnumDecl* enumDeclaration)
+	void ClangParser::ProcessEnum(const EnumDecl* enumDeclaration)
 	{
 		if (!enumDeclaration || !enumDeclaration->isThisDeclarationADefinition())
 			return;
@@ -456,29 +368,24 @@ namespace cct
 		}
 
 		std::vector<std::string> nsChain = GetNamespaceChain(enumDeclaration->getDeclContext());
-		//InsertEnumIntoPackage(pkg, nsChain, enm);
+		InsertEnumIntoPackage(m_package, nsChain, enm);
 	}
 
-	void ClangParser::ProcessNamespace(Namespace& currentNamespace, const NamespaceDecl* namespaceDeclaration)
+	void ClangParser::ProcessNamespace(const NamespaceDecl* namespaceDeclaration)
 	{
-		Namespace ns;
-		ns.name = namespaceDeclaration->getNameAsString();
-
 		for (const auto* D : namespaceDeclaration->decls())
-			ProcessDeclaration(ns, D);
-
-		currentNamespace.namespaces.emplace_back(std::move(ns));
+			ProcessDeclaration(D);
 	}
 
-	void ClangParser::ProcessDeclaration(Namespace& currentNamespace, const Decl* declaration)
+	void ClangParser::ProcessDeclaration(const Decl* declaration)
 	{
 		if (const auto* RD = llvm::dyn_cast<CXXRecordDecl>(declaration))
 		{
-			ProcessRecord(currentNamespace, RD);
+			ProcessRecord(RD);
 		}
 		else if (const auto* ED = llvm::dyn_cast<EnumDecl>(declaration))
 		{
-			ProcessEnum(currentNamespace, ED);
+			ProcessEnum(ED);
 		}
 		else if (const auto* ND = llvm::dyn_cast<NamespaceDecl>(declaration))
 		{
@@ -487,14 +394,12 @@ namespace cct
 			for (const auto* SD : ND->decls())
 			{
 				if (const auto* RD2 = llvm::dyn_cast<CXXRecordDecl>(SD))
-					ProcessRecord(currentNamespace, RD2);
+					ProcessRecord(RD2);
 				else if (const auto* ED2 = llvm::dyn_cast<EnumDecl>(SD))
-					ProcessEnum(currentNamespace, ED2);
+					ProcessEnum(ED2);
 				else if (const auto* ND = llvm::dyn_cast<NamespaceDecl>(declaration))
-					ProcessNamespace(currentNamespace, ND);
+					ProcessNamespace(ND);
 			}
 		}
 	}
 }
-
-#endif // CCT_WITH_CLANG_TOOLING
