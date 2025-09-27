@@ -7,6 +7,7 @@
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 #include "Concerto/Reflection/GlobalNamespace.hpp"
+#include "Concerto/Reflection/PackageLoader.hpp"
 
 SCENARIO("Class metadata verification")
 {

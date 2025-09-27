@@ -5,6 +5,8 @@ add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 
 add_requires("concerto-core", {configs = {asserts = true, shared = false, debug = is_mode("debug"), with_symbols = true}})
 add_requires("toml11", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
+add_requires("libllvm", {configs = {clang = true} })
+add_requires("cxxopts")
 
 option("tests", { default = false, description = "Enable unit tests"})
 add_defines("CCT_ENABLE_ASSERTS")
@@ -30,11 +32,14 @@ target("concerto-pkg-generator")
     add_files("Src/PackageGenerator/*.cpp")
     add_headerfiles("Include/(Concerto/PackageGenerator/**.hpp)")
     add_includedirs("Include/", { public = true })
-    add_packages("concerto-core", "toml11")
+    add_packages("concerto-core", "toml11", "libllvm", "cxxopts")
     set_policy("build.fence", true)
-    add_defines("CCT_PKG_GENERATOR_BUILD")
+    add_defines("CCT_PKG_GENERATOR_BUILD", "CCT_WITH_CLANG_TOOLING")
     if is_mode("debug") then
         set_symbols("debug")
+    end
+    if is_plat("windows") then
+        set_runtimes("MT")
     end
 
 
@@ -46,7 +51,7 @@ target("concerto-reflection")
     add_includedirs("Include/", { public = true })
     add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
     add_packages("concerto-core", { public = true })
-    add_rules("xml_reflect")
+    add_rules("cpp_reflect")
     add_deps("concerto-pkg-generator")
 
     if is_mode("debug") then
@@ -62,7 +67,7 @@ if has_config("tests") then
         add_files("Tests/*.cpp", "Tests/*.hpp")
         add_packages("catch2")
         add_deps("concerto-reflection")
-        add_rules("xml_reflect")
+        add_rules("cpp_reflect")
         add_includedirs("Tests/", { public = true })
         add_headerfiles("Tests/**.hpp")
 
