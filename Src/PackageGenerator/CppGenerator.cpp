@@ -250,7 +250,8 @@ namespace cct
 						callArgs += ", ";
 						callArgsTypes += ", ";
 					}
-					Write("if (parameters[{}].Is<{}>() == false)", i, param.type);
+					
+					Write("if (parameters[{}].Is<std::remove_cvref_t<{}>>() == false)", i, param.type);
 					EnterScope();
 					{
 						Write("CCT_ASSERT_FALSE(\"Expected '{}' in argument {}\");", param.type, i);
