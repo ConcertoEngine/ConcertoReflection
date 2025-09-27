@@ -10,7 +10,7 @@
 
 namespace cct
 {
-	bool HeaderGenerator::Generate(const Package& package, std::span<std::string_view> args)
+	bool HeaderGenerator::Generate(const Package& package, std::span<std::string> args)
 	{
 		std::string upperPackageName(package.name);
 		std::ranges::transform(upperPackageName, upperPackageName.begin(), [](char c)

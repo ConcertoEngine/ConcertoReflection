@@ -183,11 +183,11 @@ namespace cct
 		std::vector<std::string> args;
 		args.reserve(defines.size() + includeDirs.size() + 1);
 
-
 		args.emplace_back("-std=c++20");
 
 		for (auto& define : defines)
 			args.emplace_back("-D " + define);
+
 		for (auto& include : includeDirs)
 			args.emplace_back("-I" + include);
 

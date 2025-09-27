@@ -11,7 +11,7 @@ namespace cct
 	using namespace std::string_view_literals;
 	using namespace std::string_literals;
 
-	bool CppGenerator::Generate(const Package& package, std::span<std::string_view> args)
+	bool CppGenerator::Generate(const Package& package, std::span<std::string> args)
 	{
 		Write("//This file was automatically generated, do not edit");
 		Write("#include <Concerto/Core/Assert.hpp>");

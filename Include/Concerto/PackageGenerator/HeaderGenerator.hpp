@@ -14,7 +14,7 @@ namespace cct
 	{
 	public:
 		using FileGenerator::FileGenerator;
-		bool Generate(const Package& package, std::span<std::string_view> args) override;
+		bool Generate(const Package& package, std::span<std::string> args) override;
 	private:
 		void GenerateNamespace(const Namespace& ns, const std::string& api);
 		void GenerateClass(const Class& klass, const std::string& api);

@@ -20,7 +20,7 @@ namespace cct
 		virtual ~FileGenerator() = default;
 		explicit FileGenerator(const std::string& path);
 
-		virtual bool Generate(const Package& package, std::span<std::string_view> args) = 0;
+		virtual bool Generate(const Package& package, std::span<std::string> args) = 0;
 
 		void EnterScope();
 		void LeaveScope(std::string_view str = "");

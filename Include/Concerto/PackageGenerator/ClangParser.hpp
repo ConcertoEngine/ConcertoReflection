@@ -14,7 +14,6 @@
 
 namespace cct
 {
-#ifdef CCT_WITH_CLANG_TOOLING
 	class ClangParser
 	{
 	public:
@@ -33,6 +32,5 @@ namespace cct
 		const clang::LangOptions* m_langOptions = nullptr;
 		clang::ASTContext* m_astContext = nullptr;
 	};
-#endif // CCT_WITH_CLANG_TOOLING
 }
 
