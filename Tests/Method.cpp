@@ -24,7 +24,23 @@ SCENARIO("Method")
 			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 6);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
-			THEN("We are invoking a method")
+			THEN("We are invoking a method named 'Bar'")
+			{
+				const cct::refl::Class* sampleBarClass = cct::sample::SampleBar::GetClass();
+				REQUIRE(sampleBarClass);
+
+				const cct::refl::Method* barMethod = sampleBarClass->GetMethod("Bar");
+				REQUIRE(barMethod);
+
+				auto sampleBar = cct::sample::SampleBar::GetClass()->CreateDefaultObject<cct::sample::SampleBar>();
+				REQUIRE(sampleBar);
+				cct::refl::Int32 a;
+				auto result = barMethod->Invoke<cct::refl::Int32>(*sampleBar, a, a, a);
+				REQUIRE(result.IsOk());
+				CHECK(result.GetValue() == 42);
+			}
+
+			THEN("We are invoking a method with a custom delegate")
 			{
 				const cct::refl::Class* sampleBarClass = cct::sample::SampleBar::GetClass();
 				REQUIRE(sampleBarClass);

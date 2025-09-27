@@ -34,7 +34,7 @@ namespace cct::sample
 		CCT_METHOD("Test=\"test\"")
 		cct::refl::Int32 Bar(const cct::refl::Int32& bar1, const cct::refl::Int32& bar2, const cct::refl::Int32& bar3)
 		{
-			return 22;
+			return 42;
 		}
 
 		CCT_METHOD("Delegate = \"CustomDelegatePtr\"")
