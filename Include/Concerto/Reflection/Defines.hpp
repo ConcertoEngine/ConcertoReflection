@@ -15,12 +15,12 @@
 
 #if defined(CCT_REFLECTION_PKG_GENERATOR_BUILD)
 
-#define CCT_PACKAGE(...) [[clang::annotate("cct::Package", __VA_ARGS__)]]
-#define CCT_CLASS(...) [[clang::annotate("cct::Class", __VA_ARGS__)]]
-#define CCT_MEMBER(...) [[clang::annotate("cct::Member", __VA_ARGS__)]]
-#define CCT_METHOD(...) [[clang::annotate("cct::Method", __VA_ARGS__)]]
-#define CCT_ENUM(...) [[clang::annotate("cct::Enum", __VA_ARGS__)]]
-#define CCT_ENUM_VALUE(...) [[clang::annotate("cct::EnumValue", __VA_ARGS__)]]
+#define CCT_PACKAGE(...) [[clang::annotate("cct::Package" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_CLASS(...) [[clang::annotate("cct::Class" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_MEMBER(...) [[clang::annotate("cct::Member" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_METHOD(...) [[clang::annotate("cct::Method" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_ENUM(...) [[clang::annotate("cct::Enum" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_ENUM_VALUE(...) [[clang::annotate("cct::EnumValue" __VA_OPT__(,) __VA_ARGS__)]]
 
 #else
 
