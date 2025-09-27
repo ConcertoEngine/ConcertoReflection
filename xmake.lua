@@ -42,6 +42,14 @@ target("concerto-pkg-generator")
         set_runtimes("MT")
     end
 
+    on_config(function(package)
+        import("core.project.project")
+        local llvm = project.required_package("libllvm")
+        assert(llvm, "libllvm not found!")
+        local lib_dir = path.join(llvm:installdir(), "lib")
+        package:add("rpathdirs", lib_dir)
+    end)
+
 
 target("concerto-reflection")
     set_kind("shared")
