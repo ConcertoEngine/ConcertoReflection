@@ -50,7 +50,7 @@ SCENARIO("Method")
 
 				auto sampleBar = cct::sample::SampleBar::GetClass()->CreateDefaultObject<cct::sample::SampleBar>();
 				REQUIRE(sampleBar);
-				cct::refl::Int32 a;
+				cct::refl::Int32 a(0);
 				auto result = customDelegate->Invoke<cct::refl::Int32>(*sampleBar, a, a, a);
 				REQUIRE(result.IsOk());
 				CHECK(result.GetValue() == a);

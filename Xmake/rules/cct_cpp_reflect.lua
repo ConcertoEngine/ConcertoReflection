@@ -9,7 +9,7 @@ rule("cpp_reflect")
         target:add("headerfiles", path.join(target:autogendir(), "(" .. targetName .. "Package.gen.hpp)"))
         target:add("files", generatedCpp, {always_added = true})
         target:add("includedirs", target:autogendir(), {public = true})
-        target:add("defines", path.basename(targetName):upper() .. "_BUILD")
+        target:add("defines", path.basename(targetName):upper() .. "_BUILD", { public = false })
     end)
 
     before_buildcmd_files(function (target, batchcmds, headers, opt)
@@ -26,27 +26,26 @@ rule("cpp_reflect")
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
         local args = { target:autogendir() }
 
+        table.insert(args, "-DCCT_REFLECTION_PKG_GENERATOR_BUILD")
         for _, header in ipairs(headers.sourcefiles) do
             table.insert(args, "-s" .. header)
         end
 
-        function process_target(t, args)
-            for _, defines in ipairs(t:get("defines")) do
-                table.insert(args, "-D" .. defines)
+        function process_target(t, args, is_root)
+            for _, define in ipairs(t:get("defines")) do
+                local conf = (t:extraconf("defines") or {})[define]
+                if not conf or conf.public ~= false or is_root then
+                    table.insert(args, "-D" .. define)
+                end
             end
 
             for _, include in ipairs(t:get("includedirs")) do
                 table.insert(args, "-I" .. include)
             end
-
-            for _, define in ipairs(t:get("defines") or {}) do
-                table.insert(args, "-D" .. define)
-            end
-
             for _, dep in ipairs(t:get("deps")) do
                 local project_target = project.target(dep)
                 if project_target then
-                    process_target(project_target, args)
+                    process_target(project_target, args, false)
                 end
             end
 
@@ -62,12 +61,22 @@ rule("cpp_reflect")
             for _, inc in ipairs(p:get("sysincludedirs") or {}) do
                 table.insert(args, "-I" .. inc)
             end
-            for _, define in ipairs(p:get("defines") or {}) do
-                table.insert(args, "-D" .. define)
+            for _, define in ipairs(p:get("defines")) do
+                local conf = (p:extraconf("defines") or {})[define]
+                if not conf or conf.public ~= false then
+                    table.insert(args, "-D" .. define)
+                end
             end
         end
 
-        process_target(target, args)
+        process_target(target, args, true)
+        
+        for _, header in ipairs(target:get("headerfiles")) do
+            for _, file_path in ipairs(os.filedirs(header)) do
+                file_path = file_path:gsub("[%(%)]", "")
+                table.insert(args, "-H" .. file_path)
+            end
+        end
 
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
         batchcmds:add_depfiles(xmlFile)

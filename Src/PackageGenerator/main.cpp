@@ -22,6 +22,7 @@ int main(int argc, const char** argv)
 	std::vector<std::string> includes;
 	std::vector<std::string> defines;
 	std::vector<std::string> sources;
+	std::vector<std::string> headers;
 
 	try {
 		cxxopts::Options options("Concerto Reflection Generator",
@@ -32,6 +33,7 @@ int main(int argc, const char** argv)
 			("I,include", "Include directories (one or more)", cxxopts::value<std::vector<std::string>>())
 			("D,define", "Preprocessor defines (one or more)", cxxopts::value<std::vector<std::string>>())
 			("s,source", "Source files (one or more)", cxxopts::value<std::vector<std::string>>())
+			("H,header", "Header file to include in the generated cpp", cxxopts::value<std::vector<std::string>>())
 			("v,version", "1.0.0")
 			("h,help", "Show help");
 
@@ -64,18 +66,20 @@ int main(int argc, const char** argv)
 			defines = result["define"].as<std::vector<std::string>>();
 		if (result.count("source"))
 			sources = result["source"].as<std::vector<std::string>>();
+		if (result.count("header"))
+			headers = result["header"].as<std::vector<std::string>>();
 
 
-		//std::this_thread::sleep_for(std::chrono::seconds(10));
+		//std::this_thread::sleep_for(std::chrono::seconds(5));
 
 		Package package = cct::ClangParser().Parse(includes, defines, sources);
 		std::filesystem::path file(outputFolder);
 		std::filesystem::create_directories(file);
 
 		cct::HeaderGenerator headerGenerator((file / (package.name + "Package.gen.hpp")).string());
-		headerGenerator.Generate(package, {});
+		headerGenerator.Generate(package, headers);
 		cct::CppGenerator cppGenerator((file / (package.name + "Package.gen.cpp")).string());
-		cppGenerator.Generate(package, {});
+		cppGenerator.Generate(package, headers);
 
 	}
 	catch (const std::exception& e) {

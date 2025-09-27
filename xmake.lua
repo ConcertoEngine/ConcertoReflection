@@ -34,7 +34,7 @@ target("concerto-pkg-generator")
     add_includedirs("Include/", { public = true })
     add_packages("concerto-core", "toml11", "libllvm", "cxxopts")
     set_policy("build.fence", true)
-    add_defines("CCT_PKG_GENERATOR_BUILD", "CCT_WITH_CLANG_TOOLING")
+    add_defines("CCT_PKG_GENERATOR_BUILD")
     if is_mode("debug") then
         set_symbols("debug")
     end
@@ -47,7 +47,7 @@ target("concerto-reflection")
     set_kind("shared")
     set_languages("cxx20")
     add_files("Src/Reflection/*.cpp", "Include/Concerto/Reflection/**.hpp")
-    add_defines("CCT_REFLECTION_BUILD")
+    add_defines("CCT_REFLECTION_BUILD", { public = false })
     add_includedirs("Include/", { public = true })
     add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
     add_packages("concerto-core", { public = true })
@@ -68,8 +68,10 @@ if has_config("tests") then
         add_packages("catch2")
         add_deps("concerto-reflection")
         add_rules("cpp_reflect")
+        add_includedirs(".", { public = true }) -- temporary
         add_includedirs("Tests/", { public = true })
         add_headerfiles("Tests/**.hpp")
+        add_defines("CCT_REFLECTION_TESTS_BUILD", { public = false })
 
         if is_plat("windows") then
             add_cxflags("/Zc:preprocessor")
