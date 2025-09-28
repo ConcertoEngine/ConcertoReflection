@@ -184,6 +184,7 @@ namespace cct
 		args.reserve(defines.size() + includeDirs.size() + 1);
 
 		args.emplace_back("-std=c++20");
+		args.emplace_back("-xc++");
 
 		for (auto& define : defines)
 			args.emplace_back("-D " + define);

@@ -16,6 +16,7 @@ rule("cpp_reflect")
         import("core.project.project")
         import("core.language.language")
         import("core.tool.compiler")
+        import("core.tool.toolchain")
 
         local cctPkgGen = target:data("concerto-pkg-generator")
         assert(cctPkgGen, "concerto-pkg-generator not found!")
@@ -77,6 +78,11 @@ rule("cpp_reflect")
                 table.insert(args, "-H" .. file_path)
             end
         end
+        
+        local libllvm = project.required_package("libllvm")
+        assert(libllvm, "libllvm not found!")
+        local llvm_include = path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major(), "include")
+        table.insert(args, "-I" .. llvm_include)
 
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
         batchcmds:add_depfiles(xmlFile)
