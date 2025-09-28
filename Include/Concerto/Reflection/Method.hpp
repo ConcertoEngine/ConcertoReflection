@@ -45,10 +45,10 @@ namespace cct::refl
 
 		//Should be private
 		virtual void Initialize() = 0;
+		inline void* GetCustomDelegate() const;
 	protected:
 		void AddAttribute(std::string name, std::string value);
 		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
-		inline void* GetCustomDelegate() const;
 		inline void SetCustomDelegate(void* delegate);
 	private:
 		std::string _name;

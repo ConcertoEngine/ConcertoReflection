@@ -32,15 +32,15 @@ namespace cct::sample
 			return 42;
 		}
 
-		CCT_REFL_TESTS_METHOD("Delegate = \"CustomDelegatePtr\"")
-		cct::refl::Int32 CustomDelegate() {return CustomDelegatePtr(); }
+		CCT_REFL_TESTS_METHOD("Delegate = \"m_customDelegatePtr\"")
+		cct::refl::Int32 CustomDelegate();
 
 		CCT_OBJECT(SampleBar);
 	private:
 		CCT_REFL_TESTS_MEMBER("Test=\"test\"")
 		refl::Int32 _bar;
 
-		static inline cct::FunctionRef<cct::refl::Int32()> CustomDelegatePtr = []()
+		cct::FunctionRef<cct::refl::Int32()> m_customDelegatePtr = []()
 		{
 			return refl::Int32();
 		};

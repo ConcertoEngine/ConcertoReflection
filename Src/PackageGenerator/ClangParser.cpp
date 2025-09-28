@@ -32,11 +32,7 @@ namespace
 	{
 		if (attributes.is_table() == false)
 			return defaultValue;
-		auto& attributesTable = attributes.as_table();
-		auto it = attributesTable.find("Attributes");
-		if (it == attributesTable.end())
-			return defaultValue;
-		return it->second;
+		return attributes.as_table();
 	}
 
 	std::string QualTypeToString(const QualType& qt, const ASTContext& ctx)

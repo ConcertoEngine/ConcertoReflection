@@ -275,9 +275,12 @@ namespace cct
 						{
 							Write("if (GetCustomDelegate() == nullptr)");
 							EnterScope();
+							Write("CCT_ASSERT_FALSE(\"Missing Delegate\");");
 							Write("return {{\"Invalid delegate pointer\"s}};");
 							LeaveScope();
-							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomDelegate());", method.returnValue, callArgsTypes);
+							Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomDelegate());", method.returnValue, callArgsTypes);
+							if (method.returnValue != "void"s)
+								Write("return");
 							Write("func({});", callArgs);
 						}
 						else if (it->second.is_string())
@@ -297,17 +300,17 @@ namespace cct
 						auto it = method.tomlAttributes.as_table().find("Delegate");
 						if (it->second.is_boolean())
 						{
-							Write("if (GetCustomInvoker() == nullptr)");
+							Write("if (GetCustomDelegate() == nullptr)");
 							EnterScope();
-							Write("return {{\"Invalid invoker pointer\"s}};");
+							Write("CCT_ASSERT_FALSE(\"Missing Delegate\");");
+							Write("return {{\"Missing Delegate\"s}};");
 							LeaveScope();
-							Write("auto func = reinterpret_cast<void(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
+							Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomDelegate());", method.returnValue, callArgsTypes);
 							Write("return Any::Make<{}>(func({}));", method.returnValue, callArgs);
 						}
-						else if (it->second.is_string())
+						else
 						{
-							auto delegateName = it->second.as_string();
-							Write("return Any::Make<{}>({}({}));", method.returnValue, delegateName, callArgs);
+							Write("return Any::Make<{}>(static_cast<{}&>(self).{}({}));", method.returnValue, className, method.name, callArgs);
 						}
 					}
 					else
@@ -321,48 +324,57 @@ namespace cct
 		}
 		LeaveScope(";"sv);
 
-		//if (method.tomlAttributes.as_table().contains("Delegate"))
-		//{
-		//	std::string methodParameterPrototype;
-		//	std::string callArgs;
-		//	std::string callArgsTypes;
-		//	std::size_t i = 0;
-		//	for (auto& param : method.params)
-		//	{
-		//		if (i != 0 && i < method.params.size())
-		//		{
-		//			methodParameterPrototype += ", ";
-		//			callArgs += ", ";
-		//			callArgsTypes += ", ";
-		//		}
-		//		methodParameterPrototype += param.type + ' ' + param.name;
-		//		callArgs += param.name;
-		//		callArgsTypes += param.type;
-		//		++i;
-		//	}
-		//	if (ns.starts_with("::"sv))
-		//		ns.remove_prefix(2);
-		//	Write("{} {}::{}::{}({})", method.returnValue, ns, className, method.name, methodParameterPrototype);
-		//	EnterScope();
-		//	auto delegateIt = method.tomlAttributes.as_table().find("Delegate");
-		//	if (delegateIt->second.is_string())
-		//	{
-		//		auto functionName = method.tomlAttributes.as_table().find("Delegate")->second.as_string();
-		//		Write("{}({});", functionName, callArgs);
-		//	}
-		//	else if (delegateIt->second.is_boolean())
-		//	{
-		//		Write("if (GetCustomInvoker() == nullptr)");
-		//		EnterScope(),
-		//		Write("return {{ \"Invalid invoker pointer\"s }};");
-		//		LeaveScope();
-		//		Write("auto func = reinterpret_cast<{}(*)({})>(GetCustomInvoker());", method.returnValue, callArgsTypes);
-		//		if (method.returnValue != "void"s)
-		//			Write("return");
-		//		Write("func({});", callArgs);
-		//	}
-			//LeaveScope();
-		//}
+		if (method.tomlAttributes.as_table().contains("Delegate"))
+		{
+			std::string methodParameterPrototype;
+			std::string callArgs;
+			std::string callArgsTypes;
+			std::size_t i = 0;
+			for (auto& param : method.params)
+			{
+				if (i != 0 && i < method.params.size())
+				{
+					methodParameterPrototype += ", ";
+					callArgs += ", ";
+					callArgsTypes += ", ";
+				}
+				methodParameterPrototype += param.type + ' ' + param.name;
+				callArgs += param.name;
+				callArgsTypes += param.type;
+				++i;
+			}
+			if (ns.starts_with("::"sv))
+				ns.remove_prefix(2);
+			Write("{} {}::{}::{}({})", method.returnValue, ns, className, method.name, methodParameterPrototype);
+			EnterScope();
+			auto delegateIt = method.tomlAttributes.as_table().find("Delegate");
+			if (delegateIt->second.is_string())
+			{
+				auto functionName = method.tomlAttributes.as_table().find("Delegate")->second.as_string();
+				if (method.returnValue != "void"s)
+					Write("return");
+				Write("{}({})", functionName, callArgs);
+				Write(";");
+			}
+			else if (delegateIt->second.is_boolean())
+			{
+				Write("const auto* methodClass = GetClass()->GetMethod(\"{}\"sv);", method.name);
+				Write("if (methodClass == nullptr || methodClass->GetCustomDelegate() == nullptr)");
+				EnterScope(),
+				Write("CCT_ASSERT_FALSE(\"Missing Delegate\");");
+				Write("return");
+				if (method.returnValue != "void"s)
+					Write("{}{{}}", method.returnValue);
+				Write(";");
+				LeaveScope();
+				Write("auto func = reinterpret_cast<{}(*)({})>(methodClass->GetCustomDelegate());", method.returnValue, callArgsTypes);
+				if (method.returnValue != "void"s)
+					Write("return");
+				Write("func({})", callArgs);
+				Write(";");
+			}
+			LeaveScope();
+		}
 	}
 
 	void CppGenerator::GenerateEnum(const Enum& enum_)

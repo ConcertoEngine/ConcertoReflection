@@ -70,7 +70,7 @@ int main(int argc, const char** argv)
 			headers = result["header"].as<std::vector<std::string>>();
 
 
-		//std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 
 		Package package = cct::ClangParser().Parse(includes, defines, sources);
 		std::filesystem::path file(outputFolder);
