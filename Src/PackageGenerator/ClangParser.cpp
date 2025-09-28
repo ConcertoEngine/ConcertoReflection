@@ -165,7 +165,15 @@ namespace
 		}
 		Namespace* leaf = EnsureNamespace(pkg, nsChain);
 		if (leaf)
-			leaf->enums.push_back(enm);
+		{
+			auto it = std::ranges::find_if(leaf->enums, [&](const Enum& e)
+			{
+				return e.name == enm.name;
+			});
+
+			if (it == leaf->enums.end())
+				leaf->enums.push_back(enm);
+		}
 	}
 }
 
