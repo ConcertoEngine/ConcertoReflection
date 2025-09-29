@@ -12,7 +12,7 @@ rule("cpp_reflect")
         target:add("defines", path.basename(targetName):upper() .. "_BUILD", { public = false })
     end)
 
-    before_buildcmd_files(function (target, batchcmds, headers, opt)
+    before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("core.project.project")
         import("core.language.language")
         import("core.tool.compiler")
@@ -21,14 +21,16 @@ rule("cpp_reflect")
         local cctPkgGen = target:data("concerto-pkg-generator")
         assert(cctPkgGen, "concerto-pkg-generator not found!")
         local envs = target:data("concerto-pkg-generator-envs")
-        local outputCppFile = path.join(target:autogendir(), target:name() .. "gen.cpp")
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection")
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
+        local outputCppFile = path.join(target:autogendir(), target:name() .. "gen.cpp")
+        local outHppFile = path.join(target:autogendir(), targetName .. "Package.gen.hpp")
+
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection." .. target:name())
         local args = { target:autogendir() }
 
         table.insert(args, "-DCCT_REFLECTION_PKG_GENERATOR_BUILD")
-        for _, header in ipairs(headers.sourcefiles) do
+        for _, header in ipairs(sourcebatch.sourcefiles) do
             table.insert(args, "-s" .. header)
         end
 
@@ -85,8 +87,7 @@ rule("cpp_reflect")
         table.insert(args, "-I" .. llvm_include)
 
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
-        batchcmds:add_depfiles(xmlFile)
-        --batchcmds:add_depvalues() todo add version from cabal
+        batchcmds:add_depfiles(sourcebatch.sourcefiles, outputCppFile, outHppFile)
         batchcmds:set_depmtime(os.mtime(outputCppFile))
         batchcmds:set_depcache(target:dependfile(outputCppFile))
     end)

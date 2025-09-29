@@ -11,7 +11,6 @@ rule("find_cct_pkg_generator")
             cctPkgGen = project.target("concerto-pkg-generator")
             if cctPkgGen then
                 dir = cctPkgGen:targetdir()
-                print("Using concerto-pkg-generator from target directory: " .. dir)
             else
                 raise("Concerto Reflection package not found")
             end
