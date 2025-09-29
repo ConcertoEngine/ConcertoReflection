@@ -72,13 +72,13 @@ if has_config("tests") then
     target("concerto-reflection-tests")
         set_kind("binary")
         set_languages("cxx20")
-        add_files("Tests/*.cpp", "Tests/*.hpp")
+        add_files("Src/Tests/*.cpp", "Src/Tests/*.hpp")
         add_packages("catch2")
         add_deps("concerto-reflection")
         add_rules("cpp_reflect")
         add_includedirs(".", { public = true }) -- temporary
-        add_includedirs("Tests/", { public = true })
-        add_headerfiles("Tests/**.hpp")
+        add_includedirs("Src/Tests/", { public = true })
+        add_headerfiles("Src/Tests/**.hpp")
         add_defines("CCT_REFLECTION_TESTS_BUILD", { public = false })
 
         if is_plat("windows") then

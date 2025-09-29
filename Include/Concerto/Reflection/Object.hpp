@@ -30,6 +30,7 @@ namespace cct::refl
 
 		static bool IsInstanceOf(const Class& klass);
 
+
 		CCT_OBJECT(Object);
 	};
 
