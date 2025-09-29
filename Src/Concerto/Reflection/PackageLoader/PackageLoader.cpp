@@ -4,13 +4,13 @@
 
 #include <filesystem>
 
-#include "Concerto/Reflection/Class.hpp"
-#include "Concerto/Reflection/GlobalNamespace.hpp"
-#include "Concerto/Reflection/Namespace.inl"
-#include "Concerto/Reflection/Method.hpp"
-#include "Concerto/Reflection/MemberVariable.hpp"
-#include "Concerto/Reflection/Package.hpp"
-#include "Concerto/Reflection/PackageLoader.hpp"
+#include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.inl"
+#include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
+#include "Concerto/Reflection/Package/Package.hpp"
+#include "Concerto/Reflection/PackageLoader/PackageLoader.hpp"
 
 namespace cct::refl
 {

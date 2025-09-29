@@ -100,6 +100,6 @@ namespace cct::refl
 
 }
 
-#include "Concerto/Reflection/Class.inl"
+#include "Concerto/Reflection/Class/Class.inl"
 
 #endif //CONCERTO_REFLECTION_CLASS_HPP

@@ -35,6 +35,6 @@ namespace cct::refl
 	};
 }
 
-#include "Concerto/Reflection/MemberVariable.inl"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.inl"
 
 #endif //CONCERTO_REFLECTION_MEMBERVARIABLE_HPP

@@ -10,8 +10,8 @@
 
 #include <Concerto/Core/DynLib.hpp>
 
-#include "Concerto/Reflection/Package.hpp"
 #include "Concerto/Reflection/Defines.hpp"
+#include "Concerto/Reflection/Package/Package.hpp"
 
 namespace cct::refl
 {

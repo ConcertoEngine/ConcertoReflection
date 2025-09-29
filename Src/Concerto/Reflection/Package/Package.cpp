@@ -2,16 +2,16 @@
 // Created by arthur on 10/11/2024.
 //
 
-#include "Concerto/Reflection/Namespace.hpp"
-#include "Concerto/Reflection/Class.hpp"
-#include "Concerto/Reflection/Method.hpp"
-#include "Concerto/Reflection/MemberVariable.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.hpp"
+#include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 
-#include "Concerto/Reflection/Package.hpp"
+#include "Concerto/Reflection/Package/Package.hpp"
 
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Reflection/GlobalNamespace.hpp"
+#include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
 
 namespace cct::refl
 {

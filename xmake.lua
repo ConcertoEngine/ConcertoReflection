@@ -26,11 +26,14 @@ end
 
 includes("Xmake/rules/**.lua")
 
-function add_files_to_target(p)
+function add_files_to_target(p, hpp_as_files)
     for _, dir in ipairs(os.filedirs(p)) do
         relative_dir = path.relative(dir, "Src/")
         if os.isdir(dir) then
             add_files(path.join("Src", relative_dir, "*.cpp"))
+            if hpp_as_files then
+                add_files(path.join("Src", relative_dir, "*.hpp"))
+            end
             add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.hpp)"))
             add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.inl)"))
         else
@@ -50,7 +53,7 @@ target("concerto-pkg-generator")
     
     local files = { ".", "ClangParser", "CppGenerator", "HeaderGenerator", "FileGenerator" }
     for _, dir in ipairs(files) do
-        add_files_to_target("Src/Concerto/PackageGenerator/" .. dir)
+        add_files_to_target("Src/Concerto/PackageGenerator/" .. dir, false)
     end
 
     add_includedirs("Src/", { public = true })
@@ -76,13 +79,26 @@ target("concerto-pkg-generator")
 target("concerto-reflection")
     set_kind("shared")
     set_languages("cxx20")
-    add_files("Src/Reflection/*.cpp", "Include/Concerto/Reflection/**.hpp")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
-    add_includedirs("Include/", { public = true })
-    add_headerfiles("Include/(Concerto/Reflection/**.hpp)", "Include/(Concerto/Reflection/**.inl)")
+    
+    add_includedirs("Src/", { public = true })
+    local files = {
+        ".",
+        "Class",
+        "GlobalNamespace",
+        "MemberVariable",
+        "Method",
+        "Namespace",
+        "Object",
+        "Package",
+        "PackageLoader"
+    }
+    for _, dir in ipairs(files) do
+        add_files_to_target("Src/Concerto/Reflection/" .. dir, true)
+    end
+    add_deps("concerto-pkg-generator")
     add_packages("concerto-core", { public = true })
     add_rules("cpp_reflect")
-    add_deps("concerto-pkg-generator")
 
     if is_mode("debug") then
         set_symbols("debug")

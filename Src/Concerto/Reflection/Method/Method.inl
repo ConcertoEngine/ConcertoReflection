@@ -5,7 +5,7 @@
 #ifndef CONCERTO_REFLECTION_METHOD_INL
 #define CONCERTO_REFLECTION_METHOD_INL
 
-#include "Concerto/Reflection/Method.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
 
 namespace cct::refl
 {

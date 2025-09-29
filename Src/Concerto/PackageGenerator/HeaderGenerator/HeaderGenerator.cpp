@@ -23,11 +23,11 @@ namespace cct
 		Write("#include <string_view>");
 		Write("#include <Concerto/Reflection/Defines.hpp>");
 		NewLine();
-		Write("#include <Concerto/Reflection/Class.hpp>");
-		Write("#include <Concerto/Reflection/Object.hpp>");
-		Write("#include <Concerto/Reflection/MemberVariable.hpp>");
-		Write("#include <Concerto/Reflection/Method.hpp>");
-		Write("#include <Concerto/Reflection/Package.hpp>");
+		Write("#include <Concerto/Reflection/Class/Class.hpp>");
+		Write("#include <Concerto/Reflection/Object/Object.hpp>");
+		Write("#include <Concerto/Reflection/MemberVariable/MemberVariable.hpp>");
+		Write("#include <Concerto/Reflection/Method/Method.hpp>");
+		Write("#include <Concerto/Reflection/Package/Package.hpp>");
 		NewLine();
 
 		for (auto header : args)

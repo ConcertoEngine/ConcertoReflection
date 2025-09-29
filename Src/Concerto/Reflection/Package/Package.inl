@@ -5,8 +5,8 @@
 #ifndef CONCERTO_REFLECTION_PACKAGE_INL
 #define CONCERTO_REFLECTION_PACKAGE_INL
 
-#include "Concerto/Reflection/Package.hpp"
-#include "Concerto/Reflection/Namespace.hpp"
+#include "Concerto/Reflection/Package/Package.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {

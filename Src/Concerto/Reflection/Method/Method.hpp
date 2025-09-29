@@ -15,7 +15,7 @@
 
 #include <Concerto/Core/Result.hpp>
 #include "Concerto/Reflection/Defines.hpp"
-#include "Concerto/Reflection/Object.hpp"
+#include "Concerto/Reflection/Object/Object.hpp"
 
 namespace cct::refl
 {
@@ -82,6 +82,6 @@ namespace cct::refl
 	}
 }
 
-#include "Concerto/Reflection/Method.inl"
+#include "Concerto/Reflection/Method/Method.inl"
 
 #endif //CONCERTO_REFLECTION_METHOD_HPP

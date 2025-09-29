@@ -7,8 +7,8 @@
 
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Reflection/Class.hpp"
-#include "Concerto/Reflection/Namespace.hpp"
+#include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {

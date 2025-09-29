@@ -5,7 +5,7 @@
 #ifndef CONCERTO_REFLECTION_MEMBERVARIABLE_INL
 #define CONCERTO_REFLECTION_MEMBERVARIABLE_INL
 
-#include "Concerto/Reflection/MemberVariable.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 
 namespace cct::refl
 {

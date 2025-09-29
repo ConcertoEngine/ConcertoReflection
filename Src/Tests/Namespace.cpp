@@ -6,8 +6,8 @@
 
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
-#include "Concerto/Reflection/GlobalNamespace.hpp"
-#include "Concerto/Reflection/PackageLoader.hpp"
+#include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
+#include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 SCENARIO("Namespace")
 {

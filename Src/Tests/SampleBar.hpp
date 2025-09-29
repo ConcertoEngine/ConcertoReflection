@@ -1,9 +1,10 @@
 #pragma once
-#include <Concerto/Reflection/Defines.hpp>
 #include <Concerto/Core/Types.hpp>
 #include <Concerto/Core/FunctionRef.hpp>
-#include <Concerto/Reflection/Object.hpp>
-#include "Defines.hpp"
+#include <Concerto/Reflection/Defines.hpp>
+#include <Concerto/Reflection/Object/Object.hpp>
+
+#include "Tests/Defines.hpp"
 
 
 struct CCT_PACKAGE("version = \"1.0\"", "description = \"Sample Package description\"", "serialize = [\"JSON\", \"YML\"]") ConcertoReflectionTests {};

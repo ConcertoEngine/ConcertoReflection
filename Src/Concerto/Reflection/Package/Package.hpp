@@ -50,6 +50,6 @@ namespace cct::refl
 	};
 }
 
-#include "Concerto/Reflection/Package.inl"
+#include "Concerto/Reflection/Package/Package.inl"
 
 #endif //CONCERTO_REFLECTION_PACKAGE_HPP
