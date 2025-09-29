@@ -5,7 +5,7 @@
 #ifndef CONCERTO_PKGGENERATOR_CPPGENERATOR_HPP
 #define CONCERTO_PKGGENERATOR_CPPGENERATOR_HPP
 
-#include "FileGenerator.hpp"
+#include "Concerto/PackageGenerator/FileGenerator/FileGenerator.hpp"
 
 namespace cct
 {

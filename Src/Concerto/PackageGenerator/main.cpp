@@ -6,9 +6,9 @@
 #include <cxxopts.hpp>
 #include <Concerto/Core/Logger.hpp>
 
-#include "Concerto/PackageGenerator/CppGenerator.hpp"
-#include "Concerto/PackageGenerator/HeaderGenerator.hpp"
-#include "Concerto/PackageGenerator/ClangParser.hpp"
+#include "Concerto/PackageGenerator/CppGenerator/CppGenerator.hpp"
+#include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"
+#include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 
 
 void PrintHelp()

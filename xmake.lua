@@ -26,12 +26,34 @@ end
 
 includes("Xmake/rules/**.lua")
 
+function add_files_to_target(p)
+    for _, dir in ipairs(os.filedirs(p)) do
+        relative_dir = path.relative(dir, "Src/")
+        if os.isdir(dir) then
+            add_files(path.join("Src", relative_dir, "*.cpp"))
+            add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.hpp)"))
+            add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.inl)"))
+        else
+            local ext = path.extension(relative_dir)
+            if ext == ".hpp" or ext == ".inl" then
+                add_headerfiles(path.join("Src", "(" .. relative_dir .. ")"))
+            elseif ext == ".cpp" then
+                add_files(path.join("Src", relative_dir))
+            end
+        end
+    end
+end
+
 target("concerto-pkg-generator")
     set_kind("binary")
     set_languages("cxx20")
-    add_files("Src/PackageGenerator/*.cpp")
-    add_headerfiles("Include/(Concerto/PackageGenerator/**.hpp)")
-    add_includedirs("Include/", { public = true })
+    
+    local files = { ".", "ClangParser", "CppGenerator", "HeaderGenerator", "FileGenerator" }
+    for _, dir in ipairs(files) do
+        add_files_to_target("Src/Concerto/PackageGenerator/" .. dir)
+    end
+
+    add_includedirs("Src/", { public = true })
     add_packages("concerto-core", "toml11", "libllvm", "cxxopts")
     set_policy("build.fence", true)
     add_defines("CCT_PKG_GENERATOR_BUILD")

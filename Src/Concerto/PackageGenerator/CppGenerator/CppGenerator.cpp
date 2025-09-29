@@ -2,7 +2,7 @@
 // Created by arthur on 09/12/2024.
 //
 
-#include "Concerto/PackageGenerator/CppGenerator.hpp"
+#include "Concerto/PackageGenerator/CppGenerator/CppGenerator.hpp"
 
 #include <Concerto/Core/Logger.hpp>
 

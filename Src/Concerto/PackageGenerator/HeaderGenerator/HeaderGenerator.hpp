@@ -6,7 +6,7 @@
 #define CONCERTO_PKGGENERATOR_HEADERGENERATOR_HPP
 
 
-#include "Concerto/PackageGenerator/FileGenerator.hpp"
+#include "Concerto/PackageGenerator/FileGenerator/FileGenerator.hpp"
 
 namespace cct
 {

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <format>
 
-#include "Concerto/PackageGenerator/HeaderGenerator.hpp"
+#include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"
 
 
 namespace cct

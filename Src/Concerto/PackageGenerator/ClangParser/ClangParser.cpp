@@ -2,7 +2,7 @@
 // Clang LibTooling based parser for Concerto Package Generator
 //
 
-#include "Concerto/PackageGenerator/ClangParser.hpp"
+#include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 #include <Concerto/Core/Logger.hpp>
 #include <toml11/parser.hpp>
 #include <algorithm>

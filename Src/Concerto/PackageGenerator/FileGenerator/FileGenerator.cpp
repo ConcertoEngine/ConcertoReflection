@@ -2,7 +2,7 @@
 // Created by arthur on 09/12/2024.
 //
 
-#include "Concerto/PackageGenerator/FileGenerator.hpp"
+#include "Concerto/PackageGenerator/FileGenerator/FileGenerator.hpp"
 
 #include <iostream>
 
