@@ -51,12 +51,12 @@ namespace cct::refl
 		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		inline void SetCustomDelegate(void* delegate);
 	private:
-		std::string _name;
-		const Class* _returnValue;
-		std::vector<const Class*> _parameters;
-		std::size_t _index;
-		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
-		void* _customDelegate;
+		std::string m_name;
+		const Class* m_returnValue;
+		std::vector<const Class*> m_parameters;
+		std::size_t m_index;
+		std::unordered_map<std::string /*name*/, std::string /*value*/> m_attributes;
+		void* m_customDelegate;
 	};
 
 	template <typename T, typename... Args>

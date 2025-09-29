@@ -28,7 +28,7 @@ namespace cct::refl
 				res.emplace_back(elem.data(), elem.size());
 			if (res.size() > 1)
 			{
-				for (auto& nameSpace : _namespaces)
+				for (auto& nameSpace : m_namespaces)
 				{
 					if (nameSpace->GetName() != res[0])
 						continue;
@@ -40,11 +40,11 @@ namespace cct::refl
 			}
 		}
 
-		auto it = std::find_if(_classes.begin(), _classes.end(), [&](const std::unique_ptr<Class>& value) -> bool
+		auto it = std::find_if(m_classes.begin(), m_classes.end(), [&](const std::unique_ptr<Class>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
-		if (it != _classes.end())
+		if (it != m_classes.end())
 			return it->get();
 		return nullptr;
 	}
@@ -53,23 +53,23 @@ namespace cct::refl
 	{
 		if (index > GetNamespaceCount())
 			return nullptr;
-		return _namespaces[index].get();
+		return m_namespaces[index].get();
 	}
 
 	void Namespace::AddClass(std::unique_ptr<Class> klass)
 	{
-		_classes.emplace_back(std::move(klass));
+		m_classes.emplace_back(std::move(klass));
 	}
 
 	void Namespace::AddNamespace(std::unique_ptr<Namespace> nameSpace)
 	{
-		_namespaces.emplace_back(std::move(nameSpace));
+		m_namespaces.emplace_back(std::move(nameSpace));
 	}
 
 	Namespace* Namespace::GetNamespace(std::string_view name) const
 	{
 
-		for (auto& nameSpace : _namespaces)
+		for (auto& nameSpace : m_namespaces)
 		{
 			if (nameSpace->GetName() == name)
 				return nameSpace.get();

@@ -50,10 +50,10 @@ namespace cct::refl
 		virtual void InitializeClasses() = 0;
 
 	protected:
-		std::string _name;
-		std::vector<std::unique_ptr<Class>> _classes;
-		std::vector<std::unique_ptr<Namespace>> _namespaces;
-		std::size_t _hash;
+		std::string m_name;
+		std::vector<std::unique_ptr<Class>> m_classes;
+		std::vector<std::unique_ptr<Namespace>> m_namespaces;
+		std::size_t m_hash;
 	};
 }
 

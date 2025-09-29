@@ -79,14 +79,14 @@ namespace cct::refl
 		void SetNamespace(Namespace* nameSpace);
 		void SetBaseClass(const Class* klass);
 	private:
-		std::string _name;
-		Namespace* _namespace;
-		std::vector<std::unique_ptr<MemberVariable>> _memberVariables;
-		std::vector<std::unique_ptr<Method>> _methods;
-		const Class* _baseClass;
-		std::unordered_map<std::string /*name*/, std::string /*value*/> _attributes;
+		std::string m_name;
+		Namespace* m_namespace;
+		std::vector<std::unique_ptr<MemberVariable>> m_memberVariables;
+		std::vector<std::unique_ptr<Method>> m_methods;
+		const Class* m_baseClass;
+		std::unordered_map<std::string /*name*/, std::string /*value*/> m_attributes;
 
-		std::size_t _hash;
+		std::size_t m_hash;
 	};
 	CCT_REFLECTION_API const Class* GetClassByName(std::string_view nameSpaceName, std::string_view name);
 	CCT_REFLECTION_API const Class* GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name);

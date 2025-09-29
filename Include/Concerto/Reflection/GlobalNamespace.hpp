@@ -41,9 +41,9 @@ namespace cct::refl
 		void RemoveNamespace(std::string_view name);
 		void RemoveClass(std::string_view name);
 	private:
-		std::vector<Namespace*> _namespaces;
-		std::vector<const Class*> _classes;
-		static std::unique_ptr<GlobalNamespace> _globalNamespace;
+		std::vector<Namespace*> m_namespaces;
+		std::vector<const Class*> m_classes;
+		static std::unique_ptr<GlobalNamespace> m_globalNamespace;
 	};
 }
 

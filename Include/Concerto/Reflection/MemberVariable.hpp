@@ -29,9 +29,9 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetIndex() const;
 
 	private:
-		std::string _name;
-		std::size_t _index;
-		const Class* _type;
+		std::string m_name;
+		std::size_t m_index;
+		const Class* m_type;
 	};
 }
 

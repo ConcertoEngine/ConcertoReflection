@@ -13,25 +13,25 @@
 namespace cct::refl
 {
 	inline Namespace::Namespace(std::string name) :
-		_name(std::move(name)),
-		_hash(std::hash<std::string>()(name))
+		m_name(std::move(name)),
+		m_hash(std::hash<std::string>()(name))
 	{
 	}
 
 	inline std::string_view Namespace::GetName() const
 	{
-		return _name;
+		return m_name;
 	}
 
 	inline std::size_t Namespace::GetHash() const
 	{
-		return _hash;
+		return m_hash;
 	}
 
 	inline std::size_t Namespace::GetClassCount() const
 	{
-		std::size_t count = _classes.size();
-		for (auto& ns : _namespaces)
+		std::size_t count = m_classes.size();
+		for (auto& ns : m_namespaces)
 			count += ns->GetClassCount();
 		return count;
 	}
@@ -39,14 +39,14 @@ namespace cct::refl
 
 	inline std::size_t Namespace::GetNamespaceCount() const
 	{
-		return _namespaces.size();
+		return m_namespaces.size();
 	}
 
 	inline const Class* Namespace::GetClass(std::size_t index) const
 	{
 		if (index > GetClassCount())
 			return nullptr;
-		return _classes[index].get();
+		return m_classes[index].get();
 	}
 
 	inline bool Namespace::HasClass(std::string_view name) const

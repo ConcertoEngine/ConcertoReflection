@@ -38,15 +38,15 @@ namespace cct
 
 			for (auto line : lines)
 			{
-				stream << std::string(_indentLevel, '\t');
-				stream << std::string_view(line.data(), line.size());
+				m_stream << std::string(m_indentLevel, '\t');
+				m_stream << std::string_view(line.data(), line.size());
 			}
-			stream << '\n';
+			m_stream << '\n';
 		}
 	private:
-		std::size_t _indentLevel;
+		std::size_t m_indentLevel;
 	protected:
-		std::ofstream stream;
+		std::ofstream m_stream;
 	};
 }
 

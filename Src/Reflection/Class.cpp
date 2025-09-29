@@ -15,73 +15,73 @@
 namespace cct::refl
 {
 	Class::Class(Namespace* nameSpace, std::string name, const Class* baseClass) :
-		_name(std::move(name)),
-		_namespace(nameSpace),
-		_baseClass(baseClass ? baseClass : nullptr),
-		_hash(0)
+		m_name(std::move(name)),
+		m_namespace(nameSpace),
+		m_baseClass(baseClass ? baseClass : nullptr),
+		m_hash(0)
 	{
-		_hash = _namespace ? _namespace->GetHash() : 0;
-		_hash |= _baseClass ? _baseClass->GetHash() : 0;
-		_hash |= std::hash<std::string>()(_name);
+		m_hash = m_namespace ? m_namespace->GetHash() : 0;
+		m_hash |= m_baseClass ? m_baseClass->GetHash() : 0;
+		m_hash |= std::hash<std::string>()(m_name);
 	}
 
 	std::string_view Class::GetName() const
 	{
-		return _name;
+		return m_name;
 	}
 
 	std::string_view Class::GetNamespaceName() const
 	{
-		if (_namespace == nullptr)
+		if (m_namespace == nullptr)
 		{
 			CCT_ASSERT_FALSE("Invalid namespace pointer");
 			return {};
 		}
-		return _namespace->GetName();
+		return m_namespace->GetName();
 	}
 
 	const Namespace& Class::GetNamespace() const
 	{
-		if (_namespace == nullptr)
+		if (m_namespace == nullptr)
 		{
 			CCT_ASSERT_FALSE("Invalid namespace pointer");
 			throw std::runtime_error("Invalid namespace pointer");
 		}
-		return *_namespace;
+		return *m_namespace;
 	}
 
 	std::size_t Class::GetHash() const
 	{
-		return _hash;
+		return m_hash;
 	}
 
 	std::size_t Class::GetMemberVariableCount() const
 	{
-		return _memberVariables.size();
+		return m_memberVariables.size();
 	}
 
 	std::size_t Class::GetMethodCount() const
 	{
-		return _methods.size();
+		return m_methods.size();
 	}
 
 	const Class* Class::GetBaseClass() const
 	{
-		return _baseClass;
+		return m_baseClass;
 	}
 
 	const MemberVariable* Class::GetMemberVariable(std::size_t index) const
 	{
-		if (_memberVariables.empty())
+		if (m_memberVariables.empty())
 			return nullptr;
-		if (index > _memberVariables.size())
+		if (index > m_memberVariables.size())
 			return nullptr;
-		return _memberVariables[index].get();
+		return m_memberVariables[index].get();
 	}
 
 	const MemberVariable* Class::GetMemberVariable(std::string_view name) const
 	{
-		for (const auto& variable : _memberVariables)
+		for (const auto& variable : m_memberVariables)
 		{
 			if (variable->GetName() == name)
 				return variable.get();
@@ -99,16 +99,16 @@ namespace cct::refl
 
 	const Method* Class::GetMethod(std::size_t index) const
 	{
-		if (_methods.empty())
+		if (m_methods.empty())
 			return nullptr;
-		if (index > _methods.size())
+		if (index > m_methods.size())
 			return nullptr;
-		return _methods[index].get();
+		return m_methods[index].get();
 	}
 
 	const Method* Class::GetMethod(std::string_view name) const
 	{
-		for (const auto& method : _methods)
+		for (const auto& method : m_methods)
 		{
 			if (method->GetName() == name)
 				return method.get();
@@ -128,46 +128,46 @@ namespace cct::refl
 
 	bool Class::InheritsFrom(const Class& other) const
 	{
-		if (!_baseClass)
+		if (!m_baseClass)
 		{
 			CCT_ASSERT_FALSE("Invalid base class, it should at least derive from cct::refl::Object");
 			return false;
 		}
-		if (other == *_baseClass)
+		if (other == *m_baseClass)
 			return true;
-		return _baseClass->InheritsFrom(other);
+		return m_baseClass->InheritsFrom(other);
 	}
 
 	bool Class::InheritsFrom(std::string_view name) const
 	{
-		if (!_baseClass)
+		if (!m_baseClass)
 		{
 			CCT_ASSERT_FALSE("Invalid base class, it should at least derive from cct::refl::Object");
 			return false;
 		}
-		if (_baseClass->GetName() == name)
+		if (m_baseClass->GetName() == name)
 			return true;
-		return _baseClass->InheritsFrom(name);
+		return m_baseClass->InheritsFrom(name);
 	}
 
 	bool Class::HasAttribute(std::string_view attribute) const
 	{
 		//not using "contains", because it does not support std::string_view
-		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
+		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
 			{
 				return attribute == value.first;
 			});
-		return it != _attributes.end();
+		return it != m_attributes.end();
 	}
 
 	std::string_view Class::GetAttribute(std::string_view attribute)
 	{
 		// not using "contains", because it does not support std::string_view
-		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
+		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
 			{
 				return "attribute" == value.first;
 			});
-		if (it == _attributes.end())
+		if (it == m_attributes.end())
 		{
 			CCT_ASSERT_FALSE("Attribute '{}' does not exist", attribute);
 			return {};
@@ -188,29 +188,29 @@ namespace cct::refl
 	void Class::AddMemberVariable(std::string_view name, const Class* type)
 	{
 		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");
-		_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), type, _memberVariables.size()));
+		m_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), type, m_memberVariables.size()));
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)
 	{
 		CCT_ASSERT(!GetMethod(method->GetName()), "Method already registered");
-		_methods.emplace_back(std::move(method));
+		m_methods.emplace_back(std::move(method));
 	}
 
 	void Class::AddAttribute(std::string name, std::string value)
 	{
 		CCT_ASSERT(HasAttribute(name), "Class attribute already exist");
-		_attributes.emplace(std::move(name), std::move(value));
+		m_attributes.emplace(std::move(name), std::move(value));
 	}
 
 	void Class::SetNamespace(Namespace* nameSpace)
 	{
-		_namespace = nameSpace;
+		m_namespace = nameSpace;
 	}
 
 	void Class::SetBaseClass(const Class* klass)
 	{
-		_baseClass = klass;
+		m_baseClass = klass;
 	}
 
 	const Class* GetClassByName(std::string_view nameSpaceName, std::string_view name)

@@ -43,9 +43,9 @@ namespace cct::refl
 	protected:
 		void AddNamespace(std::unique_ptr<Namespace> nameSpace);
 		void AddClass(std::unique_ptr<Class> klass);
-		std::string _name;
-		std::vector<std::unique_ptr<Namespace>> _namespaces;
-		std::vector<std::unique_ptr<Class>> _classes;
+		std::string m_name;
+		std::vector<std::unique_ptr<Namespace>> m_namespaces;
+		std::vector<std::unique_ptr<Class>> m_classes;
 		friend class Namespace;
 	};
 }

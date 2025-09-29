@@ -16,25 +16,25 @@
 namespace cct::refl
 {
 	Package::Package(std::string name) :
-		_name(std::move(name))
+		m_name(std::move(name))
 	{
 	}
 
 	Namespace* Package::GetNamespace(std::size_t index) const
 	{
-		if (index > _namespaces.size())
+		if (index > m_namespaces.size())
 			return nullptr;
-		return _namespaces[index].get();
+		return m_namespaces[index].get();
 	}
 
 	Namespace* Package::GetNamespace(std::string_view name) const
 	{
-		auto it = std::find_if(_namespaces.begin(), _namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
+		auto it = std::find_if(m_namespaces.begin(), m_namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
 			{
 				return value->GetName() == name;
 			});
 
-		if (it != _namespaces.end())
+		if (it != m_namespaces.end())
 			return it->get();
 		return nullptr;
 	}
@@ -47,12 +47,12 @@ namespace cct::refl
 			return;
 		}
 		GlobalNamespace::Get().AddNamespace(nameSpace.get());
-		_namespaces.emplace_back(std::move(nameSpace));
+		m_namespaces.emplace_back(std::move(nameSpace));
 	}
 
 	void Package::AddClass(std::unique_ptr<Class> klass)
 	{
 		GlobalNamespace::Get().AddClass(klass.get());
-		_classes.push_back(std::move(klass));
+		m_classes.push_back(std::move(klass));
 	}
 }

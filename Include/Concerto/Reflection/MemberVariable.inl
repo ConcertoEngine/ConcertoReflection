@@ -11,12 +11,12 @@ namespace cct::refl
 {
 	inline std::string_view MemberVariable::GetName() const
 	{
-		return _name;
+		return m_name;
 	}
 
 	inline std::size_t MemberVariable::GetIndex() const
 	{
-		return _index;
+		return m_index;
 	}
 }
 

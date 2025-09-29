@@ -9,8 +9,8 @@
 namespace cct
 {
 	FileGenerator::FileGenerator(const std::string& path) :
-		_indentLevel(0),
-		stream(path, std::ios::trunc)
+		m_indentLevel(0),
+		m_stream(path, std::ios::trunc)
 	{
 		std::cout << "Generating file: " << path << '\n';
 	}
@@ -18,18 +18,18 @@ namespace cct
 	void FileGenerator::EnterScope()
 	{
 		Write("{{");
-		++_indentLevel;
+		++m_indentLevel;
 	}
 
 	void FileGenerator::LeaveScope(std::string_view str)
 	{
-		--_indentLevel;
+		--m_indentLevel;
 		Write("}}{}", str);
 	}
 
 	void FileGenerator::NewLine()
 	{
-		stream << '\n';
+		m_stream << '\n';
 	}
 
 	std::string FileGenerator::Capitalize(std::string_view str)

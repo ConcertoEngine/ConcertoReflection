@@ -11,9 +11,9 @@
 #define CCT_OBJECT(className)						\
 	public:											\
 		static const cct::refl::Class* GetClass()	\
-			{return _class;}						\
+			{return m_class;}						\
 	private:										\
-		static const cct::refl::Class* _class;		\
+		static const cct::refl::Class* m_class;		\
 		friend class Internal##className##Class
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection {};

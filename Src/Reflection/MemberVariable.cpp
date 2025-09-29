@@ -7,9 +7,9 @@
 namespace cct::refl
 {
 	MemberVariable::MemberVariable(std::string name, const Class* type, std::size_t index) :
-		_name(std::move(name)),
-		_index(index),
-		_type(type)
+		m_name(std::move(name)),
+		m_index(index),
+		m_type(type)
 	{
 	}
 }

@@ -36,8 +36,8 @@ namespace cct::refl
 
 		void LoadPackages() const;
 	private:
-		std::vector<cct::DynLib> _dynamicPackages;
-		std::vector<std::unique_ptr<Package>> _packages;
+		std::vector<cct::DynLib> m_dynamicPackages;
+		std::vector<std::unique_ptr<Package>> m_packages;
 	};
 }
 

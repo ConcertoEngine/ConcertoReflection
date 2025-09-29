@@ -11,42 +11,42 @@ namespace cct::refl
 {
 	inline std::string_view Method::GetName() const
 	{
-		return _name;
+		return m_name;
 	}
 
 	inline const Class* Method::GetReturnValue() const
 	{
-		return _returnValue;
+		return m_returnValue;
 	}
 
 	inline std::vector<const Class*> Method::GetParameters() const
 	{
-		return _parameters;
+		return m_parameters;
 	}
 
 	inline std::size_t Method::GetIndex() const
 	{
-		return _index;
+		return m_index;
 	}
 
 	inline bool Method::HasAttribute(std::string_view attribute) const
 	{
 		//not using "contains", because it does not support std::string_view
-		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
+		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
 			{
 				return "attribute" == value.first;
 			});
-		return it != _attributes.end();
+		return it != m_attributes.end();
 	}
 
 	inline std::string_view Method::GetAttribute(std::string_view attribute)
 	{
 		// not using "contains", because it does not support std::string_view
-		auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
+		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
 			{
 				return "attribute" == value.first;
 			});
-		if (it == _attributes.end())
+		if (it == m_attributes.end())
 		{
 			CCT_ASSERT_FALSE("Attribute '{}' does not exist", attribute);
 			return {};
@@ -57,17 +57,17 @@ namespace cct::refl
 	inline void Method::AddAttribute(std::string name, std::string value)
 	{
 		CCT_ASSERT(HasAttribute(name), "Class attribute already exist");
-		_attributes.emplace(std::move(name), std::move(value));
+		m_attributes.emplace(std::move(name), std::move(value));
 	}
 
 	inline void* Method::GetCustomDelegate() const
 	{
-		return _customDelegate;
+		return m_customDelegate;
 	}
 
 	inline void Method::SetCustomDelegate(void* delegate)
 	{
-		_customDelegate = delegate;
+		m_customDelegate = delegate;
 	}
 }
 

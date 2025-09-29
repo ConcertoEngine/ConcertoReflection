@@ -12,20 +12,20 @@ namespace cct::refl
 {
 	inline std::string_view Package::GetName() const
 	{
-		return _name;
+		return m_name;
 	}
 
 	inline std::size_t Package::GetClassCount() const
 	{
 		std::size_t count = 0;
-		for (const auto& nameSpace : _namespaces)
+		for (const auto& nameSpace : m_namespaces)
 			count += nameSpace->GetClassCount();
 		return count;
 	}
 
 	inline std::size_t Package::GetNamespaceCount() const
 	{
-		return _namespaces.size();
+		return m_namespaces.size();
 	}
 }
 

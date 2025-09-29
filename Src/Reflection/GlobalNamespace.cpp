@@ -14,26 +14,26 @@
 
 namespace cct::refl
 {
-	std::unique_ptr<GlobalNamespace> GlobalNamespace::_globalNamespace = std::make_unique<GlobalNamespace>();
+	std::unique_ptr<GlobalNamespace> GlobalNamespace::m_globalNamespace = std::make_unique<GlobalNamespace>();
 
 	GlobalNamespace& GlobalNamespace::Get()
 	{
-		CCT_ASSERT(_globalNamespace, "Invalid pointer");
-		return *_globalNamespace;
+		CCT_ASSERT(m_globalNamespace, "Invalid pointer");
+		return *m_globalNamespace;
 	}
 
 	std::size_t GlobalNamespace::GetNamespaceCount() const
 	{
 		std::set<std::string_view> namespaces;
-		for (auto& ns : _namespaces)
+		for (auto& ns : m_namespaces)
 			namespaces.emplace(ns->GetName());
 		return namespaces.size();
 	}
 
 	std::size_t GlobalNamespace::GetClassCount() const
 	{
-		std::size_t count = _classes.size();
-		for (auto* ns : _namespaces)
+		std::size_t count = m_classes.size();
+		for (auto* ns : m_namespaces)
 		{
 			count += ns->GetClassCount();
 		}
@@ -42,7 +42,7 @@ namespace cct::refl
 
 	const Class* GlobalNamespace::GetClassByName(std::string_view name) const
 	{
-		for (const Class* klass : _classes)
+		for (const Class* klass : m_classes)
 		{
 			if (klass->GetName() == name)
 				return klass;
@@ -74,7 +74,7 @@ namespace cct::refl
 
 		if (res.size() == 1)
 		{
-			for (auto* ns : _namespaces)
+			for (auto* ns : m_namespaces)
 			{
 				if (ns->GetName() == res[0])
 					return ns;
@@ -92,7 +92,7 @@ namespace cct::refl
 		if (names[0] == "::"sv)
 			names = names.subspan(1);
 
-		for (auto* ns : _namespaces)
+		for (auto* ns : m_namespaces)
 		{
 			if (ns->GetName() == names[0])
 			{
@@ -106,7 +106,7 @@ namespace cct::refl
 
 	void GlobalNamespace::LoadNamespaces() const
 	{
-		for (auto& nameSpace : _namespaces)
+		for (auto& nameSpace : m_namespaces)
 		{
 			nameSpace->LoadNamespaces();
 		}
@@ -114,7 +114,7 @@ namespace cct::refl
 
 	void GlobalNamespace::LoadClasses() const
 	{
-		for (auto& nameSpace : _namespaces)
+		for (auto& nameSpace : m_namespaces)
 		{
 			CCT_ASSERT(nameSpace, "Invalid namespace pointer");
 			nameSpace->LoadClasses();
@@ -123,7 +123,7 @@ namespace cct::refl
 
 	void GlobalNamespace::InitializeClasses() const
 	{
-		for (auto& nameSpace : _namespaces)
+		for (auto& nameSpace : m_namespaces)
 		{
 			CCT_ASSERT(nameSpace, "Invalid namespace pointer");
 			nameSpace->InitializeClasses();
@@ -132,17 +132,17 @@ namespace cct::refl
 
 	void GlobalNamespace::AddNamespace(Namespace* namespace_)
 	{
-		_namespaces.push_back(namespace_);
+		m_namespaces.push_back(namespace_);
 	}
 
 	void GlobalNamespace::AddClass(const Class* klass)
 	{
-		_classes.push_back(klass);
+		m_classes.push_back(klass);
 	}
 
 	void GlobalNamespace::RemoveNamespace(std::string_view name)
 	{
-		std::erase_if(_namespaces, [&](const Namespace* ns)
+		std::erase_if(m_namespaces, [&](const Namespace* ns)
 		{
 			return ns->GetName() == name;
 		});
@@ -150,7 +150,7 @@ namespace cct::refl
 
 	void GlobalNamespace::RemoveClass(std::string_view name)
 	{
-		std::erase_if(_classes, [&](const Class* ns)
+		std::erase_if(m_classes, [&](const Class* ns)
 		{
 			return ns->GetName() == name;
 		});

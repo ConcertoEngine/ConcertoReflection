@@ -17,7 +17,7 @@ namespace cct::refl
 	Package* PackageLoader::AddPackage(std::unique_ptr<Package> package)
 	{
 		Package* packagePtr = package.get();
-		_packages.emplace_back(std::move(package));
+		m_packages.emplace_back(std::move(package));
 		return packagePtr;
 	}
 
@@ -30,7 +30,7 @@ namespace cct::refl
 		if (!func)
 			return false;
 		AddPackage(func());
-		_dynamicPackages.emplace_back(std::move(lib));
+		m_dynamicPackages.emplace_back(std::move(lib));
 		return true;
 	}
 
@@ -60,7 +60,7 @@ namespace cct::refl
 	{
 		if (!AddDynamicPackage(path))
 			return false;
-		auto& package = _packages.back();
+		auto& package = m_packages.back();
 		package->LoadNamespaces();
 		package->InitializeNamespaces();
 		package->InitializeClasses();
@@ -69,27 +69,27 @@ namespace cct::refl
 
 	bool PackageLoader::AddDynamicFolderAndLoad(std::string_view path)
 	{
-		const std::size_t packageCount = _packages.size();
+		const std::size_t packageCount = m_packages.size();
 		if (!AddDynamicFolder(path))
 			return false;
-		const std::size_t newPackageCount = _packages.size();
+		const std::size_t newPackageCount = m_packages.size();
 
 		for (std::size_t i = packageCount; i < newPackageCount; ++i)
-			_packages[i]->LoadNamespaces();
+			m_packages[i]->LoadNamespaces();
 		for (std::size_t i = packageCount; i < newPackageCount; ++i)
-			_packages[i]->InitializeNamespaces();
+			m_packages[i]->InitializeNamespaces();
 		for (std::size_t i = packageCount; i < newPackageCount; ++i)
-			_packages[i]->InitializeClasses();
+			m_packages[i]->InitializeClasses();
 		return true;
 	}
 
 	void PackageLoader::LoadPackages() const
 	{
-		for (const auto& pkg : _packages)
+		for (const auto& pkg : m_packages)
 			pkg->LoadNamespaces();
-		for (const auto& pkg : _packages)
+		for (const auto& pkg : m_packages)
 			pkg->InitializeNamespaces();
-		for (const auto& pkg : _packages)
+		for (const auto& pkg : m_packages)
 			pkg->InitializeClasses();
 	}
 }

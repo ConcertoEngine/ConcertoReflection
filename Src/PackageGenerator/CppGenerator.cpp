@@ -57,8 +57,8 @@ namespace cct
 				Write("~Internal{}Namespace() override", ns.name);
 				EnterScope();
 				{
-					Write("_classes.clear();");
-					Write("_namespaces.clear();");
+					Write("m_classes.clear();");
+					Write("m_namespaces.clear();");
 				}
 				LeaveScope();
 				NewLine();
@@ -67,7 +67,7 @@ namespace cct
 				{
 					for (auto& nestedNs : ns.namespaces)
 						Write("AddNamespace(Create{}NamespaceInstance());", nestedNs.name);
-					Write("for (auto& ns : _namespaces)");
+					Write("for (auto& ns : m_namespaces)");
 					EnterScope();
 					{
 						Write("ns->LoadNamespaces();");
@@ -79,7 +79,7 @@ namespace cct
 				Write("void LoadClasses() override");
 				EnterScope();
 				{
-					Write("for(auto& ns : _namespaces)");
+					Write("for(auto& ns : m_namespaces)");
 					EnterScope();
 					Write("ns->LoadClasses();");
 					LeaveScope();
@@ -92,11 +92,11 @@ namespace cct
 				Write("void InitializeClasses() override");
 				EnterScope();
 				{
-					Write("for (auto& ns : _namespaces)");
+					Write("for (auto& ns : m_namespaces)");
 					EnterScope();
 					Write("ns->InitializeClasses();");
 					LeaveScope();
-					Write("for (auto& klass : _classes)");
+					Write("for (auto& klass : m_classes)");
 					EnterScope();
 					Write("klass->Initialize();");
 					LeaveScope();
@@ -126,20 +126,20 @@ namespace cct
 			Write("Internal{0}Class() : cct::refl::Class(nullptr, \"{0}\"s, nullptr)", klass.name);
 			EnterScope();
 			{
-				Write("if ({}::_class != nullptr)", klass.name);
+				Write("if ({}::m_class != nullptr)", klass.name);
 				EnterScope();
 				{
 					Write("CCT_ASSERT_FALSE(\"Class already created\");");
 					Write("return;");
 				}
 				LeaveScope();
-				Write("{}::_class = this;", klass.name);
+				Write("{}::m_class = this;", klass.name);
 			}
 			LeaveScope();
-			Write("~Internal{}Class()", klass.name);
+			Write("~Internal{}Class() override", klass.name);
 			EnterScope();
 			{
-				Write("{}::_class = nullptr;", klass.name);
+				Write("{}::m_class = nullptr;", klass.name);
 			}
 			LeaveScope();
 			NewLine();
@@ -197,7 +197,7 @@ namespace cct
 		}
 		LeaveScope(";"sv);
 		NewLine();
-		Write("const cct::refl::Class* {}::_class = nullptr;", klass.name);
+		Write("const cct::refl::Class* {}::m_class = nullptr;", klass.name);
 		NewLine();
 	}
 
@@ -258,7 +258,7 @@ namespace cct
 						Write("return {{\"Expected '{}' in argument {}\"s}};", param.type, i);
 					}
 					LeaveScope();
-					Write("using Param{0} = std::conditional_t<std::is_pointer_v<{1}>, {1}, std::add_lvalue_reference_t<{1}>>;", i, param.type);
+					Write("using Param{0} = {1};", i, param.type);
 					Write("Param{0} {1} = parameters[{0}].As<Param{0}>();", i, param.name);
 					NewLine();
 					callArgs += param.name;
@@ -431,7 +431,7 @@ namespace cct
 					Write("GlobalNamespace::Get().RemoveClass(\"{}\"sv);", klass.name);
 				for (auto& ns : pkg.namepsaces)
 					Write("GlobalNamespace::Get().RemoveNamespace(\"{}\"sv);", ns.name);
-				Write("_namespaces.clear();");
+				Write("m_namespaces.clear();");
 			}
 			LeaveScope();
 
@@ -441,7 +441,7 @@ namespace cct
 			{
 				for (auto& ns : pkg.namepsaces)
 					Write("AddNamespace(Create{}NamespaceInstance());", ns.name);
-				Write("for (auto& ns : _namespaces)");
+				Write("for (auto& ns : m_namespaces)");
 				EnterScope();
 				{
 					Write("ns->LoadNamespaces();");
@@ -460,7 +460,7 @@ namespace cct
 					LeaveScope();
 				}
 				NewLine();
-				Write("for (auto& ns : _namespaces)");
+				Write("for (auto& ns : m_namespaces)");
 				EnterScope();
 				Write("ns->LoadClasses();");
 				LeaveScope();
@@ -470,7 +470,7 @@ namespace cct
 			Write("void InitializeClasses() override");
 			EnterScope();
 			{
-				Write("for (auto& ns : _namespaces)");
+				Write("for (auto& ns : m_namespaces)");
 				EnterScope();
 				{
 					Write("ns->InitializeClasses();");
