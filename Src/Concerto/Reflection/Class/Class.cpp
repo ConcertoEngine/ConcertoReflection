@@ -89,7 +89,7 @@ namespace cct::refl
 		return nullptr;
 	}
 
-	cct::refl::Object* Class::GetMemberVariable(std::string_view name, cct::refl::Object& self) const
+	cct::refl::Object* Class::GetMemberVariable(std::string_view name, const cct::refl::Object& self) const
 	{
 		auto* memberVariable = GetMemberVariable(name);
 		if (memberVariable == nullptr)

@@ -39,7 +39,7 @@ namespace cct::sample
 		CCT_OBJECT(SampleBar);
 	private:
 		CCT_REFL_TESTS_MEMBER("Test=\"test\"")
-		refl::Int32 m_bar;
+		cct::refl::Int32 m_bar;
 
 		cct::FunctionRef<cct::refl::Int32()> m_customDelegatePtr = []()
 		{

@@ -80,7 +80,7 @@ target("concerto-reflection")
     set_kind("shared")
     set_languages("cxx20")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
-    
+    add_defines("CCT_ENABLE_ASSERTS")
     add_includedirs("Src/", { public = true })
     local files = {
         ".",
@@ -118,7 +118,7 @@ if has_config("tests") then
         add_includedirs("Src/Tests/", { public = true })
         add_headerfiles("Src/Tests/**.hpp")
         add_defines("CCT_REFLECTION_TESTS_BUILD", { public = false })
-
+        add_defines("CCT_ENABLE_ASSERTS")
         if is_plat("windows") then
             add_cxflags("/Zc:preprocessor")
         end

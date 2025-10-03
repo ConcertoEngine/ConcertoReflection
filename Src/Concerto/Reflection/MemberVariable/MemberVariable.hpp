@@ -27,6 +27,7 @@ namespace cct::refl
 
 		[[nodiscard]] inline std::string_view GetName() const;
 		[[nodiscard]] inline std::size_t GetIndex() const;
+		[[nodiscard]] inline const Class* GetType() const;
 
 	private:
 		std::string m_name;

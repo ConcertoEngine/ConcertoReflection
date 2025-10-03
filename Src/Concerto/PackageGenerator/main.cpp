@@ -10,12 +10,6 @@
 #include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"
 #include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 
-
-void PrintHelp()
-{
-	std::cout << "Usage: concerto-pkg-generator target_name [file_list] [-- <clang-args>]";
-}
-
 int main(int argc, const char** argv)
 {
 	std::string outputFolder;
@@ -80,9 +74,9 @@ int main(int argc, const char** argv)
 		headerGenerator.Generate(package, headers);
 		cct::CppGenerator cppGenerator((file / (package.name + "Package.gen.cpp")).string());
 		cppGenerator.Generate(package, headers);
-
 	}
-	catch (const std::exception& e) {
+	catch (const std::exception& e)
+	{
 		std::cerr << "Error: " << e.what() << "\n";
 		return EXIT_FAILURE;
 	}

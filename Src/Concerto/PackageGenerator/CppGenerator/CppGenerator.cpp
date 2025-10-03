@@ -173,9 +173,21 @@ namespace cct
 			}
 			LeaveScope();
 			NewLine();
-			Write("std::unique_ptr<cct::refl::Object> CreateDefaultObject() const override {{ return std::unique_ptr<cct::refl::Object>(new {}); }}", klass.name);
+			Write("std::unique_ptr<cct::refl::Object> CreateDefaultObject() const override");
+			EnterScope();
+			{
+				Write("auto object = std::unique_ptr<cct::refl::Object>(new {});", klass.name);
+				Write("if (object)");
+				EnterScope();
+				{
+					Write("static_cast<{}*>(object.get())->m_dynamicClass = this;", klass.name);
+				}
+				LeaveScope();
+				Write(" return object;");
+				LeaveScope();
+			}
 			NewLine();
-			Write("cct::refl::Object* GetMemberVariable(std::size_t index, cct::refl::Object& self) const override");
+			Write("cct::refl::Object* GetMemberVariable(std::size_t index, const cct::refl::Object& self) const override");
 			EnterScope();
 			{
 				std::size_t i = 0;
@@ -184,7 +196,7 @@ namespace cct
 					Write("if (index == {})", i);
 					EnterScope();
 					{
-						Write("return &static_cast<{}&>(self).{};", klass.name, member.name);
+						Write("return &const_cast<{0}&>(static_cast<const {0}&>(self)).{1};", klass.name, member.name);
 					}
 					LeaveScope();
 					++i;

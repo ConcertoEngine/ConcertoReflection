@@ -7,6 +7,7 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 #include <memory>
+#include <string_view>
 
 #define CCT_OBJECT(className)						\
 	public:											\
@@ -25,13 +26,29 @@ namespace cct::refl
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Object
 	{
 	public:
-		Object() = default;
+		Object() : m_dynamicClass(nullptr) {}
 		virtual ~Object() = default;
 
-		static bool IsInstanceOf(const Class& klass);
+		static inline bool IsInstanceOf(const Class& klass);
 
+		[[nodiscard]] inline const cct::refl::Object* GetMemberVariable(std::size_t index) const;
+		[[nodiscard]] inline cct::refl::Object* GetMemberVariable(std::size_t index);
+
+		[[nodiscard]] inline const cct::refl::Object* GetMemberVariable(std::string_view name) const;
+		[[nodiscard]] inline cct::refl::Object* GetMemberVariable(std::string_view name);
+
+		template<typename T> [[nodiscard]] T* GetMemberVariable(std::size_t index);
+		template<typename T> [[nodiscard]] const T* GetMemberVariable(std::size_t index) const;
+
+		template<typename T> [[nodiscard]] T* GetMemberVariable(std::string_view name);
+		template<typename T>[[nodiscard]] const T* GetMemberVariable(std::string_view name) const;
+
+		[[nodiscard]] inline const cct::refl::Class* GetDynamicClass() const;
 
 		CCT_OBJECT(Object);
+
+	protected:
+		const cct::refl::Class* m_dynamicClass;
 	};
 
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int8 : public cct::refl::Object
@@ -51,7 +68,11 @@ namespace cct::refl
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int32 : public cct::refl::Object
 	{
 	public:
-		Int32() = default;
+		Int32() :
+			m_value(0)
+		{
+			m_dynamicClass = m_class;
+		}
 		Int32(cct::Int32 value) : m_value(value){}
 		~Int32() override = default;
 
@@ -78,4 +99,6 @@ namespace cct::refl
 	};
 }
 
+
+#include "Concerto/Reflection/Object/Object.inl"
 #endif //CONCERTO_REFLECTION_OBJECT_HPP

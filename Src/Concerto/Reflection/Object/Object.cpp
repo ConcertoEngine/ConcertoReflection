@@ -10,8 +10,5 @@
 
 namespace cct::refl
 {
-	bool Object::IsInstanceOf(const Class& klass)
-	{
-		return GetClass()->InheritsFrom(klass);
-	}
+
 }
