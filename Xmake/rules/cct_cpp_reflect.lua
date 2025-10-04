@@ -23,7 +23,7 @@ rule("cpp_reflect")
         local envs = target:data("concerto-pkg-generator-envs")
 
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
-        local outputCppFile = path.join(target:autogendir(), target:name() .. "gen.cpp")
+        local outputCppFile = path.join(target:autogendir(), targetName .. "Package.gen.cpp")
         local outHppFile = path.join(target:autogendir(), targetName .. "Package.gen.hpp")
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.reflection." .. target:name())
@@ -87,7 +87,8 @@ rule("cpp_reflect")
         table.insert(args, "-I" .. llvm_include)
 
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
-        batchcmds:add_depfiles(sourcebatch.sourcefiles, outputCppFile, outHppFile)
+        batchcmds:add_depfiles(sourcebatch.sourcefiles)
         batchcmds:set_depmtime(os.mtime(outputCppFile))
         batchcmds:set_depcache(target:dependfile(outputCppFile))
+        print(target:dependfile(outputCppFile))
     end)
