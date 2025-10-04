@@ -26,8 +26,14 @@ namespace cct::refl
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Object
 	{
 	public:
-		Object() : m_dynamicClass(nullptr) {}
+		Object();
 		virtual ~Object() = default;
+
+		Object(const Object& other);
+		Object(Object&& other) noexcept;
+
+		Object& operator=(const Object& other);
+		Object& operator=(Object&& other) noexcept;
 
 		static inline bool IsInstanceOf(const Class& klass);
 
@@ -54,7 +60,7 @@ namespace cct::refl
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int8 : public cct::refl::Object
 	{
 	public:
-		virtual ~Int8() = default;
+		~Int8() = default;
 		CCT_OBJECT(Int8);
 	};
 
