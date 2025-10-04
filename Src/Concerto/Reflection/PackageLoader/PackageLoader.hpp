@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include <Concerto/Core/DynLib.hpp>
+#include <Concerto/Core/DynLib/DynLib.hpp>
 
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Reflection/Package/Package.hpp"

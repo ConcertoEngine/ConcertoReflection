@@ -11,9 +11,9 @@
 #include <span>
 #include <array>
 
-#include <Concerto/Core/Any.hpp>
+#include <Concerto/Core/Any/Any.hpp>
+#include <Concerto/Core/Result/Result.hpp>
 
-#include <Concerto/Core/Result.hpp>
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Reflection/Object/Object.hpp"
 

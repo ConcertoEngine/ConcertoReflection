@@ -4,7 +4,7 @@
 #include <thread>
 
 #include <cxxopts.hpp>
-#include <Concerto/Core/Logger.hpp>
+#include <Concerto/Core/Logger/Logger.hpp>
 
 #include "Concerto/PackageGenerator/CppGenerator/CppGenerator.hpp"
 #include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"

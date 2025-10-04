@@ -4,7 +4,7 @@
 
 #include "Concerto/PackageGenerator/CppGenerator/CppGenerator.hpp"
 
-#include <Concerto/Core/Logger.hpp>
+#include <Concerto/Core/Logger/Logger.hpp>
 
 namespace cct
 {

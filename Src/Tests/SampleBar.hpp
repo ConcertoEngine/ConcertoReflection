@@ -1,6 +1,6 @@
 #pragma once
-#include <Concerto/Core/Types.hpp>
-#include <Concerto/Core/FunctionRef.hpp>
+#include <Concerto/Core/Types/Types.hpp>
+#include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 #include <Concerto/Reflection/Defines.hpp>
 #include <Concerto/Reflection/Object/Object.hpp>
 

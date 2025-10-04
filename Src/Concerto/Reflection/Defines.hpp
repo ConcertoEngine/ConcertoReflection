@@ -5,7 +5,7 @@
 #ifndef CONCERTO_REFLECTION_DEFINE_HPP
 #define CONCERTO_REFLECTION_DEFINE_HPP
 
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 #ifdef CCT_REFLECTION_BUILD
 #define CCT_REFLECTION_API CCT_EXPORT

@@ -3,7 +3,7 @@
 //
 
 #include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
-#include <Concerto/Core/Logger.hpp>
+#include <Concerto/Core/Logger/Logger.hpp>
 #include <toml11/parser.hpp>
 #include <algorithm>
 #include <optional>

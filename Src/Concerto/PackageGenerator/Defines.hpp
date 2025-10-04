@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 #include <toml11/types.hpp>
 
 #ifdef CCT_PKGGENERATOR_BUILD
