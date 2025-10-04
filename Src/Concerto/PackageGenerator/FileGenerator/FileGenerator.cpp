@@ -4,15 +4,68 @@
 
 #include "Concerto/PackageGenerator/FileGenerator/FileGenerator.hpp"
 
-#include <iostream>
+#include <filesystem>
+#include <sstream>
+#include <Concerto/Core/Logger/Logger.hpp>
 
 namespace cct
 {
 	FileGenerator::FileGenerator(const std::string& path) :
 		m_indentLevel(0),
-		m_stream(path, std::ios::trunc)
+		m_stream(),
+		m_path(path)
 	{
-		std::cout << "Generating file: " << path << '\n';
+	}
+
+	namespace
+	{
+		static std::string NormalizeNewlines(std::string s)
+		{
+			// Convert CRLF to LF to allow platform-agnostic comparisons
+			std::string out;
+			out.reserve(s.size());
+			for (std::size_t i = 0; i < s.size(); ++i)
+			{
+				char c = s[i];
+				if (c == '\r')
+				{
+					// skip, will be normalized by following '\n' or ignored if standalone
+					continue;
+				}
+				out.push_back(c);
+			}
+			return out;
+		}
+	}
+
+	FileGenerator::~FileGenerator()
+	{
+		try
+		{
+			std::string generated = m_stream.str();
+			std::string existing;
+			{
+				std::ifstream in(m_path, std::ios::in | std::ios::binary);
+				if (in)
+				{
+					std::ostringstream buf;
+					buf << in.rdbuf();
+					existing = buf.str();
+				}
+			}
+			if (NormalizeNewlines(existing) == NormalizeNewlines(generated))
+				return;
+
+			std::ofstream out(m_path, std::ios::out | std::ios::trunc);
+			if (out)
+			{
+				out << generated;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			cct::Logger::Error("Failed to write generated file {}: {}", m_path, e.what());
+		}
 	}
 
 	void FileGenerator::EnterScope()

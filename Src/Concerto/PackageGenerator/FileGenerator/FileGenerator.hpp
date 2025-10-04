@@ -6,6 +6,7 @@
 #define CONCERTO_PKGGENERATOR_FILEGENERATOR_HPP
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <format>
 #include <ranges>
@@ -17,7 +18,7 @@ namespace cct
 	class FileGenerator
 	{
 	public:
-		virtual ~FileGenerator() = default;
+		virtual ~FileGenerator();
 		explicit FileGenerator(const std::string& path);
 
 		virtual bool Generate(const Package& package, std::span<std::string> args) = 0;
@@ -46,7 +47,8 @@ namespace cct
 	private:
 		std::size_t m_indentLevel;
 	protected:
-		std::ofstream m_stream;
+		std::ostringstream m_stream;
+		std::string m_path;
 	};
 }
 
