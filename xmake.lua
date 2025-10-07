@@ -3,6 +3,13 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
+package("concerto-core")
+    on_fetch(function (package)
+        local concerto_core = "C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoCore/install"
+        return { linkdirs = { path.join(concerto_core, "lib") }, includedirs = { path.join(concerto_core, "include"), links = { "concerto-core" } } }
+    end)
+package_end()
+
 add_requires("concerto-core", {configs = {asserts = true, shared = false, debug = is_mode("debug"), with_symbols = true}})
 add_requires("toml11", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
 add_requires("libllvm", {configs = {clang = true} })
@@ -91,7 +98,8 @@ target("concerto-reflection")
         "Namespace",
         "Object",
         "Package",
-        "PackageLoader"
+        "PackageLoader",
+        "Registry",
     }
     for _, dir in ipairs(files) do
         add_files_to_target("Src/Concerto/Reflection/" .. dir, true)

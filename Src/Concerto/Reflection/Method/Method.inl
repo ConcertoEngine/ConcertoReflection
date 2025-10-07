@@ -39,7 +39,7 @@ namespace cct::refl
 		return it != m_attributes.end();
 	}
 
-	inline std::string_view Method::GetAttribute(std::string_view attribute)
+	inline std::string_view Method::GetAttribute(std::string_view attribute) const
 	{
 		// not using "contains", because it does not support std::string_view
 		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool

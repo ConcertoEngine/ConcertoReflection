@@ -5,9 +5,12 @@
 #ifndef CONCERTO_REFLECTION_OBJECT_HPP
 #define CONCERTO_REFLECTION_OBJECT_HPP
 
-#include "Concerto/Reflection/Defines.hpp"
 #include <memory>
 #include <string_view>
+
+#include <Concerto/Core/EnumFlags/EnumFlags.hpp>
+
+#include "Concerto/Reflection/Defines.hpp"
 
 #define CCT_OBJECT(className)						\
 	public:											\
@@ -21,8 +24,23 @@ struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflect
 
 namespace cct::refl
 {
+	enum class ChangeType
+	{
+		PreChange,
+		PostChange,
+		Set,
+		Insert,
+		Delete
+	};
+}
+
+CCT_ENABLE_ENUM_FLAGS(cct::refl::ChangeType)
+
+namespace cct::refl
+{
 	class Class;
-	
+	class Registry;
+
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Object
 	{
 	public:
@@ -51,16 +69,21 @@ namespace cct::refl
 
 		[[nodiscard]] inline const cct::refl::Class* GetDynamicClass() const;
 
+		[[nodiscard]] bool HasRegistry() const;
+		[[nodiscard]] Registry* GetRegistry();
+		[[nodiscard]] const Registry* GetRegistry() const;
+
 		CCT_OBJECT(Object);
 
 	protected:
 		const cct::refl::Class* m_dynamicClass;
+		Registry* m_registry;
 	};
 
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int8 : public cct::refl::Object
 	{
 	public:
-		~Int8() = default;
+		virtual ~Int8() = default;
 		CCT_OBJECT(Int8);
 	};
 
@@ -70,6 +93,9 @@ namespace cct::refl
 		virtual ~Int16() = default;
 		CCT_OBJECT(Int16);
 	};
+
+	#define CCT_STRINGIFY(x) #x
+	#define CCT_QUOTE(x) "\"" CCT_STRINGIFY(x) "\""
 
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int32 : public cct::refl::Object
 	{
@@ -93,7 +119,7 @@ namespace cct::refl
 		}
 
 		CCT_OBJECT(Int32);
-	private:
+	protected:
 		cct::Int32 m_value;
 	};
 
@@ -102,6 +128,50 @@ namespace cct::refl
 	public:
 		virtual ~Int64() = default;
 		CCT_OBJECT(Int64);
+	};
+
+	class CCT_REFL_CLASS() CCT_REFLECTION_API ClampedInt32 : public cct::refl::Int32
+	{
+	public:
+		~ClampedInt32() override = default;
+		CCT_OBJECT(ClampedInt32);
+		void SetMin(cct::Int32 min)
+		{
+			m_min = min;
+			Set(m_value);
+		}
+		void SetMax(cct::Int32 max)
+		{
+			m_max = max;
+			Set(m_value);
+		}
+
+		void Set(cct::Int32 value)
+		{
+			if (!m_registry)
+			{
+				OnValueChangeEvent(*this, ChangeType::Set);
+				m_value = value;
+				return;
+			}
+			//m_registry->NotifyPreChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
+			//m_value = value;
+			//m_registry->NotifyPostChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
+		}
+
+		[[nodiscard]] cct::Int32 Get() const
+		{
+			return m_value;
+		}
+
+	private:
+		CCT_REFL_METHOD("ChangedEvent = " CCT_QUOTE(m_value))
+		void OnValueChangeEvent(const Object& oldValue, EnumFlags<ChangeType> changeType)
+		{
+			m_value = std::max(std::min(m_min, m_value), m_max);
+		}
+		cct::Int32 m_min;
+		cct::Int32 m_max;
 	};
 }
 

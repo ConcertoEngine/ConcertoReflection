@@ -42,6 +42,21 @@ namespace cct::refl
 		return m_dynamicClass;
 	}
 
+	inline bool Object::HasRegistry() const
+	{
+		return m_registry != nullptr;
+	}
+
+	inline Registry* Object::GetRegistry()
+	{
+		return m_registry;
+	}
+
+	inline const Registry* Object::GetRegistry() const
+	{
+		return m_registry;
+	}
+
 	template <typename T>
 	T* Object::GetMemberVariable(std::size_t index)
 	{

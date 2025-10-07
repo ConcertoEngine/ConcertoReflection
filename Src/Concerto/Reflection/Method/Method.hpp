@@ -41,7 +41,7 @@ namespace cct::refl
 		Result<T, std::string> Invoke(Object& self, Args... args) const;
 
 		inline bool HasAttribute(std::string_view attribute) const;
-		inline std::string_view GetAttribute(std::string_view attribute);
+		inline std::string_view GetAttribute(std::string_view attribute) const;
 
 		//Should be private
 		virtual void Initialize() = 0;
