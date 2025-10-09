@@ -38,7 +38,7 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetIndex() const;
 
 		template<typename T, typename ...Args>
-		Result<T, std::string> Invoke(Object& self, Args... args) const;
+		Result<T, std::string> Invoke(Object& self, Args&&... args) const;
 
 		inline bool HasAttribute(std::string_view attribute) const;
 		inline std::string_view GetAttribute(std::string_view attribute) const;
@@ -60,21 +60,22 @@ namespace cct::refl
 	};
 
 	template <typename T, typename... Args>
-	Result<T, std::string> Method::Invoke(Object& self, Args... args) const
+	Result<T, std::string> Method::Invoke(Object& self, Args&&... args) const
 	{
-		constexpr auto size = sizeof...(Args);
-		std::array<cct::Any, size> erasedArgs = { (cct::Any::Make<Args>(args))... };
+		std::array<cct::Any, sizeof...(Args)> erasedArgs = {
+			cct::Any::Make<Args>(std::forward<Args>(args))...
+		};
+
+		Result<Any, std::string> result = Invoke(self, erasedArgs);
 
 		if constexpr (std::is_void_v<T>)
 		{
-			Result<Any, std::string> result = Invoke(self, erasedArgs);
 			if (result.IsError())
 				return std::move(result).GetError();
 			return {};
 		}
 		else
 		{
-			Result<Any, std::string> result = Invoke(self, erasedArgs);
 			if (result.IsOk())
 				return std::move(result).GetValue().template As<T>();
 			return std::move(result).GetError();

@@ -27,7 +27,7 @@ namespace cct::refl
 					continue;
 				if (method->GetAttribute("ChangedEvent") != variableName)
 					continue;
-				Result<void, std::string> result = method->Invoke<void, Object&, EnumFlags<ChangeType>>(changedObject, changedObject, changeType);
+				Result<void, std::string> result = method->Invoke<void>(changedObject, changedObject, changeType);
 				if (result.IsError())
 					cct::Logger::Error("'{}' method returned an error: {}", method->GetName(), result.GetError());
 				return;
