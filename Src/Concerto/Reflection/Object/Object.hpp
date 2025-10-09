@@ -67,11 +67,20 @@ namespace cct::refl
 		template<typename T> [[nodiscard]] T* GetMemberVariable(std::string_view name);
 		template<typename T>[[nodiscard]] const T* GetMemberVariable(std::string_view name) const;
 
+		template<typename T> [[nodiscard]] T* GetNativeMemberVariable(std::size_t index);
+		template<typename T> [[nodiscard]] const T* GetNativeMemberVariable(std::size_t index) const;
+
+		template<typename T> [[nodiscard]] T* GetNativeMemberVariable(std::string_view name);
+		template<typename T> [[nodiscard]] const T* GetNativeMemberVariable(std::string_view name) const;
+
 		[[nodiscard]] inline const cct::refl::Class* GetDynamicClass() const;
+		inline void SetDynamicClass(const Class* klass);
 
 		[[nodiscard]] bool HasRegistry() const;
 		[[nodiscard]] Registry* GetRegistry();
 		[[nodiscard]] const Registry* GetRegistry() const;
+
+		inline void InitializeMemberVariables();
 
 		CCT_OBJECT(Object);
 
@@ -150,7 +159,7 @@ namespace cct::refl
 		{
 			if (!m_registry)
 			{
-				OnValueChangeEvent(*this, ChangeType::Set);
+//				OnValueChangeEvent(*this, ChangeType::Set);
 				m_value = value;
 				return;
 			}
@@ -165,11 +174,11 @@ namespace cct::refl
 		}
 
 	private:
-		CCT_REFL_METHOD("ChangedEvent = " CCT_QUOTE(m_value))
-		void OnValueChangeEvent(const Object& oldValue, EnumFlags<ChangeType> changeType)
-		{
-			m_value = std::max(std::min(m_min, m_value), m_max);
-		}
+		//CCT_REFL_METHOD("ChangedEvent = " CCT_QUOTE(m_value))
+		//void OnValueChangeEvent(const Object& oldValue, EnumFlags<ChangeType> changeType)
+		//{
+		//	m_value = std::max(std::min(m_min, m_value), m_max);
+		//}
 		cct::Int32 m_min;
 		cct::Int32 m_max;
 	};

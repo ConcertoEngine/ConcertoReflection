@@ -6,6 +6,7 @@
 #define CONCERTO_REFLECTION_DEFINE_HPP
 
 #include <Concerto/Core/Types/Types.hpp>
+#include <Concerto/Core/Assert.hpp>
 
 #ifdef CCT_REFLECTION_BUILD
 #define CCT_REFLECTION_API CCT_EXPORT
@@ -18,6 +19,7 @@
 #define CCT_PACKAGE(...) [[clang::annotate("cct::Package" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_CLASS(...) [[clang::annotate("cct::Class" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_MEMBER(...) [[clang::annotate("cct::Member" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_NATIVE_MEMBER(...) [[clang::annotate("cct::NativeMember" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_METHOD(...) [[clang::annotate("cct::Method" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_ENUM(...) [[clang::annotate("cct::Enum" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_ENUM_VALUE(...) [[clang::annotate("cct::EnumValue" __VA_OPT__(,) __VA_ARGS__)]]
@@ -27,6 +29,7 @@
 #define CCT_PACKAGE(...)
 #define CCT_CLASS(...)
 #define CCT_MEMBER(...)
+#define CCT_NATIVE_MEMBER(...)
 #define CCT_METHOD(...)
 #define CCT_ENUM(...)
 #define CCT_ENUM_VALUE(...)

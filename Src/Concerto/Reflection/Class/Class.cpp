@@ -60,6 +60,11 @@ namespace cct::refl
 		return m_memberVariables.size();
 	}
 
+	std::size_t Class::GetNativeMemberVariableCount() const
+	{
+		return m_nativeMemberVariables.size();
+	}
+
 	std::size_t Class::GetMethodCount() const
 	{
 		return m_methods.size();
@@ -68,6 +73,36 @@ namespace cct::refl
 	const Class* Class::GetBaseClass() const
 	{
 		return m_baseClass;
+	}
+
+	std::span<std::unique_ptr<MemberVariable>> Class::GetMemberVariables()
+	{
+		return m_memberVariables;
+	}
+
+	std::span<const std::unique_ptr<MemberVariable>> Class::GetMemberVariables() const
+	{
+		return m_memberVariables;
+	}
+
+	std::span<std::unique_ptr<NativeMemberVariable>> Class::GetNativeMemberVariables()
+	{
+		return m_nativeMemberVariables;
+	}
+
+	std::span<const std::unique_ptr<NativeMemberVariable>> Class::GetNativeMemberVariables() const
+	{
+		return m_nativeMemberVariables;
+	}
+
+	std::span<std::unique_ptr<Method>> Class::GetMethods()
+	{
+		return m_methods;
+	}
+
+	std::span<const std::unique_ptr<Method>> Class::GetMethods() const
+	{
+		return m_methods;
 	}
 
 	const MemberVariable* Class::GetMemberVariable(std::size_t index) const
@@ -89,12 +124,39 @@ namespace cct::refl
 		return nullptr;
 	}
 
+	const NativeMemberVariable* Class::GetNativeMemberVariable(std::size_t index) const
+	{
+		if (m_nativeMemberVariables.empty())
+			return nullptr;
+		if (index > m_nativeMemberVariables.size())
+			return nullptr;
+		return m_nativeMemberVariables[index].get();
+	}
+
+	const NativeMemberVariable* Class::GetNativeMemberVariable(std::string_view name) const
+	{
+		for (const auto& variable : m_nativeMemberVariables)
+		{
+			if (variable->GetName() == name)
+				return variable.get();
+		}
+		return nullptr;
+	}
+
 	cct::refl::Object* Class::GetMemberVariable(std::string_view name, const cct::refl::Object& self) const
 	{
 		auto* memberVariable = GetMemberVariable(name);
 		if (memberVariable == nullptr)
 			return nullptr;
 		return GetMemberVariable(memberVariable->GetIndex(), self);
+	}
+
+	void* Class::GetNativeMemberVariable(std::string_view name, const cct::refl::Object& self) const
+	{
+		auto* memberVariable = GetNativeMemberVariable(name);
+		if (memberVariable == nullptr)
+			return nullptr;
+		return GetNativeMemberVariable(memberVariable->GetIndex(), self);
 	}
 
 	const Method* Class::GetMethod(std::size_t index) const
@@ -189,6 +251,12 @@ namespace cct::refl
 	{
 		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");
 		m_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), type, m_memberVariables.size()));
+	}
+
+	void Class::AddNativeMemberVariable(std::string_view name, UInt64 typeId)
+	{
+		CCT_ASSERT(!GetNativeMemberVariable(name), "Member variable already exists");
+		m_nativeMemberVariables.emplace_back(std::make_unique<NativeMemberVariable>(std::string(name), typeId, m_nativeMemberVariables.size()));
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)

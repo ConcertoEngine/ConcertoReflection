@@ -55,6 +55,36 @@ SCENARIO("MemberVariable")
 				const cct::refl::MemberVariable* sampleBarMemberVariable2 = cct::sample::SampleBar::GetClass()->GetMemberVariable(0);
 				CHECK(sampleBarMemberVariable1 == sampleBarMemberVariable2);
 			}
+
+			THEN("We are getting the native member variable of 'SampleBar'")
+			{
+				const cct::refl::Class* sampleBarClass = cct::sample::SampleBar::GetClass();
+				REQUIRE(sampleBarClass);
+				CHECK(sampleBarClass->GetNativeMemberVariableCount() == 1);
+
+				auto sampleBarInstance = sampleBarClass->CreateDefaultObject();
+				REQUIRE(sampleBarInstance);
+
+				const cct::refl::NativeMemberVariable* nativeMemberVariable = sampleBarClass->GetNativeMemberVariable(0);
+				REQUIRE(nativeMemberVariable);
+				CHECK(nativeMemberVariable->GetName() == "m_nativeType"sv);
+				CHECK(nativeMemberVariable->GetIndex() == 0);
+				CHECK(nativeMemberVariable->GetTypeId() == cct::TypeId<cct::Int32>());
+
+				const cct::refl::NativeMemberVariable* nativeMemberVariable1 = sampleBarClass->GetNativeMemberVariable("m_nativeType"sv);
+				REQUIRE(nativeMemberVariable1);
+				CHECK(nativeMemberVariable1->GetName() == "m_nativeType"sv);
+				CHECK(nativeMemberVariable1->GetIndex() == 0);
+				CHECK(nativeMemberVariable1->GetTypeId() == cct::TypeId<cct::Int32>());
+
+				const cct::Int32* memberVariable1 = sampleBarInstance->GetNativeMemberVariable<cct::Int32>(0);
+				CHECK(memberVariable1);
+				CHECK(*memberVariable1 == 42);
+
+				const cct::Int32* memberVariable2 = sampleBarInstance->GetNativeMemberVariable<cct::Int32>("m_nativeType");
+				CHECK(memberVariable2);
+				CHECK(memberVariable2 == memberVariable1);
+			}
 		}
 	}
 }

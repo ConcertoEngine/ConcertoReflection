@@ -15,6 +15,7 @@ namespace cct
 	{
 		Write("//This file was automatically generated, do not edit");
 		Write("#include <Concerto/Core/Assert.hpp>");
+		Write("#include <Concerto/Core/TypeInfo/TypeInfo.hpp>");
 		Write("#include \"Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp\"");
 		Write("#include \"{}Package.gen.hpp\"", package.name);
 		Write("using namespace std::string_view_literals;");
@@ -155,7 +156,10 @@ namespace cct
 				}
 				NewLine();
 				for (auto& member : klass.members)
-					Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"));)", member.name, member.type);
+					if (member.isNative)
+						Write(R"(AddNativeMemberVariable("{}", cct::TypeId<{}>());)", member.name, member.type);
+					else
+						Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"));)", member.name, member.type);
 				NewLine();
 				std::size_t i = 0;
 				for (auto& method : klass.methods)
@@ -180,7 +184,8 @@ namespace cct
 				Write("if (object)");
 				EnterScope();
 				{
-					Write("static_cast<{}*>(object.get())->m_dynamicClass = this;", klass.name);
+					Write("object->SetDynamicClass(this);", klass.name);
+					Write("object->InitializeMemberVariables();");
 				}
 				LeaveScope();
 				Write(" return object;");
@@ -193,6 +198,29 @@ namespace cct
 				std::size_t i = 0;
 				for (auto& member : klass.members)
 				{
+					if (member.isNative)
+						continue;
+					Write("if (index == {})", i);
+					EnterScope();
+					{
+						Write("return &const_cast<{0}&>(static_cast<const {0}&>(self)).{1};", klass.name, member.name);
+					}
+					LeaveScope();
+					++i;
+				}
+				Write("CCT_ASSERT_FALSE(\"Invalid index\");");
+				Write("return nullptr;");
+			}
+			LeaveScope();
+			NewLine();
+			Write("void* GetNativeMemberVariable(std::size_t index, const cct::refl::Object& self) const override");
+			EnterScope();
+			{
+				std::size_t i = 0;
+				for (auto& member : klass.members)
+				{
+					if (member.isNative == false)
+						continue;
 					Write("if (index == {})", i);
 					EnterScope();
 					{
@@ -263,7 +291,7 @@ namespace cct
 						callArgsTypes += ", ";
 					}
 					
-					Write("if (parameters[{}].Is<std::remove_cvref_t<{}>>() == false)", i, param.type);
+					Write("if (parameters[{}].Is<std::remove_cv_t<{}>>() == false)", i, param.type);
 					EnterScope();
 					{
 						Write("CCT_ASSERT_FALSE(\"Expected '{}' in argument {}\");", param.type, i);

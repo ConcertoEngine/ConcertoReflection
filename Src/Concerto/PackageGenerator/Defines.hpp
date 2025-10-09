@@ -42,6 +42,7 @@ struct Class
 	{
 		std::string name;
 		std::string type;
+		bool isNative;
 		TomlAttributes tomlAttributes;
 	};
 	struct Method

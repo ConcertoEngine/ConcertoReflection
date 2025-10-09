@@ -34,6 +34,28 @@ namespace cct::refl
 		std::size_t m_index;
 		const Class* m_type;
 	};
+
+	class CCT_REFLECTION_API NativeMemberVariable
+	{
+	public:
+		NativeMemberVariable(std::string name, UInt64 typeId, std::size_t index);
+		~NativeMemberVariable() = default;
+
+		NativeMemberVariable(const NativeMemberVariable&) = delete;
+		NativeMemberVariable(NativeMemberVariable&&) = default;
+
+		NativeMemberVariable& operator=(const NativeMemberVariable&) = delete;
+		NativeMemberVariable& operator=(NativeMemberVariable&&) = default;
+
+		[[nodiscard]] inline std::string_view GetName() const;
+		[[nodiscard]] inline std::size_t GetIndex() const;
+		[[nodiscard]] inline UInt64 GetTypeId() const;
+
+	private:
+		std::string m_name;
+		std::size_t m_index;
+		UInt64 m_typeId;
+	};
 }
 
 #include "Concerto/Reflection/MemberVariable/MemberVariable.inl"

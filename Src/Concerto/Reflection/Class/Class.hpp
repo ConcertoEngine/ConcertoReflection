@@ -16,6 +16,7 @@
 
 namespace cct::refl
 {
+	class NativeMemberVariable;
 	class Object;
 	class Namespace;
 	class MemberVariable;
@@ -39,15 +40,29 @@ namespace cct::refl
 		[[nodiscard]] std::size_t GetHash() const;
 
 		[[nodiscard]] std::size_t GetMemberVariableCount() const;
+		[[nodiscard]] std::size_t GetNativeMemberVariableCount() const;
 		[[nodiscard]] std::size_t GetMethodCount() const;
 
 		[[nodiscard]] const Class* GetBaseClass() const;
 
+		[[nodiscard]] std::span<std::unique_ptr<MemberVariable>> GetMemberVariables();
+		[[nodiscard]] std::span<const std::unique_ptr<MemberVariable>> GetMemberVariables() const;
+
+		[[nodiscard]] std::span<std::unique_ptr<NativeMemberVariable>> GetNativeMemberVariables();
+		[[nodiscard]] std::span<const std::unique_ptr<NativeMemberVariable>> GetNativeMemberVariables() const;
+
+		[[nodiscard]] std::span<std::unique_ptr<Method>> GetMethods();
+		[[nodiscard]] std::span<const std::unique_ptr<Method>> GetMethods() const;
+
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::size_t index) const;
 		[[nodiscard]] const MemberVariable* GetMemberVariable(std::string_view name) const;
+		[[nodiscard]] const NativeMemberVariable* GetNativeMemberVariable(std::size_t index) const;
+		[[nodiscard]] const NativeMemberVariable* GetNativeMemberVariable(std::string_view name) const;
 
 		[[nodiscard]] virtual cct::refl::Object* GetMemberVariable(std::size_t index, const cct::refl::Object& self) const = 0;
 		[[nodiscard]] cct::refl::Object* GetMemberVariable(std::string_view name, const cct::refl::Object& self) const;
+		[[nodiscard]] virtual void* GetNativeMemberVariable(std::size_t index, const cct::refl::Object& self) const = 0;
+		[[nodiscard]] void* GetNativeMemberVariable(std::string_view name, const cct::refl::Object& self) const;
 
 		[[nodiscard]] const Method* GetMethod(std::size_t index) const;
 		[[nodiscard]] const Method* GetMethod(std::string_view name) const;
@@ -74,6 +89,7 @@ namespace cct::refl
 		virtual void Initialize() = 0;
 	protected:
 		void AddMemberVariable(std::string_view name, const Class* type);
+		void AddNativeMemberVariable(std::string_view name, UInt64 typeId);
 		void AddMemberFunction(std::unique_ptr<Method> method);
 		void AddAttribute(std::string name, std::string value);
 		void SetNamespace(Namespace* nameSpace);
@@ -82,6 +98,7 @@ namespace cct::refl
 		std::string m_name;
 		Namespace* m_namespace;
 		std::vector<std::unique_ptr<MemberVariable>> m_memberVariables;
+		std::vector<std::unique_ptr<NativeMemberVariable>> m_nativeMemberVariables;
 		std::vector<std::unique_ptr<Method>> m_methods;
 		const Class* m_baseClass;
 		std::unordered_map<std::string /*name*/, std::string /*value*/> m_attributes;

@@ -26,6 +26,29 @@ namespace cct::refl
 		CCT_ASSERT(m_type, "MemberVariable has no type");
 		return m_type;
 	}
+
+	inline NativeMemberVariable::NativeMemberVariable(std::string name, UInt64 typeId, std::size_t index) :
+		m_name(std::move(name)),
+		m_typeId(typeId),
+		m_index(index)
+	{
+
+	}
+
+	inline std::string_view NativeMemberVariable::GetName() const
+	{
+		return m_name;
+	}
+
+	inline std::size_t NativeMemberVariable::GetIndex() const
+	{
+		return m_index;
+	}
+
+	inline UInt64 NativeMemberVariable::GetTypeId() const
+	{
+		return m_typeId;
+	}
 }
 
 #endif //CONCERTO_REFLECTION_MEMBERVARIABLE_INL

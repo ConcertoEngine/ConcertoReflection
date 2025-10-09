@@ -99,6 +99,7 @@ namespace
 			"cct::Package"sv,
 			"cct::Class"sv,
 			"cct::Member"sv,
+			"cct::NativeMember"sv,
 			"cct::Method"sv,
 			"cct::Enum"sv,
 			"cct::EnumValue"sv
@@ -271,12 +272,13 @@ namespace cct
 		{
 			bool hasAttr = false;
 			TomlAttributes memberAttrs;
+			std::string scope;
 			for (const auto* A : F->attrs())
 			{
-				std::string scope; TomlAttributes attrs;
+				TomlAttributes attrs;
 				if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 					continue;
-				if (scope == "cct::Member")
+				if (scope == "cct::Member" || scope == "cct::NativeMember")
 				{
 					hasAttr = true;
 					memberAttrs = GetAttributesOr(attrs, {});
@@ -288,6 +290,7 @@ namespace cct
 			Class::Member m;
 			m.name = F->getNameAsString();
 			m.type = QualTypeToString(F->getType(), *m_astContext);
+			m.isNative = scope == "cct::NativeMember";
 			m.tomlAttributes = memberAttrs;
 			cls.members.push_back(std::move(m));
 		}
