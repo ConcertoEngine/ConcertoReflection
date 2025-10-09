@@ -20,6 +20,12 @@ namespace cct::sample
 	class CCT_REFL_TESTS_CLASS("Test=\"test\"") SampleBar : public cct::refl::Object
 	{ 
 	public:
+		SampleBar() :
+			m_bar(42),
+			m_nativeType(42)
+		{
+			
+		}
 		CCT_REFL_TESTS_METHOD("Test=\"test\"")
 		int* Foo(const cct::refl::Int32 & bar)
 		{
@@ -40,6 +46,9 @@ namespace cct::sample
 	private:
 		CCT_REFL_TESTS_MEMBER("Test=\"test\"")
 		cct::refl::Int32 m_bar;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		cct::Int32 m_nativeType;
 
 		cct::FunctionRef<cct::refl::Int32()> m_customDelegatePtr = []()
 		{
