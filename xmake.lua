@@ -3,14 +3,39 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
-package("concerto-core")
-    on_fetch(function (package)
-        local concerto_core = "C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoCore/install"
-        return { linkdirs = { path.join(concerto_core, "lib") }, includedirs = { path.join(concerto_core, "include"), links = { "concerto-core" } } }
-    end)
-package_end()
+-- package("concerto-core")
+--     on_fetch(function (package)
+--         local concerto_core = "C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoCore/install"
+--         return {
+--             linkdirs = { path.join(concerto_core, "lib") },
+--             includedirs = { path.join(concerto_core, "include")},
+--             links = { "concerto-core" } 
+--             }
+--     end)
 
-add_requires("concerto-core", {configs = {asserts = true, shared = false, debug = is_mode("debug"), with_symbols = true}})
+--     add_configs("asserts", {description = "Enable asserts.", default = false, type = "boolean"})
+--     add_configs("enet", {description = "Enable ENet support.", default = false, type = "boolean"})
+
+--     on_load(function (package)
+--         if package:config("enet") then
+--             package:add("deps", "enet")
+--         end
+--         if package:config("asserts") then
+--             package:add("defines", "CCT_ENABLE_ASSERTS")
+--         end
+--         if package:is_plat("windows") then
+--             package:add("syslinks", "user32", "kernel32")
+--         end
+--         if package:has_tool("cxx", "cl", "clang_cl") then
+--             package:add("cxxflags", "/Zc:preprocessor", { public = true })
+--         end
+--         if not package:config("shared") then
+--             package:add("defines", "CCT_CORE_LIB_STATIC")
+--         end
+--     end)
+-- package_end()
+
+add_requires("concerto-core", {configs = {asserts = true, shared = false, debug = is_mode("debug")}})
 add_requires("toml11", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
@@ -84,6 +109,7 @@ target("concerto-pkg-generator")
 
 
 target("concerto-reflection")
+    add_defines("CCT_CORE_LIB_STATIC", { public = true })
     set_kind("shared")
     set_languages("cxx20")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
@@ -112,6 +138,7 @@ target("concerto-reflection")
         set_symbols("debug")
     end
     set_policy("build.across_targets_in_parallel", false)
+    add_cxxflags("cl::/Zc:preprocessor")
 
 
 if has_config("tests") then
@@ -134,4 +161,5 @@ if has_config("tests") then
         if is_mode("debug") then
             set_symbols("debug")
         end
+        add_cxxflags("cl::/Zc:preprocessor")
 end
