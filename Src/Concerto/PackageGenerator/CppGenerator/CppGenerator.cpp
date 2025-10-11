@@ -296,14 +296,14 @@ namespace cct
 						if (type.starts_with(s))
 							type = type.substr(s.size());
 
-					Write("if (parameters[{}].Is<std::remove_cv_t<{}>>() == false)", i, type);
+					Write("using Param{0} = {1};", i, type);
+					Write("if (parameters[{0}].Is<Param{0}>() == false)", i);
 					EnterScope();
 					{
 						Write("CCT_ASSERT_FALSE(\"Expected '{}' in argument {}\");", param.type, i);
 						Write("return {{\"Expected '{}' in argument {}\"s}};", param.type, i);
 					}
 					LeaveScope();
-					Write("using Param{0} = {1};", i, param.type);
 					Write("Param{0} {1} = parameters[{0}].As<Param{0}>();", i, param.name);
 					NewLine();
 					callArgs += param.name;
