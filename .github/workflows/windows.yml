@@ -7,7 +7,6 @@ on:
     paths-ignore:
       - '.github/workflows/macos.yml'
       - '.github/workflows/windows.yml'
-      - '.github/workflows/coverage.yml'
     branches: [ "main" ]
 
 jobs:
@@ -50,10 +49,10 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ env.XMAKE_GLOBALDIR }}\.xmake\packages
-        key: MSVC-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+        key: MSVC-${{ matrix.arch }}-${{ matrix.mode }}-${{ matrix.kind }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake and install dependencies
-      run: xmake config --arch=${{ matrix.arch }} -k ${{ matrix.kind }} --mode=${{ matrix.mode }} --tests=y --yes
+      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} -k ${{ matrix.kind }} --yes --tests=y
 
     - name: Save cached xmake dependencies
       if: ${{ !steps.restore-depcache.outputs.cache-hit }}
@@ -63,7 +62,7 @@ jobs:
         key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
     - name: Build
-      run: xmake --yes -vD
+      run: xmake --yes -v
 
     - name: Run unit tests
       run: xmake run concerto-reflection-tests
