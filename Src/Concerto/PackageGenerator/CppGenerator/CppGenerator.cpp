@@ -290,8 +290,13 @@ namespace cct
 						callArgs += ", ";
 						callArgsTypes += ", ";
 					}
-					
-					Write("if (parameters[{}].Is<std::remove_cv_t<{}>>() == false)", i, param.type);
+
+					std::string_view type = param.type;
+					for (auto& s : {"const"sv})
+						if (type.starts_with(s))
+							type = type.substr(s.size());
+
+					Write("if (parameters[{}].Is<std::remove_cv_t<{}>>() == false)", i, type);
 					EnterScope();
 					{
 						Write("CCT_ASSERT_FALSE(\"Expected '{}' in argument {}\");", param.type, i);
