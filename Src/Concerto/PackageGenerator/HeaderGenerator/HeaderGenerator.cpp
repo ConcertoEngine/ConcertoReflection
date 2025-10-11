@@ -36,10 +36,18 @@ namespace cct
 		}
 
 		NewLine();
-		Write("#ifdef {}PACKAGE_BUILD", upperPackageName);
-		Write("#define {}PACKAGE_API CCT_EXPORT", upperPackageName);
+		Write("#ifdef {}PACKAGE_STATIC", upperPackageName);
+		{
+			Write("	#define {}PACKAGE_API", upperPackageName);
+		}
 		Write("#else");
-		Write("#define {}PACKAGE_API CCT_IMPORT\n", upperPackageName);
+		{
+			Write("#ifdef {}PACKAGE_BUILD", upperPackageName);
+			Write("	#define {}PACKAGE_API CCT_EXPORT", upperPackageName);
+			Write("#else");
+			Write("	#define {}PACKAGE_API CCT_IMPORT\n", upperPackageName);
+			Write("#endif");
+		}
 		Write("#endif");
 		NewLine();
 

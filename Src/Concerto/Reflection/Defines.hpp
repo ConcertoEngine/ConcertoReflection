@@ -8,11 +8,15 @@
 #include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Core/Assert.hpp>
 
-#ifdef CCT_REFLECTION_BUILD
-#define CCT_REFLECTION_API CCT_EXPORT
+#ifdef CCT_REFLECTION_STATIC
+	#define CCT_REFLECTION_API
 #else
-#define CCT_REFLECTION_API CCT_IMPORT
-#endif // CCT_REFLECTION_BUILD
+	#ifdef CCT_REFLECTION_BUILD
+		#define CCT_REFLECTION_API CCT_EXPORT
+	#else
+		#define CCT_REFLECTION_API CCT_IMPORT
+	#endif // CCT_REFLECTION_BUILD
+#endif // CCT_REFLECTION_STATIC
 
 #if defined(CCT_REFLECTION_PKG_GENERATOR_BUILD)
 

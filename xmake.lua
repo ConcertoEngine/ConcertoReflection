@@ -35,8 +35,8 @@ add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 --     end)
 -- package_end()
 
-add_requires("concerto-core", {configs = {asserts = true, shared = false, debug = is_mode("debug")}})
-add_requires("toml11", {configs = {debug = is_mode("debug"), with_symbols = is_mode("debug")}})
+add_requires("concerto-core", {configs = {asserts = true, shared = false}})
+add_requires("toml11")
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
 
@@ -109,12 +109,14 @@ target("concerto-pkg-generator")
 
 
 target("concerto-reflection")
-    add_defines("CCT_CORE_LIB_STATIC", { public = true })
-    set_kind("shared")
+    set_kind("$(kind)")
     set_languages("cxx20")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
     add_defines("CCT_ENABLE_ASSERTS")
     add_includedirs("Src/", { public = true })
+    if is_kind("static") then
+        add_defines("CCT_REFLECTION_STATIC", { public = true })
+    end
     local files = {
         ".",
         "Class",

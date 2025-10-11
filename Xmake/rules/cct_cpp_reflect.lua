@@ -9,6 +9,9 @@ rule("cpp_reflect")
         target:add("headerfiles", path.join(target:autogendir(), "(" .. targetName .. "Package.gen.hpp)"))
         target:add("files", generatedCpp, {always_added = true})
         target:add("includedirs", target:autogendir(), {public = true})
+        if target:get("kind") == "static" or target:get("kind") == "binary" then
+            target:add("defines", targetName:upper() .. "PACKAGE_STATIC", { public = true })
+        end
         target:add("defines", path.basename(targetName):upper() .. "_BUILD", { public = false })
     end)
 
