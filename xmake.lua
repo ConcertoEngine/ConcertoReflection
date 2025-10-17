@@ -35,7 +35,7 @@ add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 --     end)
 -- package_end()
 
-add_requires("concerto-core", {configs = {asserts = true, shared = false}})
+add_requires("concerto-core", {configs = {asserts = true, shared = is_kind("static") and false or true }})
 add_requires("toml11")
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
@@ -134,7 +134,7 @@ target("concerto-reflection")
     end
     add_deps("concerto-pkg-generator")
     add_packages("concerto-core", { public = true })
-    add_rules("cpp_reflect")
+    add_rules("cct_cpp_reflect")
 
     if is_mode("debug") then
         set_symbols("debug")
@@ -150,7 +150,7 @@ if has_config("tests") then
         add_files("Src/Tests/*.cpp", "Src/Tests/*.hpp")
         add_packages("catch2")
         add_deps("concerto-reflection")
-        add_rules("cpp_reflect")
+        add_rules("cct_cpp_reflect")
         add_includedirs(".", { public = true }) -- temporary
         add_includedirs("Src/Tests/", { public = true })
         add_headerfiles("Src/Tests/**.hpp")

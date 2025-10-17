@@ -18,6 +18,10 @@ namespace cct
 		Write("#include <Concerto/Core/TypeInfo/TypeInfo.hpp>");
 		Write("#include \"Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp\"");
 		Write("#include \"{}Package.gen.hpp\"", package.name);
+
+		for (auto& header : args)
+			Write("#include \"{}\"", header);
+
 		Write("using namespace std::string_view_literals;");
 		Write("using namespace std::string_literals;");
 		Write("using namespace cct;");
@@ -67,7 +71,7 @@ namespace cct
 				EnterScope();
 				{
 					for (auto& nestedNs : ns.namespaces)
-						Write("AddNamespace(Create{}NamespaceInstance());", nestedNs.name);
+						Write("AddNamespace({}::{}::Create{}NamespaceInstance());", namespaceChain, ns.name, nestedNs.name);
 					Write("for (auto& ns : m_namespaces)");
 					EnterScope();
 					{

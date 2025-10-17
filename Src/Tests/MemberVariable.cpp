@@ -9,6 +9,8 @@
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
+#include "Tests/SampleBar.hpp"
+
 SCENARIO("MemberVariable")
 {
 	using namespace std::string_view_literals;

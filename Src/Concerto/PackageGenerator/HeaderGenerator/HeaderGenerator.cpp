@@ -30,11 +30,6 @@ namespace cct
 		Write("#include <Concerto/Reflection/Package/Package.hpp>");
 		NewLine();
 
-		for (auto header : args)
-		{
-			Write("#include \"{}\"", header);
-		}
-
 		NewLine();
 		Write("#ifdef {}PACKAGE_STATIC", upperPackageName);
 		{
@@ -119,6 +114,7 @@ namespace cct
 
 	void HeaderGenerator::GenerateEnum(const Enum& enum_, const std::string& api)
 	{
+		Write("enum class {} : {};", enum_.name, enum_.base);
 		Write("{} std::string_view {}ToString({} value);", api, Capitalize(enum_.name), enum_.name);
 		Write("{} {} {}FromString(std::string_view str);", api, enum_.name, Capitalize(enum_.name));
 	}
