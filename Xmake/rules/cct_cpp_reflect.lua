@@ -1,4 +1,4 @@
-rule("cpp_reflect")
+rule("cct_cpp_reflect")
     add_deps("find_cct_pkg_generator")
     set_extensions(".hpp")
 
@@ -9,9 +9,6 @@ rule("cpp_reflect")
         target:add("headerfiles", path.join(target:autogendir(), "(" .. targetName .. "Package.gen.hpp)"))
         target:add("files", generatedCpp, {always_added = true})
         target:add("includedirs", target:autogendir(), {public = true})
-        if target:get("kind") == "static" or target:get("kind") == "binary" then
-            target:add("defines", targetName:upper() .. "PACKAGE_STATIC", { public = true })
-        end
         target:add("defines", path.basename(targetName):upper() .. "_BUILD", { public = false })
     end)
 
@@ -76,22 +73,30 @@ rule("cpp_reflect")
         end
 
         process_target(target, args, true)
-        
+
         for _, header in ipairs(target:get("headerfiles")) do
+            header = header:gsub("[%(%)]", "")
             for _, file_path in ipairs(os.filedirs(header)) do
-                file_path = file_path:gsub("[%(%)]", "")
+                for _, incdir in ipairs(target:get("includedirs")) do
+                    if file_path:startswith(incdir) then
+                        file_path = file_path:sub(#incdir + 2)
+                        break
+                    end
+                end
                 table.insert(args, "-H" .. file_path)
             end
         end
         
-        local libllvm = project.required_package("libllvm")
-        assert(libllvm, "libllvm not found!")
-        local llvm_include = path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major(), "include")
-        table.insert(args, "-I" .. llvm_include)
-
+        -- local libllvm = project.required_package("libllvm")
+        -- if not libllvm then
+        --     libllvm = project.required_package("concerto-reflection")
+        --     print("libllvm from concerto-reflection: ", project.dump())
+        -- end
+        -- assert(libllvm, "libllvm not found!")
+        -- local llvm_include = path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major(), "include")
+        -- table.insert(args, "-I" .. llvm_include)
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
         batchcmds:add_depfiles(sourcebatch.sourcefiles)
         batchcmds:set_depmtime(os.mtime(outputCppFile))
         batchcmds:set_depcache(target:dependfile(outputCppFile))
-        print(target:dependfile(outputCppFile))
     end)
