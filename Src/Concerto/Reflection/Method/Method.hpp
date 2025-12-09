@@ -15,7 +15,7 @@
 #include <Concerto/Core/Result/Result.hpp>
 
 #include "Concerto/Reflection/Defines.hpp"
-#include "Concerto/Reflection/Object/Object.hpp"
+#include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
 {

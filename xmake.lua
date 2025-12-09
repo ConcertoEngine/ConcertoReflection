@@ -58,14 +58,12 @@ end
 
 includes("Xmake/rules/**.lua")
 
-function add_files_to_target(p, hpp_as_files)
+function add_files_to_target(p)
     for _, dir in ipairs(os.filedirs(p)) do
         relative_dir = path.relative(dir, "Src/")
         if os.isdir(dir) then
             add_files(path.join("Src", relative_dir, "*.cpp"))
-            if hpp_as_files then
-                add_files(path.join("Src", relative_dir, "*.hpp"))
-            end
+            add_files(path.join("Src", relative_dir, "*.refl.hpp"))
             add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.hpp)"))
             add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.inl)"))
         else

@@ -1,6 +1,6 @@
 rule("cct_cpp_reflect")
     add_deps("find_cct_pkg_generator")
-    set_extensions(".hpp")
+    set_extensions(".refl.hpp")
 
     on_config(function (target)
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
@@ -83,7 +83,9 @@ rule("cct_cpp_reflect")
                         break
                     end
                 end
-                table.insert(args, "-H" .. file_path)
+                if path.extension(file_path) == ".refl.hpp" then
+                    table.insert(args, "-H" .. file_path)
+                end
             end
         end
         

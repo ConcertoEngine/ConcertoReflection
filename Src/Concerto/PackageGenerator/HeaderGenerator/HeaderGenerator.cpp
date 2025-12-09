@@ -24,7 +24,7 @@ namespace cct
 		Write("#include <Concerto/Reflection/Defines.hpp>");
 		NewLine();
 		Write("#include <Concerto/Reflection/Class/Class.hpp>");
-		Write("#include <Concerto/Reflection/Object/Object.hpp>");
+		Write("#include <Concerto/Reflection/Object/Object.refl.hpp>");
 		Write("#include <Concerto/Reflection/MemberVariable/MemberVariable.hpp>");
 		Write("#include <Concerto/Reflection/Method/Method.hpp>");
 		Write("#include <Concerto/Reflection/Package/Package.hpp>");
