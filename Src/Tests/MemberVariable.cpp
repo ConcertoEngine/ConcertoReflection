@@ -9,7 +9,7 @@
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
-#include "Tests/SampleBar.hpp"
+#include "Tests/SampleBar.refl.hpp"
 
 SCENARIO("MemberVariable")
 {
