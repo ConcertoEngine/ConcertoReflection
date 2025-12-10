@@ -1,5 +1,5 @@
 rule("find_cct_pkg_generator")
-    on_config(function (target)
+    before_build(function (target)
         import("core.project.project")
         import("lib.detect.find_tool")
 
