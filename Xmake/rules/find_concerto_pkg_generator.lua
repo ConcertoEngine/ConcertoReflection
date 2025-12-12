@@ -15,8 +15,12 @@ rule("find_cct_pkg_generator")
                 raise("Concerto Reflection package not found")
             end
         end
+        
+        if not dir then
+            raise("Unable to locate concerto-pkg-generator")
+        end
 
-        local program = find_tool("concerto-pkg-generator", {check = "-v", paths = dir})
+        local program = find_tool("concerto-pkg-generator", {check = "-v", paths = {dir}})
         assert(program, "concerto-pkg-generator not found! Please install concerto-reflection package or build concerto-pkg-generator target.")
         target:data_set("concerto-pkg-generator", program)
     end)

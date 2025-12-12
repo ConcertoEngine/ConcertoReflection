@@ -3,7 +3,7 @@
 //
 
 #include "Concerto/Reflection/Registry/Registry.hpp"
-#include "Concerto/Reflection/Object/Object.hpp"
+#include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
 {

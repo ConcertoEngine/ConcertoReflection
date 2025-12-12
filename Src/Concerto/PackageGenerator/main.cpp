@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include <cstring>
+#include <string>
 #include <thread>
 
 #include <cxxopts.hpp>
@@ -17,6 +18,8 @@ int main(int argc, const char** argv)
 	std::vector<std::string> defines;
 	std::vector<std::string> sources;
 	std::vector<std::string> headers;
+	std::string resourceDir;
+	std::string sdk;
 
 	try {
 		cxxopts::Options options("Concerto Reflection Generator",
@@ -28,6 +31,8 @@ int main(int argc, const char** argv)
 			("D,define", "Preprocessor defines (one or more)", cxxopts::value<std::vector<std::string>>())
 			("s,source", "Source files (one or more)", cxxopts::value<std::vector<std::string>>())
 			("H,header", "Header file to include in the generated cpp", cxxopts::value<std::vector<std::string>>())
+			("R,resource-dir", "Clang resource directory", cxxopts::value<std::string>())
+			("S,sdk", "SDK path", cxxopts::value<std::string>())
 			("v,version", "1.0.0")
 			("h,help", "Show help");
 
@@ -62,18 +67,24 @@ int main(int argc, const char** argv)
 			sources = result["source"].as<std::vector<std::string>>();
 		if (result.count("header"))
 			headers = result["header"].as<std::vector<std::string>>();
-
+		if (result.count("resource-dir"))
+			resourceDir = result["resource-dir"].as<std::string>();
+		if (result.count("sdk"))
+			sdk = result["sdk"].as<std::string>();
 
 		//std::this_thread::sleep_for(std::chrono::seconds(5));
+		cct::ClangParser parser;
+		Package* package = parser.Parse(includes, defines, sources, resourceDir, sdk);
+		if (!package)
+			return EXIT_FAILURE;
 
-		Package package = cct::ClangParser().Parse(includes, defines, sources);
 		std::filesystem::path file(outputFolder);
 		std::filesystem::create_directories(file);
 
-		cct::HeaderGenerator headerGenerator((file / (package.name + "Package.gen.hpp")).string());
-		headerGenerator.Generate(package, headers);
-		cct::CppGenerator cppGenerator((file / (package.name + "Package.gen.cpp")).string());
-		cppGenerator.Generate(package, headers);
+		cct::HeaderGenerator headerGenerator((file / (package->name + "Package.gen.hpp")).string());
+		headerGenerator.Generate(*package, headers);
+		cct::CppGenerator cppGenerator((file / (package->name + "Package.gen.cpp")).string());
+		cppGenerator.Generate(*package, headers);
 	}
 	catch (const std::exception& e)
 	{

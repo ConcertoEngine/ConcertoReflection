@@ -176,9 +176,11 @@ namespace
 
 namespace cct
 {
-	Package ClangParser::Parse(const std::vector<std::string>& includeDirs,
+	Package* ClangParser::Parse(const std::vector<std::string>& includeDirs,
 		const std::vector<std::string>& defines,
-		const std::vector<std::string>& sources)
+		const std::vector<std::string>& sources,
+		const std::string& resourceDir,
+		const std::string& sdk)
 	{
 		std::string code;
 
@@ -186,13 +188,17 @@ namespace cct
 			code += std::format("#include \"{}\"\n", src);
 
 		std::vector<std::string> args;
-		args.reserve(defines.size() + includeDirs.size() + 1);
+		args.reserve(defines.size() + includeDirs.size() + 3);
 
 		args.emplace_back("-std=c++20");
 		args.emplace_back("-xc++");
+		args.emplace_back("-resource-dir=" + resourceDir);
+#ifdef CCT_PLATFORM_MACOS
+		args.emplace_back("-isysroot" + sdk);
+#endif
 
 		for (auto& define : defines)
-			args.emplace_back("-D " + define);
+			args.emplace_back("-D" + define);
 
 		for (auto& include : includeDirs)
 			args.emplace_back("-I" + include);
@@ -200,8 +206,8 @@ namespace cct
 		std::unique_ptr<ASTUnit> AST = buildASTFromCodeWithArgs(code, args);
 		if (!AST)
 		{
-			Logger::Warning("LibTooling: failed to parse");
-			return {};
+			Logger::Error("LibTooling: failed to parse");
+			return nullptr;
 		}
 		
 		m_astContext = &AST->getASTContext();
@@ -212,7 +218,7 @@ namespace cct
 		for (const auto* D : TU->decls())
 			ProcessDeclaration(D);
 
-		return m_package;
+		return &m_package;
 	}
 
 	void ClangParser::ProcessRecord(const CXXRecordDecl* recordDeclaration)

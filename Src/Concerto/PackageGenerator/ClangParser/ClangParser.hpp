@@ -17,9 +17,11 @@ namespace cct
 	class ClangParser
 	{
 	public:
-		Package Parse(const std::vector<std::string>& includeDirs,
+		Package* Parse(const std::vector<std::string>& includeDirs,
 			const std::vector<std::string>& defines,
-			const std::vector<std::string>& sources);
+			const std::vector<std::string>& sources,
+			const std::string& resourceDir,
+			const std::string& sdk);
 
 		void ProcessDeclaration(const clang::Decl* declaration);
 		void ProcessNamespace(const clang::NamespaceDecl* namespaceDeclaration);

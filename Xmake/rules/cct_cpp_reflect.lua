@@ -1,6 +1,6 @@
 rule("cct_cpp_reflect")
     add_deps("find_cct_pkg_generator")
-    set_extensions(".hpp")
+    set_extensions(".refl.hpp")
 
     on_config(function (target)
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
@@ -83,18 +83,24 @@ rule("cct_cpp_reflect")
                         break
                     end
                 end
-                table.insert(args, "-H" .. file_path)
+                if file_path:endswith(".refl.hpp") then
+                    table.insert(args, "-H" .. file_path)
+                end
             end
         end
         
-        -- local libllvm = project.required_package("libllvm")
-        -- if not libllvm then
-        --     libllvm = project.required_package("concerto-reflection")
-        --     print("libllvm from concerto-reflection: ", project.dump())
-        -- end
-        -- assert(libllvm, "libllvm not found!")
-        -- local llvm_include = path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major(), "include")
-        -- table.insert(args, "-I" .. llvm_include)
+        local libllvm = project.required_package("libllvm")
+        assert(libllvm, "libllvm not found!")
+        local llvm_include = path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major(), "include")
+        if is_plat("macosx") then
+            local xcode = target:toolchain("xcode")
+            assert(xcode, "xcode toolchain not found!")
+            local sdk_path = xcode:config("xcode_sysroot")
+            assert(sdk_path, "Unable to determine SDK path from xcode toolchain")
+            table.insert(args, "-S" .. sdk_path)
+        end
+        table.insert(args, "-R" .. path.join(libllvm:installdir(), "lib", "clang", libllvm:version():major()))
+
         batchcmds:vrunv(cctPkgGen.program, args, {envs = envs})
         batchcmds:add_depfiles(sourcebatch.sourcefiles)
         batchcmds:set_depmtime(os.mtime(outputCppFile))
