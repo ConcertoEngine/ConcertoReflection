@@ -202,6 +202,234 @@ Concerto Reflection exposes a rich runtime API.  Here are some of the key capab
 * All reflection entities (packages, classes, enums, methods, members) can carry key–value attributes.  Use `HasAttribute` and `GetAttribute` to inspect them.
 * Built‑in types such as `Int32` are also registered with the reflection system, allowing you to treat fundamental types like any other class.
 
+
+### Template class support
+
+Concerto Reflection supports C++ template classes with full reflection metadata for each specialization.
+
+#### Annotating template classes
+
+Mark template classes with the standard reflection macros:
+
+```cpp
+template<typename T>
+class CCT_CLASS() Container : public cct::refl::Object
+{
+public:
+    Container() : m_value() {}
+
+    CCT_MEMBER()
+    T m_value;
+
+    CCT_METHOD()
+    void SetValue(T val) { m_value = val; }
+
+    CCT_METHOD()
+    T GetValue() const { return m_value; }
+
+    CCT_OBJECT(Container);
+};
+
+// Explicitly instantiate the specializations you want to reflect
+template class Container<int>;
+template class Container<double>;
+```
+
+#### Accessing template specializations at runtime
+
+Once loaded, you can retrieve specializations in two ways:
+
+**Method 1: Using the TemplateClass API**
+
+```cpp
+const auto* containerClass = cct::refl::GetClassByName("cct::sample::Container");
+if (containerClass && containerClass->IsTemplateClass())
+{
+    auto* templateClass = dynamic_cast<cct::refl::TemplateClass*>(
+        const_cast<cct::refl::Class*>(containerClass));
+
+    // Get a specific specialization by type string
+    auto* intSpec = templateClass->GetSpecialization("int"sv);
+    if (intSpec)
+    {
+        auto obj = intSpec->CreateDefaultObject();
+        // Use the specialized instance...
+    }
+}
+```
+
+**Method 2: Direct retrieval by full name**
+
+```cpp
+const auto* intSpec = cct::refl::GetClassByName("cct::sample::Container<int>");
+if (intSpec)
+{
+    auto obj = intSpec->CreateDefaultObject();
+    // Use the specialized instance...
+}
+```
+
+#### Multi-parameter templates
+
+Templates with multiple parameters are fully supported:
+
+```cpp
+template<typename K, typename V>
+class CCT_CLASS() Pair : public cct::refl::Object
+{
+public:
+    CCT_MEMBER()
+    K m_key;
+
+    CCT_MEMBER()
+    V m_value;
+
+    CCT_OBJECT(Pair);
+};
+
+// Explicitly instantiate specializations
+template class Pair<int, double>;
+template class Pair<std::string, int>;
+```
+
+Then retrieve them:
+
+```cpp
+const auto* pairSpec = cct::refl::GetClassByName("cct::sample::Pair<int,double>");
+```
+
+#### How it works
+
+The package generator:
+1. Detects template class declarations and their explicit instantiations
+2. Generates a base `TemplateClass` that describes the template parameters
+3. For each explicit instantiation, generates a specialization class with the concrete type information
+4. Registers all specializations in the reflection namespace for runtime discovery
+
+---
+
+### Generic class support (runtime-parameterized types)
+
+Concerto Reflection also supports **generic classes** – classes whose member variables store runtime type parameters. Unlike C++ templates which are resolved at compile-time, generic classes allow you to work with polymorphic type parameters at runtime without requiring explicit specializations.
+
+#### Key differences: Templates vs Generics
+
+| Aspect | Template Class | Generic Class |
+|--------|---|---|
+| **Type Resolution** | Compile-time (instantiation-based) | Runtime (parameter-based) |
+| **Specializations** | Explicit instantiations required | Single definition works for all type arguments |
+| **Type Safety** | Full compile-time checking | Type safety via `const Class*` pointers |
+| **Cross-DLL Compatibility** | Each specialization needs code generation | Single definition works across DLLs |
+| **Memory Model** | Separate binary code per specialization | Shared implementation, parameterized data |
+| **Use Cases** | Known type combinations at build time | Dynamic, unknown type combinations at runtime |
+
+#### Annotating generic classes
+
+Mark a class as generic using `CCT_GENERIC_CLASS()` and annotate type parameter fields with `CCT_GENERIC_TYPE()`:
+
+```cpp
+class CCT_CLASS() CCT_GENERIC_CLASS() GenericContainer : public cct::refl::Object
+{
+public:
+    GenericContainer() : m_elementType(nullptr) {}
+
+    CCT_MEMBER()
+    CCT_GENERIC_TYPE()
+    const cct::refl::Class* m_elementType;
+
+    CCT_METHOD()
+    const cct::refl::Class* GetElementType() const
+    {
+        return m_elementType;
+    }
+
+    CCT_OBJECT(GenericContainer);
+};
+```
+
+Key points:
+- Type parameter fields **must** be of type `const cct::refl::Class*`
+- Use `CCT_GENERIC_TYPE()` annotation to mark type parameters
+- The macro automatically includes `CCT_MEMBER()` annotation
+- Provide getter methods to access type parameters
+
+#### Using generic classes at runtime
+
+Generic classes are instantiated with type arguments passed to `CreateDefaultObject()`:
+
+```cpp
+const auto* containerClass = cct::refl::GetClassByName("cct::sample::GenericContainer");
+if (containerClass && containerClass->IsGenericClass())
+{
+    auto* genericClass = dynamic_cast<cct::refl::GenericClass*>(
+        const_cast<cct::refl::Class*>(containerClass));
+
+    // Get a type to use as argument
+    const auto* int32Class = cct::refl::GetClassByName("cct::refl::Int32");
+
+    // Create instance with type argument(s)
+    std::vector<const cct::refl::Class*> typeArgs = { int32Class };
+    auto obj = genericClass->CreateDefaultObject(
+        std::span<const cct::refl::Class*>(typeArgs));
+
+    if (obj)
+    {
+        // Access the type parameter
+        auto container = dynamic_cast<YourGenericContainer*>(obj.get());
+        const auto* elementType = container->GetElementType();
+        // Use the element type information...
+    }
+}
+```
+
+#### Multi-parameter generics
+
+Generic classes can have multiple type parameters:
+
+```cpp
+class CCT_CLASS() CCT_GENERIC_CLASS() GenericPair : public cct::refl::Object
+{
+public:
+    GenericPair() : m_keyType(nullptr), m_valueType(nullptr) {}
+
+    CCT_MEMBER()
+    CCT_GENERIC_TYPE()
+    const cct::refl::Class* m_keyType;
+
+    CCT_MEMBER()
+    CCT_GENERIC_TYPE()
+    const cct::refl::Class* m_valueType;
+
+    CCT_METHOD()
+    const cct::refl::Class* GetKeyType() const { return m_keyType; }
+
+    CCT_METHOD()
+    const cct::refl::Class* GetValueType() const { return m_valueType; }
+
+    CCT_OBJECT(GenericPair);
+};
+```
+
+Instantiate with multiple type arguments:
+
+```cpp
+const auto* int32Class = cct::refl::GetClassByName("cct::refl::Int32");
+const auto* int64Class = cct::refl::GetClassByName("cct::refl::Int64");
+
+std::vector<const cct::refl::Class*> typeArgs = { int32Class, int64Class };
+auto obj = genericClass->CreateDefaultObject(
+    std::span<const cct::refl::Class*>(typeArgs));
+```
+
+#### How it works
+
+The package generator:
+1. Detects `CCT_GENERIC_CLASS()` annotations on class declarations
+2. Identifies type parameter fields via `CCT_GENERIC_TYPE()` annotations
+3. Generates code that stores type parameters in member variables during instantiation
+4. Provides `CreateDefaultObject(span<const Class*>)` to pass type arguments at runtime
+
+---
 ---
 
 ## 📚 Examples & Documentation

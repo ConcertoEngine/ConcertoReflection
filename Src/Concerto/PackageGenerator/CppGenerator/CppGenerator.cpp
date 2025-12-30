@@ -17,6 +17,7 @@ namespace cct
 		Write("#include <Concerto/Core/Assert.hpp>");
 		Write("#include <Concerto/Core/TypeInfo/TypeInfo.hpp>");
 		Write("#include \"Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp\"");
+		Write("#include <Concerto/Reflection/GenericClass/GenericClass.hpp>");
 		Write("#include \"{}Package.gen.hpp\"", package.name);
 
 		for (auto& header : args)
@@ -30,7 +31,14 @@ namespace cct
 		for (auto& enum_ : package.enums)
 			GenerateEnum(enum_);
 		for (auto& klass : package.classes)
-			GenerateClass({}, klass);
+		{
+			if (klass.isGenericClass)
+				GenerateGenericClass({}, klass);
+			else if (klass.isTemplateClass)
+				GenerateTemplateClass({}, klass);
+			else
+				GenerateClass({}, klass);
+		}
 		for (auto& ns : package.namepsaces)
 			GenerateNamespace(ns);
 		GeneratePackage(package);
@@ -47,7 +55,14 @@ namespace cct
 			for (auto& enum_ : ns.enums)
 				GenerateEnum(enum_);
 			for (auto& klass : ns.classes)
-				GenerateClass(namespaceChain + "::"s + std::string(ns.name), klass);
+			{
+				if (klass.isGenericClass)
+					GenerateGenericClass(namespaceChain + "::"s + std::string(ns.name), klass);
+				else if (klass.isTemplateClass)
+					GenerateTemplateClass(namespaceChain + "::"s + std::string(ns.name), klass);
+				else
+					GenerateClass(namespaceChain + "::"s + std::string(ns.name), klass);
+			}
 		}
 		LeaveScope();
 		Write("namespace");
@@ -89,7 +104,28 @@ namespace cct
 					Write("ns->LoadClasses();");
 					LeaveScope();
 					for (auto& klass : ns.classes)
-						Write("AddClass(std::make_unique<{}::Internal{}Class>());", ns.name, klass.name);
+					{
+						if (klass.isGenericClass)
+						Write("AddClass(std::make_unique<{}::Internal{}GenericClass>());", ns.name, klass.name);
+					else if (klass.isTemplateClass)
+						{
+							Write("AddClass(std::make_unique<{}::Internal{}TemplateClass>());", ns.name, klass.name);
+							for (const auto& specialization : klass.templateSpecializations)
+							{
+								if (specialization.empty())
+									continue;
+								std::string specName = specialization;
+								for (auto& c : specName)
+								{
+									if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9'))
+										c = '_';
+								}
+								Write("AddClass(std::make_unique<{}::Internal{}_{}_Class>());", ns.name, klass.name, specName);
+							}
+						}
+						else
+							Write("AddClass(std::make_unique<{}::Internal{}Class>());", ns.name, klass.name);
+					}
 
 				}
 				LeaveScope();
@@ -241,7 +277,225 @@ namespace cct
 		}
 		LeaveScope(";"sv);
 		NewLine();
-		Write("const cct::refl::Class* {}::m_class = nullptr;", klass.name);
+	}
+
+	void CppGenerator::GenerateGenericClass(std::string_view ns, const Class& klass)
+	{
+		Write("class Internal{}GenericClass : public cct::refl::GenericClass", klass.name);
+		EnterScope();
+		{
+			Write("public:");
+			Write("Internal{}GenericClass() : cct::refl::GenericClass(nullptr, \"{}\"s, nullptr)",
+				klass.name, klass.name);
+			EnterScope();
+			LeaveScope();
+
+			NewLine();
+			Write("void Initialize() override");
+			EnterScope();
+			{
+				if (!ns.empty())
+					Write("SetNamespace(GlobalNamespace::Get().GetNamespaceByName(\"{}\"sv));", ns);
+
+				if (!klass.base.empty())
+				{
+					Write("const Class* baseClass = GetClassByName(\"{}\"sv);", klass.base);
+					Write("CCT_ASSERT(baseClass != nullptr, \"Could not find class '{}'\");", klass.base);
+					Write("SetBaseClass(baseClass);");
+				}
+
+				NewLine();
+				Write("SetTypeParameterCount({});", klass.genericTypeParameterFields.size());
+
+				for (const auto& fieldName : klass.genericTypeParameterFields)
+					Write("AddTypeParameter(\"{}\");", fieldName);
+
+				NewLine();
+				// Add members and methods as in regular class
+				for (auto& member : klass.members)
+				{
+					if (member.isNative)
+						Write(R"(AddNativeMemberVariable("{}", cct::TypeId<{}>());)", member.name, member.type);
+					else
+						Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"sv));)", member.name, member.type);
+				}
+
+			}
+			LeaveScope();
+
+			NewLine();
+			Write("std::unique_ptr<cct::refl::Object> CreateDefaultObject() const override");
+			EnterScope();
+			{
+				Write("CCT_ASSERT_FALSE(\"Cannot instantiate generic class directly. Use CreateDefaultObject(std::span<const Class*>)\");");
+				Write("return nullptr;");
+			}
+			LeaveScope();
+
+			NewLine();
+			Write("std::unique_ptr<cct::refl::Object> CreateDefaultObject(");
+			Write("    std::span<const cct::refl::Class*> typeArgs) const override");
+			EnterScope();
+			{
+				Write("if (typeArgs.size() != {})", klass.genericTypeParameterFields.size());
+				EnterScope();
+				{
+					Write("CCT_ASSERT_FALSE(\"Expected {} type arguments, got {{}}\", typeArgs.size());",
+						klass.genericTypeParameterFields.size());
+					Write("return nullptr;");
+				}
+				LeaveScope();
+
+				if (ns.empty())
+					Write("auto obj = std::make_unique<{}>();", klass.name);
+				else
+					Write("auto obj = std::make_unique<{}::{}>();", ns, klass.name);
+
+				// Inject type parameters
+				for (std::size_t i = 0; i < klass.genericTypeParameterFields.size(); ++i)
+					Write("obj->{} = typeArgs[{}];", klass.genericTypeParameterFields[i], i);
+
+				Write("obj->SetDynamicClass(this);");
+				Write("obj->InitializeMemberVariables();");
+				Write("return obj;");
+			}
+			LeaveScope();
+
+			NewLine();
+			Write("cct::refl::Object* GetMemberVariable(std::size_t, const cct::refl::Object&) const override");
+			EnterScope();
+			{
+				Write("return nullptr;");
+			}
+			LeaveScope();
+
+			NewLine();
+			Write("void* GetNativeMemberVariable(std::size_t, const cct::refl::Object&) const override");
+			EnterScope();
+			{
+				Write("return nullptr;");
+			}
+			LeaveScope();
+		}
+		LeaveScope(";");
+	}
+
+	void CppGenerator::GenerateTemplateClass(std::string_view ns, const Class& klass)
+	{
+		Write("namespace");
+		EnterScope();
+		{
+			for (const auto& specialization : klass.templateSpecializations)
+			{
+				if (specialization.empty())
+					continue;
+
+				// Create a sanitized name for the specialization class
+				std::string specName = specialization;
+				for (auto& c : specName)
+				{
+					if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9'))
+						c = '_';
+				}
+
+				Write("class Internal{}_{}_Class : public ::cct::refl::Class", klass.name, specName);
+				EnterScope();
+				{
+					Write("public:");
+					Write("Internal{}_{}_Class() : ::cct::refl::Class(nullptr, \"{}\"s, nullptr)", klass.name, specName, std::format("{}<{}>", klass.name, specialization));
+					EnterScope();
+					LeaveScope();
+					NewLine();
+					Write("void Initialize() override");
+					EnterScope();
+					{
+						// Specialization classes initialize their template instance
+					}
+					LeaveScope();
+					NewLine();
+					Write("::cct::refl::Object* GetMemberVariable(std::size_t index, const ::cct::refl::Object& self) const override");
+					EnterScope();
+					{
+						Write("return nullptr;");
+					}
+					LeaveScope();
+					NewLine();
+					Write("void* GetNativeMemberVariable(std::size_t index, const ::cct::refl::Object& self) const override");
+					EnterScope();
+					{
+						Write("return nullptr;");
+					}
+					LeaveScope();
+					NewLine();
+					Write("std::unique_ptr<::cct::refl::Object> CreateDefaultObject() const override");
+					EnterScope();
+					{
+						if (ns.empty())
+						{
+							Write("auto obj = std::make_unique<{}{}>();", klass.name, std::format("<{}>", specialization));
+						}
+						else
+						{
+							Write("auto obj = std::make_unique<{}::{}{}>();", ns, klass.name, std::format("<{}>", specialization));
+						}
+						Write("return obj;");
+					}
+					LeaveScope();
+				}
+				LeaveScope(";");
+				NewLine();
+			}
+
+			Write("class Internal{}TemplateClass : public ::cct::refl::TemplateClass", klass.name);
+			EnterScope();
+			{
+				Write("public:");
+				Write("Internal{}TemplateClass() : ::cct::refl::TemplateClass(nullptr, \"{}\"s, nullptr)", klass.name, klass.name);
+				EnterScope();
+				LeaveScope();
+				NewLine();
+				Write("void Initialize() override");
+				EnterScope();
+				{
+					for (const auto& param : klass.templateParameters)
+						Write("cct::refl::TemplateClass::AddTemplateParameter(\"{}\");", param.name);
+
+					if (!klass.templateSpecializations.empty())
+						Write("std::vector<std::string> typeArgs;");
+
+					for (const auto& specialization : klass.templateSpecializations)
+					{
+						if (specialization.empty())
+							continue;
+
+						// Create sanitized name
+						std::string specName = specialization;
+						for (auto& c : specName)
+						{
+							if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9'))
+								c = '_';
+						}
+
+						Write("typeArgs.clear();");
+						Write("typeArgs.push_back(\"{}\");", specialization);
+						Write("RegisterSpecialization(typeArgs, std::make_unique<Internal{}_{}_Class>({}));",
+							klass.name, specName, "");
+					}
+				}
+				LeaveScope();
+				NewLine();
+				Write("std::unique_ptr<::cct::refl::Object> CreateDefaultObject() const override");
+				EnterScope();
+				{
+					Write("CCT_ASSERT_FALSE(\"Cannot instantiate template class directly\");");
+					Write("return nullptr;");
+				}
+				LeaveScope();
+			}
+			LeaveScope(";");
+			NewLine();
+		}
+		LeaveScope();
 		NewLine();
 	}
 
@@ -252,13 +506,9 @@ namespace cct
 		{
 			auto it = method.tomlAttributes.as_table().find("Base");
 			if (it->second.is_string())
-			{
 				base = it->second.as_string();
-			}
 			else
-			{
 				cct::Logger::Error("Invalid base class for method: {}::{}", className, method.name);
-			}
 		}
 		auto baseClass = base.empty() ? "cct::refl::Method"sv : base;
 		Write("class {}{}Method : public {}", className, method.name, baseClass);

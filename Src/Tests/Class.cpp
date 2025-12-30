@@ -22,7 +22,7 @@ SCENARIO("Class metadata verification")
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
 			packageLoader.LoadPackages();
 			
-			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 7);
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 11);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are getting the class Object")

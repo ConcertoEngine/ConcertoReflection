@@ -247,6 +247,11 @@ namespace cct::refl
 		return !(*this == other);
 	}
 
+	bool Class::IsTemplateClass() const
+	{
+		return false;
+	}
+
 	void Class::AddMemberVariable(std::string_view name, const Class* type)
 	{
 		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");

@@ -18,6 +18,8 @@ namespace cct
 	private:
 		void GenerateNamespace(const Namespace& ns, const std::string& api);
 		void GenerateClass(const Class& klass, const std::string& api);
+		void GenerateGenericClass(const Class& klass, const std::string& api);
+		void GenerateTemplateClass(const Class& klass, const std::string& api);
 		void GenerateEnum(const Enum& enum_, const std::string& api);
 	};
 }

@@ -123,6 +123,7 @@ target("concerto-reflection")
     local files = {
         ".",
         "Class",
+        "GenericClass",
         "GlobalNamespace",
         "MemberVariable",
         "Method",
@@ -131,6 +132,8 @@ target("concerto-reflection")
         "Package",
         "PackageLoader",
         "Registry",
+        "TemplateClass",
+        "Signal",
     }
     for _, dir in ipairs(files) do
         add_files_to_target("Src/Concerto/Reflection/" .. dir, true)

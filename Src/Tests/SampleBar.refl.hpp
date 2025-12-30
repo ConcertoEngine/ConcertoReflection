@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 #include <Concerto/Reflection/Defines.hpp>
@@ -54,6 +55,77 @@ namespace cct::sample
 		{
 			return refl::Int32();
 		};
-		
+
+	};
+
+	// Templated class with actual generic members
+	template<typename K, typename V>
+	class CCT_REFL_TESTS_CLASS() TemplatedPair : public cct::refl::Object
+	{
+	public:
+		TemplatedPair() : m_key(), m_value() {}
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		K m_key;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		V m_value;
+
+		CCT_REFL_TESTS_METHOD()
+		void Set(K k, V v)
+		{
+			m_key = k;
+			m_value = v;
+		}
+
+		CCT_REFL_TESTS_METHOD()
+		K GetKey() const
+		{
+			return m_key;
+		}
+
+		CCT_REFL_TESTS_METHOD()
+		V GetValue() const
+		{
+			return m_value;
+		}
+
+		CCT_OBJECT(TemplatedPair);
+	};
+
+	template class TemplatedPair<int, float>;
+	template class TemplatedPair<std::string, std::string>;
+
+	// Generic class with multiple type parameters (runtime parameterized)
+	class CCT_REFL_TESTS_CLASS() CCT_GENERIC_CLASS() GenericPair : public cct::refl::Object
+	{
+	public:
+		GenericPair() :
+			m_keyType(nullptr),
+			m_valueType(nullptr)
+		{
+		}
+
+		CCT_REFL_TESTS_MEMBER()
+		CCT_REFL_TESTS_GENERIC_TYPE()
+		const cct::refl::Class* m_keyType;
+
+		CCT_REFL_TESTS_MEMBER()
+		CCT_REFL_TESTS_GENERIC_TYPE()
+		const cct::refl::Class* m_valueType;
+
+		CCT_REFL_TESTS_METHOD()
+		const cct::refl::Class* GetKeyType() const
+		{
+			return m_keyType;
+		}
+
+		CCT_REFL_TESTS_METHOD()
+		const cct::refl::Class* GetValueType() const
+		{
+			return m_valueType;
+		}
+
+		CCT_OBJECT(GenericPair);
 	};
 }

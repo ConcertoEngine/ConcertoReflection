@@ -28,6 +28,8 @@ namespace cct
 		Write("#include <Concerto/Reflection/MemberVariable/MemberVariable.hpp>");
 		Write("#include <Concerto/Reflection/Method/Method.hpp>");
 		Write("#include <Concerto/Reflection/Package/Package.hpp>");
+	Write("#include <Concerto/Reflection/TemplateClass/TemplateClass.hpp>");
+	Write("#include <Concerto/Reflection/GenericClass/GenericClass.hpp>");
 		NewLine();
 
 		NewLine();
@@ -53,7 +55,12 @@ namespace cct
 
 		for (auto& klass : package.classes)
 		{
-			GenerateClass(klass, api);
+			if (klass.isGenericClass)
+				GenerateGenericClass(klass, api);
+			else if (klass.isTemplateClass)
+				GenerateTemplateClass(klass, api);
+			else
+				GenerateClass(klass, api);
 			NewLine();
 		}
 
@@ -82,6 +89,81 @@ namespace cct
 
 	void HeaderGenerator::GenerateClass(const Class& klass, const std::string& api)
 	{
+		if (klass.base.empty())
+			Write("class {} {}", api, klass.name);
+		else
+			Write("class {} {} : public {}", api, klass.name, klass.base);
+		EnterScope();
+		{
+			Write("public:");
+			for (const auto& member : klass.members)
+			{
+				Write("const {}& Get{}() const", member.type, Capitalize(member.name));
+				EnterScope();
+				Write("return _{};", member.name);
+				LeaveScope();
+				Write("{}& Get{}()", member.type, Capitalize(member.name));
+				EnterScope();
+				Write("return _{};", member.name);
+				LeaveScope();
+			}
+			NewLine();
+			Write("CCT_OBJECT({});", klass.name);
+			NewLine();
+			Write("private:");
+			for (const auto& member : klass.members)
+			{
+				Write("{} _{};", member.type, member.name);
+			}
+		}
+		LeaveScope(";");
+	}
+
+	void HeaderGenerator::GenerateTemplateClass(const Class& klass, const std::string& api)
+	{
+		Write("template<", "");
+		for (std::size_t i = 0; i < klass.templateParameters.size(); ++i)
+		{
+			Write("typename {}", klass.templateParameters[i].name, "");
+			if (i < klass.templateParameters.size() - 1)
+				Write(", ", "");
+		}
+		Write(">");
+
+		if (klass.base.empty())
+			Write("class {} {}", api, klass.name);
+		else
+			Write("class {} {} : public {}", api, klass.name, klass.base);
+		EnterScope();
+		{
+			Write("public:");
+			for (const auto& member : klass.members)
+			{
+				Write("const {}& Get{}() const", member.type, Capitalize(member.name));
+				EnterScope();
+				Write("return _{};", member.name);
+				LeaveScope();
+				Write("{}& Get{}()", member.type, Capitalize(member.name));
+				EnterScope();
+				Write("return _{};", member.name);
+				LeaveScope();
+			}
+			NewLine();
+			Write("CCT_OBJECT({});", klass.name);
+			NewLine();
+			Write("private:");
+			for (const auto& member : klass.members)
+			{
+				Write("{} _{};", member.type, member.name);
+			}
+		}
+		LeaveScope(";");
+	}
+
+	void HeaderGenerator::GenerateGenericClass(const Class& klass, const std::string& api)
+	{
+		// For generic classes, we generate the same interface as regular classes
+		// The actual type parameters are handled at runtime
 		if (klass.base.empty())
 			Write("class {} {}", api, klass.name);
 		else
