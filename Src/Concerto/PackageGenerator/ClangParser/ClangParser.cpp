@@ -21,6 +21,7 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <llvm/ADT/SmallString.h>
+#include <clang/AST/PrettyPrinter.h>
 
 using namespace clang;
 using namespace clang::tooling;
@@ -98,6 +99,8 @@ namespace
 		constexpr std::array knownAnnotations = {
 			"cct::Package"sv,
 			"cct::Class"sv,
+			"cct::GenericClass"sv,
+			"cct::GenericType"sv,
 			"cct::Member"sv,
 			"cct::NativeMember"sv,
 			"cct::Method"sv,
@@ -107,7 +110,8 @@ namespace
 
 		std::string_view annotation(AnnotateAttribute->getAnnotation().begin(), AnnotateAttribute->getAnnotation().end());
 		bool known = false;
-		for (auto& annotationName : knownAnnotations)
+
+		for (const auto& annotationName : knownAnnotations)
 		{
 			if (annotationName == annotation)
 			{
@@ -116,7 +120,7 @@ namespace
 			}
 		}
 
-		if (known == false)
+		if (!known)
 			return false;
 
 		outScope = annotation;
@@ -218,6 +222,8 @@ namespace cct
 		for (const auto* D : TU->decls())
 			ProcessDeclaration(D);
 
+		RemoveEmptyNamespaces(m_package.namepsaces);
+
 		return &m_package;
 	}
 
@@ -228,6 +234,7 @@ namespace cct
 
 		std::optional<std::pair<std::string, TomlAttributes>> classAttr;
 		std::optional<std::pair<std::string, TomlAttributes>> packageAttr;
+		std::optional<std::pair<std::string, TomlAttributes>> genericClassAttr;
 		for (const auto* A : recordDeclaration->attrs())
 		{
 			std::string scope; TomlAttributes attrs;
@@ -235,9 +242,10 @@ namespace cct
 				continue;
 			if (scope == "cct::Class") classAttr = std::make_pair(scope, attrs);
 			else if (scope == "cct::Package") packageAttr = std::make_pair(scope, attrs);
+			else if (scope == "cct::GenericClass") genericClassAttr = std::make_pair(scope, attrs);
 		}
 		auto txt = recordDeclaration->getNameAsString();
-		if (!classAttr && !packageAttr)
+		if (!classAttr && !packageAttr && !genericClassAttr)
 			return; // Not a reflection-relevant class
 
 		if (packageAttr)
@@ -258,13 +266,53 @@ namespace cct
 			return;
 		}
 
-		if (!classAttr)
-			return; // Only keep classes with cct::Class
+		// Determine which type of class this is
+		if (!classAttr && !genericClassAttr)
+			return; // Only keep classes with cct::Class or cct::GenericClass
 
 		Class cls;
 		cls.name = recordDeclaration->getNameAsString();
-		cls.scope = "cct::Class";
-		cls.tomlAttributes = GetAttributesOr(classAttr->second, {});
+
+		// Handle generic class
+		if (genericClassAttr)
+		{
+			cls.scope = "cct::GenericClass";
+			cls.isGenericClass = true;
+			cls.tomlAttributes = GetAttributesOr(genericClassAttr->second, {});
+
+			// Detect explicit type parameters via CCT_GENERIC_TYPE() annotations
+			for (const auto* F : recordDeclaration->fields())
+			{
+				auto fieldName = F->getNameAsString();
+				auto fieldType = QualTypeToString(F->getType(), *m_astContext);
+
+				// Check if field has CCT_GENERIC_TYPE annotation
+				for (const auto* attr : F->getAttrs())
+				{
+					if (const auto* annotationAttr = dyn_cast<clang::AnnotateAttr>(attr))
+					{
+						auto annotation = annotationAttr->getAnnotation().str();
+						if (annotation == "cct::GenericType")
+						{
+							// Verify field type is "const Class*"
+							if (fieldType == "const cct::refl::Class *" ||
+								fieldType == "const Class *" ||
+								fieldType == "const cct::refl::Class*" ||
+								fieldType == "const Class*")
+							{
+								cls.genericTypeParameterFields.push_back(fieldName);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			cls.scope = "cct::Class";
+			cls.tomlAttributes = GetAttributesOr(classAttr->second, {});
+		}
 
 		// Base class (first base)
 		if (recordDeclaration->getNumBases() > 0)
@@ -393,7 +441,15 @@ namespace cct
 
 	void ClangParser::ProcessDeclaration(const Decl* declaration)
 	{
-		if (const auto* RD = llvm::dyn_cast<CXXRecordDecl>(declaration))
+		if (const auto* CTD = llvm::dyn_cast<ClassTemplateDecl>(declaration))
+		{
+			ProcessTemplateRecord(CTD);
+		}
+		else if (const auto* CTSD = llvm::dyn_cast<ClassTemplateSpecializationDecl>(declaration))
+		{
+			ProcessTemplateSpecialization(CTSD);
+		}
+		else if (const auto* RD = llvm::dyn_cast<CXXRecordDecl>(declaration))
 		{
 			ProcessRecord(RD);
 		}
@@ -407,13 +463,218 @@ namespace cct
 			// Visit nested declarations inside namespaces
 			for (const auto* SD : ND->decls())
 			{
-				if (const auto* RD2 = llvm::dyn_cast<CXXRecordDecl>(SD))
+				if (const auto* CTD2 = llvm::dyn_cast<ClassTemplateDecl>(SD))
+					ProcessTemplateRecord(CTD2);
+				else if (const auto* CTSD2 = llvm::dyn_cast<ClassTemplateSpecializationDecl>(SD))
+					ProcessTemplateSpecialization(CTSD2);
+				else if (const auto* RD2 = llvm::dyn_cast<CXXRecordDecl>(SD))
 					ProcessRecord(RD2);
 				else if (const auto* ED2 = llvm::dyn_cast<EnumDecl>(SD))
 					ProcessEnum(ED2);
 				else if (const auto* ND = llvm::dyn_cast<NamespaceDecl>(declaration))
 					ProcessNamespace(ND);
 			}
+		}
+	}
+
+	void ClangParser::ProcessTemplateRecord(const ClassTemplateDecl* templateDeclaration)
+	{
+		if (!templateDeclaration)
+			return;
+
+		const auto* recordDecl = templateDeclaration->getTemplatedDecl();
+		if (!recordDecl || !recordDecl->isThisDeclarationADefinition())
+			return;
+
+		std::optional<std::pair<std::string, TomlAttributes>> classAttr;
+		for (const auto* A : recordDecl->attrs())
+		{
+			std::string scope; TomlAttributes attrs;
+			if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
+				continue;
+			if (scope == "cct::Class")
+			{
+				classAttr = std::make_pair(scope, attrs);
+				break;
+			}
+		}
+
+		if (!classAttr)
+			return;
+
+		Class cls;
+		cls.name = recordDecl->getNameAsString();
+		cls.scope = "cct::Class";
+		cls.tomlAttributes = GetAttributesOr(classAttr->second, {});
+		cls.isTemplateClass = true;
+
+		const auto* paramList = templateDeclaration->getTemplateParameters();
+		if (paramList)
+		{
+			for (unsigned i = 0; i < paramList->size(); ++i)
+			{
+				const auto* templateParam = paramList->getParam(i);
+				::TemplateParameter tparam;
+				if (const auto* typeParam = llvm::dyn_cast<TemplateTypeParmDecl>(templateParam))
+				{
+					tparam.name = typeParam->getNameAsString();
+					if (typeParam->hasDefaultArgument())
+					{
+						// TODO: Extract default argument
+					}
+				}
+				else if (const auto* nonTypeParam = llvm::dyn_cast<NonTypeTemplateParmDecl>(templateParam))
+				{
+					tparam.name = nonTypeParam->getNameAsString();
+				}
+
+				if (!tparam.name.empty())
+					cls.templateParameters.push_back(std::move(tparam));
+			}
+		}
+
+		if (recordDecl->getNumBases() > 0)
+		{
+			const auto& base = *recordDecl->bases_begin();
+			cls.base = QualTypeToString(base.getType(), *m_astContext);
+		}
+
+		for (const auto* F : recordDecl->fields())
+		{
+			bool hasAttr = false;
+			TomlAttributes memberAttrs;
+			std::string scope;
+			for (const auto* A : F->attrs())
+			{
+				TomlAttributes attrs;
+				if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
+					continue;
+				if (scope == "cct::Member" || scope == "cct::NativeMember")
+				{
+					hasAttr = true;
+					memberAttrs = GetAttributesOr(attrs, {});
+					break;
+				}
+			}
+			if (!hasAttr) continue;
+
+			Class::Member m;
+			m.name = F->getNameAsString();
+			m.type = QualTypeToString(F->getType(), *m_astContext);
+			m.isNative = scope == "cct::NativeMember";
+			m.tomlAttributes = memberAttrs;
+			cls.members.push_back(std::move(m));
+		}
+
+		for (const auto* M : recordDecl->methods())
+		{
+			bool hasAttr = false;
+			TomlAttributes methodAttrs;
+			for (const auto* A : M->attrs())
+			{
+				std::string scope; TomlAttributes attrs;
+				if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
+					continue;
+				if (scope == "cct::Method")
+				{
+					hasAttr = true;
+					methodAttrs = GetAttributesOr(attrs, {});
+					break;
+				}
+			}
+			if (!hasAttr) continue;
+
+			Class::Method mm;
+			mm.name = M->getNameAsString();
+			mm.returnValue = QualTypeToString(M->getReturnType(), *m_astContext);
+			mm.tomlAttributes = methodAttrs;
+
+			unsigned pi = 0;
+			for (const auto* P : M->parameters())
+			{
+				Class::Method::Params param;
+				param.type = QualTypeToString(P->getType(), *m_astContext);
+				if (P->getIdentifier()) param.name = P->getNameAsString();
+				else { param.name = std::string("arg") + std::to_string(pi); }
+				mm.params.push_back(std::move(param));
+				++pi;
+			}
+			cls.methods.push_back(std::move(mm));
+		}
+
+		std::vector<std::string> nsChain = GetNamespaceChain(recordDecl->getDeclContext());
+		InsertClassIntoPackage(m_package, nsChain, cls);
+	}
+
+	void ClangParser::ProcessTemplateSpecialization(const ClassTemplateSpecializationDecl* specializationDeclaration)
+	{
+		if (!specializationDeclaration || !specializationDeclaration->isThisDeclarationADefinition())
+			return;
+
+		const auto& templateArgs = specializationDeclaration->getTemplateArgs();
+		std::vector<std::string> typeArgs;
+
+		for (unsigned i = 0; i < templateArgs.size(); ++i)
+		{
+			const auto& arg = templateArgs[i];
+			if (arg.getKind() == TemplateArgument::Type)
+			{
+				typeArgs.push_back(QualTypeToString(arg.getAsType(), *m_astContext));
+			}
+			else if (arg.getKind() == TemplateArgument::Integral)
+			{
+				llvm::SmallString<32> s;
+				arg.getAsIntegral().toString(s, /*Radix=*/10);
+				typeArgs.emplace_back(s.begin(), s.end());
+			}
+		}
+
+		const auto* templateDecl = specializationDeclaration->getSpecializedTemplate();
+		if (!templateDecl)
+			return;
+
+		const auto templateClassName = templateDecl->getNameAsString();
+
+		std::vector<std::string> nsChain = GetNamespaceChain(specializationDeclaration->getDeclContext());
+		Namespace* leaf = nsChain.empty() ? nullptr : EnsureNamespace(m_package, nsChain);
+		auto& classList = nsChain.empty() ? m_package.classes : leaf->classes;
+
+		auto it = std::ranges::find_if(classList, [&](const Class& c)
+		{
+			return c.name == templateClassName && c.isTemplateClass;
+		});
+
+		if (it == classList.end())
+			return;
+
+		it->templateSpecializations.push_back(typeArgs.empty() ? "" :
+			[&typeArgs]()
+			{
+				std::string result;
+				for (std::size_t i = 0; i < typeArgs.size(); ++i)
+				{
+					result += typeArgs[i];
+					if (i < typeArgs.size() - 1)
+						result += ",";
+				}
+				return result;
+			}()
+		);
+	}
+
+	void ClangParser::RemoveEmptyNamespaces(std::vector<Namespace>& namespaces)
+	{
+		auto it = namespaces.begin();
+		while (it != namespaces.end())
+		{
+			RemoveEmptyNamespaces(it->namespaces);
+
+			bool isEmpty = it->classes.empty() && it->enums.empty() && it->namespaces.empty();
+
+			if (isEmpty)
+				it = namespaces.erase(it);
+			else
+				++it;
 		}
 	}
 }

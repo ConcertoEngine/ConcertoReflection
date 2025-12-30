@@ -12,12 +12,12 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)						\
-	public:											\
-		static const cct::refl::Class* GetClass()	\
-			{return m_class;}						\
-	private:										\
-		static const cct::refl::Class* m_class;		\
+#define CCT_OBJECT(className)							\
+	public:												\
+		static const cct::refl::Class* GetClass()		\
+			{return m_class;}							\
+	private:											\
+		inline static const cct::refl::Class* m_class;	\
 		friend class Internal##className##Class
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection {};

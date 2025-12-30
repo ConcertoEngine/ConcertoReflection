@@ -1,5 +1,7 @@
 .vscode
 .xmake
+.cache
 dist-newstyle
 vsxmake2022
+compile_commands.json
 build

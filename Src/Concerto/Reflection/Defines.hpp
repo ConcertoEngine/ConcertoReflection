@@ -22,6 +22,8 @@
 
 #define CCT_PACKAGE(...) [[clang::annotate("cct::Package" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_CLASS(...) [[clang::annotate("cct::Class" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_GENERIC_CLASS(...) [[clang::annotate("cct::GenericClass" __VA_OPT__(,) __VA_ARGS__)]]
+#define CCT_GENERIC_TYPE() [[clang::annotate("cct::GenericType")]]
 #define CCT_MEMBER(...) [[clang::annotate("cct::Member" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_NATIVE_MEMBER(...) [[clang::annotate("cct::NativeMember" __VA_OPT__(,) __VA_ARGS__)]]
 #define CCT_METHOD(...) [[clang::annotate("cct::Method" __VA_OPT__(,) __VA_ARGS__)]]
@@ -32,6 +34,8 @@
 
 #define CCT_PACKAGE(...)
 #define CCT_CLASS(...)
+#define CCT_GENERIC_CLASS(...)
+#define CCT_GENERIC_TYPE()
 #define CCT_MEMBER(...)
 #define CCT_NATIVE_MEMBER(...)
 #define CCT_METHOD(...)

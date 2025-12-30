@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclTemplate.h>
 #include <clang/Frontend/ASTUnit.h>
 
 #include "Concerto/PackageGenerator/Defines.hpp"
@@ -26,6 +27,8 @@ namespace cct
 		void ProcessDeclaration(const clang::Decl* declaration);
 		void ProcessNamespace(const clang::NamespaceDecl* namespaceDeclaration);
 		void ProcessRecord(const clang::CXXRecordDecl* recordDeclaration);
+		void ProcessTemplateRecord(const clang::ClassTemplateDecl* templateDeclaration);
+		void ProcessTemplateSpecialization(const clang::ClassTemplateSpecializationDecl* specializationDeclaration);
 		void ProcessEnum(const clang::EnumDecl* enumDeclaration);
 
 	private:
@@ -33,6 +36,8 @@ namespace cct
 		clang::SourceManager* m_sourceManager = nullptr;
 		const clang::LangOptions* m_langOptions = nullptr;
 		clang::ASTContext* m_astContext = nullptr;
+
+		void RemoveEmptyNamespaces(std::vector<Namespace>& namespaces);
 	};
 }
 

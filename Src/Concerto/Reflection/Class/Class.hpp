@@ -85,6 +85,10 @@ namespace cct::refl
 		requires (std::is_base_of_v<cct::refl::Object, T>&& std::is_polymorphic_v<T>)
 		std::unique_ptr<T> CreateDefaultObject() const;
 
+		[[nodiscard]] virtual bool IsTemplateClass() const;
+
+	[[nodiscard]] virtual bool IsGenericClass() const { return false; }
+
 		//should be private
 		virtual void Initialize() = 0;
 	protected:

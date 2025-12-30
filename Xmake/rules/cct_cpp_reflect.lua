@@ -10,6 +10,12 @@ rule("cct_cpp_reflect")
         target:add("files", generatedCpp, {always_added = true})
         target:add("includedirs", target:autogendir(), {public = true})
         target:add("defines", path.basename(targetName):upper() .. "_BUILD", { public = false })
+
+        local upperPackageName = path.basename(targetName):upper()
+        target:add("defines", upperPackageName .. "PACKAGE_BUILD", { public = false })
+        if target:kind() == "static" then
+            target:add("defines", upperPackageName .. "PACKAGE_STATIC", { public = true })
+        end
     end)
 
     before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)

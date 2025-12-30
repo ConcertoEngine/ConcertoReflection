@@ -36,6 +36,13 @@ struct Enum
 	TomlAttributes tomlAttributes;
 };
 
+struct TemplateParameter
+{
+	std::string name;
+	std::string defaultValue;
+	std::string constraint;
+};
+
 struct Class
 {
 	struct Member
@@ -68,6 +75,15 @@ struct Class
 	std::vector<Method> methods;
 	std::vector<Member> members;
 	TomlAttributes tomlAttributes;
+
+	// Template support
+	std::vector<TemplateParameter> templateParameters;
+	std::vector<std::string> templateSpecializations;
+	bool isTemplateClass = false;
+
+	// Generic class support
+	bool isGenericClass = false;
+	std::vector<std::string> genericTypeParameterFields;
 };
 
 struct Namespace
