@@ -20,7 +20,7 @@ namespace cct
 		void GenerateGenericClass(std::string_view ns, const Class& klass);
 		void GenerateTemplateClass(std::string_view ns, const Class& klass);
 		void GenerateClassMethod(std::string_view className, const Class::Method& method, std::string_view ns, std::size_t methodIndex);
-		void GenerateEnum(const Enum& enum_);
+		void GenerateEnum(const Enum& enum_, std::string_view ns = "");
 		void GeneratePackage(const Package& pkg);
 	};
 }
