@@ -18,6 +18,7 @@ namespace cct
 		Write("#include <Concerto/Core/TypeInfo/TypeInfo.hpp>");
 		Write("#include \"Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp\"");
 		Write("#include <Concerto/Reflection/GenericClass/GenericClass.hpp>");
+		Write("#include <Concerto/Reflection/Enumeration/EnumerationClass.hpp>");
 		Write("#include \"{}Package.gen.hpp\"", package.name);
 
 		for (auto& header : args)
@@ -29,7 +30,7 @@ namespace cct
 		Write("using namespace cct::refl;");
 
 		for (auto& enum_ : package.enums)
-			GenerateEnum(enum_);
+			GenerateEnum(enum_, "");
 		for (auto& klass : package.classes)
 		{
 			if (klass.isGenericClass)
@@ -53,7 +54,7 @@ namespace cct
 			for (auto& nestedNs : ns.namespaces)
 				GenerateNamespace(nestedNs, namespaceChain + "::"s + std::string(ns.name));
 			for (auto& enum_ : ns.enums)
-				GenerateEnum(enum_);
+				GenerateEnum(enum_, namespaceChain + "::"s + std::string(ns.name));
 			for (auto& klass : ns.classes)
 			{
 				if (klass.isGenericClass)
@@ -103,6 +104,10 @@ namespace cct
 					EnterScope();
 					Write("ns->LoadClasses();");
 					LeaveScope();
+					for (auto& enum_ : ns.enums)
+					{
+						Write("AddClass(std::make_unique<{}::Internal{}EnumerationClass>());", ns.name, enum_.name);
+					}
 					for (auto& klass : ns.classes)
 					{
 						if (klass.isGenericClass)
@@ -676,41 +681,55 @@ namespace cct
 		}
 	}
 
-	void CppGenerator::GenerateEnum(const Enum& enum_)
+	void CppGenerator::GenerateEnum(const Enum& enum_, std::string_view ns)
 	{
-		Write("std::string_view {}ToString({} value)", enum_.name, enum_.name);
+
+		Write("class Internal{}EnumerationClass : public cct::refl::EnumerationClass", enum_.name);
 		EnterScope();
 		{
-			Write("switch(value)");
+			Write("public:");
+			Write("Internal{}EnumerationClass()", enum_.name);
+			Write(": cct::refl::EnumerationClass(nullptr, \"{}\"s)", enum_.name);
 			EnterScope();
 			{
+			}
+			LeaveScope();
 
-				for (auto& elem : enum_.elements)
+			NewLine();
+			Write("~Internal{}EnumerationClass() override", enum_.name);
+			EnterScope();
+			{
+			}
+			LeaveScope();
+
+			NewLine();
+			Write("void Initialize() override");
+			EnterScope();
+			{
+				for (const auto& elem : enum_.elements)
 				{
-					Write("case {}::{}:", enum_.name, elem.name);
-					Write("return \"{}\"sv;", elem.name);
+					Write("AddEnumValue(\"{}\", {});", elem.name, elem.value);
 				}
 			}
 			LeaveScope();
-			Write("CCT_ASSERT_FALSE(\"Invalid enum value\");");
-			Write("return {{}};");
-		}
-		LeaveScope();
 
-		Write("{} {}FromString(std::string_view value)", enum_.name, enum_.name);
-		EnterScope();
-		{
-			for (auto& elem : enum_.elements)
+			NewLine();
+			Write("cct::refl::Object* GetMemberVariable(std::size_t, const cct::refl::Object&) const override");
+			EnterScope();
 			{
-				Write("if (value == \"{}\"sv)", elem.name);
-				EnterScope();
-				Write("return {}::{};", enum_.name, elem.name);
-				LeaveScope();
+				Write("return nullptr;");
 			}
-			Write("CCT_ASSERT_FALSE(\"Invalid enum value: {{}}\", value);");
-			Write("return {{}};");
+			LeaveScope();
+
+			NewLine();
+			Write("void* GetNativeMemberVariable(std::size_t, const cct::refl::Object&) const override");
+			EnterScope();
+			{
+				Write("return nullptr;");
+			}
+			LeaveScope();
 		}
-		LeaveScope();
+		LeaveScope(";");
 	}
 
 	void CppGenerator::GeneratePackage(const Package& pkg)

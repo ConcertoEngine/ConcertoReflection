@@ -123,6 +123,9 @@ target("concerto-reflection")
     local files = {
         ".",
         "Class",
+        "Enumeration",
+        "EnumIterator",
+        "EnumValue",
         "GenericClass",
         "GlobalNamespace",
         "MemberVariable",
