@@ -66,6 +66,9 @@ namespace cct::refl
 		for (const auto elem : split)
 			res.emplace_back(elem.data(), elem.size());
 
+		if (res.size() >= 1 && res[0] == ""sv)
+			res.erase(res.begin()); // because split on "::" gives an empty first element
+		
 		if (res.empty())
 		{
 			CCT_ASSERT_FALSE("Invalid class: {}", name);

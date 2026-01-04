@@ -26,6 +26,10 @@ namespace cct::refl
 			std::vector<std::string_view> res;
 			for (const auto elem : split)
 				res.emplace_back(elem.data(), elem.size());
+
+			if (res.size() >= 1 && res[0] == ""sv)
+				res.erase(res.begin()); // because split on "::" gives an empty first element
+
 			if (res.size() > 1)
 			{
 				for (auto& nameSpace : m_namespaces)
