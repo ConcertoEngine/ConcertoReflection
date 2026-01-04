@@ -204,7 +204,27 @@ namespace cct
 					if (member.isNative)
 						Write(R"(AddNativeMemberVariable("{}", cct::TypeId<{}>());)", member.name, member.type);
 					else
-						Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"));)", member.name, member.type);
+					{
+						auto removeAllColons = [](std::string_view s) {
+							std::string result;
+							for (char c : s)
+							{
+								if (c != ':')
+									result += c;
+							}
+							return result;
+						};
+						std::string type = removeAllColons(member.type);
+						Write(R"(const cct::refl::Class* {}Class = cct::refl::GetClassByName("{}::{}"sv);)", type, ns, member.type);
+						Write(R"(if ({}Class == nullptr))", type);
+						EnterScope();
+						{
+							Write(R"({}Class = cct::refl::GetClassByName("{}"sv);)", type, member.type);
+						}
+						LeaveScope();
+						Write(R"(CCT_ASSERT({}Class != nullptr, "Could not find class '{}'" );)", type, member.type);
+						Write(R"(AddMemberVariable("{}", {}Class);)", member.name, type);
+					}
 				NewLine();
 				std::size_t i = 0;
 				for (auto& method : klass.methods)
