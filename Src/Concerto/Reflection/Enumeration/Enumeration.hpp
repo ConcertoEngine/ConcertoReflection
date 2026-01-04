@@ -38,6 +38,8 @@ namespace cct::refl
 		[[nodiscard]] const EnumValue* GetEnumValue(std::string_view name) const;
 		[[nodiscard]] const EnumValue* GetEnumValue(cct::Int64 value) const;
 
+		[[nodiscard]] cct::Int64 GetValue() const;
+
 		[[nodiscard]] EnumIterable Enumerate() const;
 
 		[[nodiscard]] std::string ToString(cct::Int64 value) const;

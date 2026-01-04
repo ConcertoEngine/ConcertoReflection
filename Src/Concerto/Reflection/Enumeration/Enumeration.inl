@@ -51,4 +51,9 @@ namespace cct::refl
 		CCT_ASSERT_FALSE("Could not find enum value with value: {}", value);
 		return nullptr;
 	}
+
+	inline cct::Int64 Enumeration::GetValue() const
+	{
+		return m_value;
+	}
 }
