@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <sstream>
+
 #include <Concerto/Core/Logger/Logger.hpp>
 
 namespace cct
@@ -36,7 +37,7 @@ namespace cct
 			}
 			return out;
 		}
-	}
+	} // namespace
 
 	FileGenerator::~FileGenerator()
 	{
@@ -93,4 +94,4 @@ namespace cct
 		s[0] = toupper(s[0]);
 		return s;
 	}
-}
+} // namespace cct

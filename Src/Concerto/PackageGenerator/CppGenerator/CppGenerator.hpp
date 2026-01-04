@@ -14,6 +14,7 @@ namespace cct
 	public:
 		using FileGenerator::FileGenerator;
 		bool Generate(const Package& package, std::span<std::string> args) override;
+
 	private:
 		void GenerateNamespace(const Namespace& ns, const std::string& namespaceChain = "");
 		void GenerateClass(std::string_view ns, const Class& klass);
@@ -23,6 +24,6 @@ namespace cct
 		void GenerateEnum(const Enum& enum_, std::string_view ns = "");
 		void GeneratePackage(const Package& pkg);
 	};
-}
+} // namespace cct
 
-#endif //CONCERTO_PKGGENERATOR_CPPGENERATOR_HPP
+#endif // CONCERTO_PKGGENERATOR_CPPGENERATOR_HPP

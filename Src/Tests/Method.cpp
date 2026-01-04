@@ -2,14 +2,14 @@
 // Created by arthur on 04/07/2025.
 //
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
+
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 #include "Tests/SampleBar.refl.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Method")
 {

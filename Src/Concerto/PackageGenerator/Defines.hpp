@@ -6,11 +6,11 @@
 #define CONCERTO_PKGGENERATOR_DEFINE_HPP
 
 #include <string_view>
-#include <vector>
 #include <unordered_map>
-
+#include <vector>
 
 #include <Concerto/Core/Types/Types.hpp>
+
 #include <toml11/types.hpp>
 
 #ifdef CCT_PKGGENERATOR_BUILD
@@ -105,4 +105,4 @@ struct Package
 	std::vector<Enum> enums;
 };
 
-#endif //CONCERTO_PKGGENERATOR_DEFINE_HPP
+#endif // CONCERTO_PKGGENERATOR_DEFINE_HPP

@@ -3,12 +3,15 @@
 //
 
 #include "Concerto/Reflection/EnumValue/EnumValue.hpp"
+
 #include "Concerto/Core/Assert.hpp"
 
 namespace cct::refl
 {
-	EnumValue::EnumValue(std::string name, cct::Int64 value, std::size_t index)
-		: m_name(std::move(name)), m_value(value), m_index(index)
+	EnumValue::EnumValue(std::string name, cct::Int64 value, std::size_t index) :
+		m_name(std::move(name)),
+		m_value(value),
+		m_index(index)
 	{
 	}
 
@@ -31,4 +34,4 @@ namespace cct::refl
 	{
 		m_attributes[std::move(name)] = std::move(value);
 	}
-}
+} // namespace cct::refl

@@ -5,12 +5,12 @@
 #ifndef CONCERTO_REFLECTION_TEMPLATE_CLASS_HPP
 #define CONCERTO_REFLECTION_TEMPLATE_CLASS_HPP
 
+#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
-#include <memory>
-#include <vector>
-#include <span>
 #include <unordered_map>
+#include <vector>
 
 #include "Concerto/Reflection/Class/Class.hpp"
 
@@ -52,8 +52,8 @@ namespace cct::refl
 		static constexpr std::string_view SpecializationSeparator = ",";
 		std::string MakeSpecializationKey(std::span<std::string_view> typeArgs) const;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/TemplateClass/TemplateClass.inl"
 
-#endif //CONCERTO_REFLECTION_TEMPLATE_CLASS_HPP
+#endif // CONCERTO_REFLECTION_TEMPLATE_CLASS_HPP

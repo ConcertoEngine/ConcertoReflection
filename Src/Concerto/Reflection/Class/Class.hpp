@@ -5,12 +5,12 @@
 #ifndef CONCERTO_REFLECTION_CLASS_HPP
 #define CONCERTO_REFLECTION_CLASS_HPP
 
+#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
-#include <memory>
-#include <vector>
-#include <span>
 #include <unordered_map>
+#include <vector>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -77,20 +77,24 @@ namespace cct::refl
 		std::string_view GetAttribute(std::string_view attribute);
 
 		bool operator==(const Class& other) const;
-		bool operator!=(const Class& other) const; 
+		bool operator!=(const Class& other) const;
 
 		virtual std::unique_ptr<cct::refl::Object> CreateDefaultObject() const = 0;
 
 		template<typename T>
-		requires (std::is_base_of_v<cct::refl::Object, T>&& std::is_polymorphic_v<T>)
+			requires(std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 		std::unique_ptr<T> CreateDefaultObject() const;
 
 		[[nodiscard]] virtual bool IsTemplateClass() const;
 
-	[[nodiscard]] virtual bool IsGenericClass() const { return false; }
+		[[nodiscard]] virtual bool IsGenericClass() const
+		{
+			return false;
+		}
 
-		//should be private
+		// should be private
 		virtual void Initialize() = 0;
+
 	protected:
 		void AddMemberVariable(std::string_view name, const Class* type);
 		void AddNativeMemberVariable(std::string_view name, UInt64 typeId);
@@ -98,6 +102,7 @@ namespace cct::refl
 		void AddAttribute(std::string name, std::string value);
 		void SetNamespace(Namespace* nameSpace);
 		void SetBaseClass(const Class* klass);
+
 	private:
 		std::string m_name;
 		Namespace* m_namespace;
@@ -119,8 +124,8 @@ namespace cct::refl
 	 */
 	CCT_REFLECTION_API const Class* GetClassByName(std::string_view name);
 
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Class/Class.inl"
 
-#endif //CONCERTO_REFLECTION_CLASS_HPP
+#endif // CONCERTO_REFLECTION_CLASS_HPP

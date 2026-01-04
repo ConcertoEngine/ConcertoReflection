@@ -31,12 +31,13 @@ namespace cct::refl
 
 		Object* Allocate(const Class* klass);
 		void DeAllocate(const Object& object);
+
 	private:
 		std::size_t m_defaultObjectCount;
-		std::unordered_map<const Class*, std::vector<std::unique_ptr<Object>>> m_objects; //TODO: remove std::unique_ptr
+		std::unordered_map<const Class*, std::vector<std::unique_ptr<Object>>> m_objects; // TODO: remove std::unique_ptr
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Registry/Registry.inl"
 
-#endif //CONCERTO_REFLECTION_REGISTRY_HPP
+#endif // CONCERTO_REFLECTION_REGISTRY_HPP

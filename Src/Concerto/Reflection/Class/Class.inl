@@ -12,8 +12,8 @@
 
 namespace cct::refl
 {
-	template <typename T>
-	requires (std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
+	template<typename T>
+		requires(std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 	std::unique_ptr<T> Class::CreateDefaultObject() const
 	{
 		if (*T::GetClass() != *this)
@@ -32,9 +32,9 @@ namespace cct::refl
 			CCT_ASSERT_FALSE("Invalid pointer");
 			return nullptr;
 		}
-		
+
 		return std::unique_ptr<T>(reinterpret_cast<T*>(obj));
 	}
-}
+} // namespace cct::refl
 
 #endif // CONCERTO_REFLECTION_CLASS_INL

@@ -12,4 +12,4 @@ namespace cct::refl
 		m_type(type)
 	{
 	}
-}
+} // namespace cct::refl

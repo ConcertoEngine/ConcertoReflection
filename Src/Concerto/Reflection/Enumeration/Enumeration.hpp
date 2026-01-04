@@ -5,17 +5,17 @@
 #ifndef CONCERTO_REFLECTION_ENUMERATION_HPP
 #define CONCERTO_REFLECTION_ENUMERATION_HPP
 
+#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
-#include <memory>
 #include <vector>
-#include <span>
 
 #include <Concerto/Core/Types/Types.hpp>
 
-#include "Concerto/Reflection/Object/Object.refl.hpp"
-#include "Concerto/Reflection/EnumValue/EnumValue.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
+#include "Concerto/Reflection/EnumValue/EnumValue.hpp"
+#include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
 {
@@ -63,7 +63,7 @@ namespace cct::refl
 
 		friend class EnumerationClass;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Enumeration/Enumeration.inl"
 

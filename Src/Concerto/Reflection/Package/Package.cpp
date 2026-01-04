@@ -2,16 +2,15 @@
 // Created by arthur on 10/11/2024.
 //
 
-#include "Concerto/Reflection/Namespace/Namespace.hpp"
-#include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/Method/Method.hpp"
-#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
-
 #include "Concerto/Reflection/Package/Package.hpp"
 
 #include <Concerto/Core/Assert.hpp>
 
+#include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {
@@ -30,9 +29,7 @@ namespace cct::refl
 	Namespace* Package::GetNamespace(std::string_view name) const
 	{
 		auto it = std::find_if(m_namespaces.begin(), m_namespaces.end(), [&](const std::unique_ptr<Namespace>& value) -> bool
-			{
-				return value->GetName() == name;
-			});
+							   { return value->GetName() == name; });
 
 		if (it != m_namespaces.end())
 			return it->get();
@@ -55,4 +52,4 @@ namespace cct::refl
 		GlobalNamespace::Get().AddClass(klass.get());
 		m_classes.push_back(std::move(klass));
 	}
-}
+} // namespace cct::refl

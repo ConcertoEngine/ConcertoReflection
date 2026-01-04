@@ -5,9 +5,9 @@
 #ifndef CONCERTO_REFLECTION_ENUM_ITERATOR_HPP
 #define CONCERTO_REFLECTION_ENUM_ITERATOR_HPP
 
-#include <string_view>
-#include <span>
 #include <memory>
+#include <span>
+#include <string_view>
 
 #include <Concerto/Core/Types/Types.hpp>
 
@@ -18,8 +18,9 @@ namespace cct::refl
 	class EnumIterator
 	{
 	public:
-		explicit EnumIterator(std::span<const std::unique_ptr<EnumValue>> enumValues, std::size_t index = 0)
-			: m_enumValues(enumValues), m_index(index)
+		explicit EnumIterator(std::span<const std::unique_ptr<EnumValue>> enumValues, std::size_t index = 0) :
+			m_enumValues(enumValues),
+			m_index(index)
 		{
 		}
 
@@ -29,7 +30,10 @@ namespace cct::refl
 
 		inline EnumIterator& operator++();
 		inline bool operator!=(const EnumIterator& other) const;
-		inline EnumIterator operator*() const { return *this; }
+		inline EnumIterator operator*() const
+		{
+			return *this;
+		}
 
 	private:
 		std::span<const std::unique_ptr<EnumValue>> m_enumValues;
@@ -42,8 +46,8 @@ namespace cct::refl
 	class EnumIterable
 	{
 	public:
-		explicit EnumIterable(std::span<const std::unique_ptr<EnumValue>> enumValues)
-			: m_enumValues(enumValues)
+		explicit EnumIterable(std::span<const std::unique_ptr<EnumValue>> enumValues) :
+			m_enumValues(enumValues)
 		{
 		}
 
@@ -60,12 +64,14 @@ namespace cct::refl
 	private:
 		std::span<const std::unique_ptr<EnumValue>> m_enumValues;
 	};
-}
+} // namespace cct::refl
 
 namespace std
 {
 	template<>
-	struct tuple_size<cct::refl::EnumIterator> : std::integral_constant<std::size_t, 2> {};
+	struct tuple_size<cct::refl::EnumIterator> : std::integral_constant<std::size_t, 2>
+	{
+	};
 
 	template<>
 	struct tuple_element<0, cct::refl::EnumIterator>
@@ -78,7 +84,7 @@ namespace std
 	{
 		using type = cct::Int64;
 	};
-}
+} // namespace std
 
 namespace cct::refl
 {
@@ -91,7 +97,7 @@ namespace cct::refl
 		else if constexpr (N == 1)
 			return it.GetValue();
 	}
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Enumeration/EnumIterator.inl"
 

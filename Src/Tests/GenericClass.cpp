@@ -1,14 +1,14 @@
 //
 // Created by arthur on 12/16/2025.
 //
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
+#include <Concerto/Reflection/GenericClass/GenericClass.hpp>
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
-#include <Concerto/Reflection/GenericClass/GenericClass.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 #include <Tests/SampleBar.refl.hpp>
 
 SCENARIO("GenericClass identification")
@@ -90,7 +90,7 @@ SCENARIO("GenericPair multi-parameter generic class")
 				REQUIRE(int32Class != nullptr);
 				REQUIRE(int64Class != nullptr);
 
-				std::vector<const cct::refl::Class*> typeArgs = { int32Class, int64Class };
+				std::vector<const cct::refl::Class*> typeArgs = {int32Class, int64Class};
 				auto obj = genericClass->CreateDefaultObject(
 					std::span<const cct::refl::Class*>(typeArgs));
 				REQUIRE(obj != nullptr);

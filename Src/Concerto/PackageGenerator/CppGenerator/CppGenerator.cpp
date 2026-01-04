@@ -111,8 +111,8 @@ namespace cct
 					for (auto& klass : ns.classes)
 					{
 						if (klass.isGenericClass)
-						Write("AddClass(std::make_unique<{}::Internal{}GenericClass>());", ns.name, klass.name);
-					else if (klass.isTemplateClass)
+							Write("AddClass(std::make_unique<{}::Internal{}GenericClass>());", ns.name, klass.name);
+						else if (klass.isTemplateClass)
 						{
 							Write("AddClass(std::make_unique<{}::Internal{}TemplateClass>());", ns.name, klass.name);
 							for (const auto& specialization : klass.templateSpecializations)
@@ -131,7 +131,6 @@ namespace cct
 						else
 							Write("AddClass(std::make_unique<{}::Internal{}Class>());", ns.name, klass.name);
 					}
-
 				}
 				LeaveScope();
 				NewLine();
@@ -205,7 +204,8 @@ namespace cct
 						Write(R"(AddNativeMemberVariable("{}", cct::TypeId<{}>());)", member.name, member.type);
 					else
 					{
-						auto removeAllColons = [](std::string_view s) {
+						auto removeAllColons = [](std::string_view s)
+						{
 							std::string result;
 							for (char c : s)
 							{
@@ -237,7 +237,7 @@ namespace cct
 					++i;
 				}
 
-				//for (auto& [name, value] : klass.attributes)
+				// for (auto& [name, value] : klass.attributes)
 				//	Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			}
 			LeaveScope();
@@ -311,7 +311,7 @@ namespace cct
 		{
 			Write("public:");
 			Write("Internal{}GenericClass() : cct::refl::GenericClass(nullptr, \"{}\"s, nullptr)",
-				klass.name, klass.name);
+				  klass.name, klass.name);
 			EnterScope();
 			LeaveScope();
 
@@ -344,7 +344,6 @@ namespace cct
 					else
 						Write(R"(AddMemberVariable("{}", cct::refl::GetClassByName("{}"sv));)", member.name, member.type);
 				}
-
 			}
 			LeaveScope();
 
@@ -366,7 +365,7 @@ namespace cct
 				EnterScope();
 				{
 					Write("CCT_ASSERT_FALSE(\"Expected {} type arguments, got {{}}\", typeArgs.size());",
-						klass.genericTypeParameterFields.size());
+						  klass.genericTypeParameterFields.size());
 					Write("return nullptr;");
 				}
 				LeaveScope();
@@ -504,7 +503,7 @@ namespace cct
 						Write("typeArgs.clear();");
 						Write("typeArgs.push_back(\"{}\");", specialization);
 						Write("RegisterSpecialization(typeArgs, std::make_unique<Internal{}_{}_Class>({}));",
-							klass.name, specName, "");
+							  klass.name, specName, "");
 					}
 				}
 				LeaveScope();
@@ -545,7 +544,7 @@ namespace cct
 			NewLine();
 			Write("void Initialize() override");
 			EnterScope();
-			//for (auto& [name, value] : method.attributes)
+			// for (auto& [name, value] : method.attributes)
 			//	Write(R"(AddAttribute("{}"s, "{}"s);)", name, value);
 			LeaveScope();
 			NewLine();
@@ -685,7 +684,7 @@ namespace cct
 				Write("const auto* methodClass = GetClass()->GetMethod(\"{}\"sv);", method.name);
 				Write("if (methodClass == nullptr || methodClass->GetCustomDelegate() == nullptr)");
 				EnterScope(),
-				Write("CCT_ASSERT_FALSE(\"Missing Delegate\");");
+					Write("CCT_ASSERT_FALSE(\"Missing Delegate\");");
 				Write("return");
 				if (method.returnValue != "void"s)
 					Write("{}{{}}", method.returnValue);
@@ -703,7 +702,6 @@ namespace cct
 
 	void CppGenerator::GenerateEnum(const Enum& enum_, std::string_view ns)
 	{
-
 		Write("class Internal{}EnumerationClass : public cct::refl::EnumerationClass", enum_.name);
 		EnterScope();
 		{
@@ -824,4 +822,4 @@ namespace cct
 		Write("return std::make_unique<Internal{}Package>();", pkg.name);
 		LeaveScope();
 	}
-}
+} // namespace cct

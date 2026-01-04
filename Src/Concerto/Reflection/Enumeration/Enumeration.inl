@@ -56,4 +56,4 @@ namespace cct::refl
 	{
 		return m_value;
 	}
-}
+} // namespace cct::refl

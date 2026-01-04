@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Reflection/Registry/Registry.hpp"
+
 #include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
@@ -33,9 +34,10 @@ namespace cct::refl
 				return;
 			}
 		}
-	}
+	} // namespace
 
-	Registry::Registry(std::size_t defaultObjectCount) : m_defaultObjectCount(defaultObjectCount)
+	Registry::Registry(std::size_t defaultObjectCount) :
+		m_defaultObjectCount(defaultObjectCount)
 
 	{
 	}
@@ -82,9 +84,7 @@ namespace cct::refl
 		}
 
 		auto objectIt = std::ranges::find_if(it->second, [&](std::unique_ptr<Object>& obj)
-		{
-			return obj.get() == &object;
-		});
+											 { return obj.get() == &object; });
 
 		if (objectIt == it->second.end())
 		{
@@ -94,4 +94,4 @@ namespace cct::refl
 
 		it->second.erase(objectIt);
 	}
-}
+} // namespace cct::refl

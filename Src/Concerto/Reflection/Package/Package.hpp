@@ -6,16 +6,18 @@
 #define CONCERTO_REFLECTION_PACKAGE_HPP
 
 #include <memory>
-#include <string_view>
 #include <string>
+#include <string_view>
 #include <vector>
 
+#include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/Defines.hpp"
 
 namespace cct::refl
 {
 	class Object;
 	class Namespace;
+	class Class;
 
 	class CCT_REFLECTION_API Package
 	{
@@ -29,7 +31,6 @@ namespace cct::refl
 		Package& operator=(const Package&) = delete;
 		Package& operator=(Package&&) = default;
 
-
 		[[nodiscard]] inline std::string_view GetName() const;
 		[[nodiscard]] inline std::size_t GetClassCount() const;
 		[[nodiscard]] inline std::size_t GetNamespaceCount() const;
@@ -40,6 +41,7 @@ namespace cct::refl
 		virtual void LoadNamespaces() = 0;
 		virtual void InitializeNamespaces() = 0;
 		virtual void InitializeClasses() = 0;
+
 	protected:
 		void AddNamespace(std::unique_ptr<Namespace> nameSpace);
 		void AddClass(std::unique_ptr<Class> klass);
@@ -48,8 +50,8 @@ namespace cct::refl
 		std::vector<std::unique_ptr<Class>> m_classes;
 		friend class Namespace;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Package/Package.inl"
 
-#endif //CONCERTO_REFLECTION_PACKAGE_HPP
+#endif // CONCERTO_REFLECTION_PACKAGE_HPP

@@ -5,11 +5,11 @@
 #ifndef CONCERTO_REFLECTION_METHOD_HPP
 #define CONCERTO_REFLECTION_METHOD_HPP
 
-#include <string>
-#include <memory>
-#include <vector>
-#include <span>
 #include <array>
+#include <memory>
+#include <span>
+#include <string>
+#include <vector>
 
 #include <Concerto/Core/Any/Any.hpp>
 #include <Concerto/Core/Result/Result.hpp>
@@ -37,19 +37,21 @@ namespace cct::refl
 		[[nodiscard]] std::vector<const Class*> GetParameters() const;
 		[[nodiscard]] inline std::size_t GetIndex() const;
 
-		template<typename T, typename ...Args>
+		template<typename T, typename... Args>
 		Result<T, std::string> Invoke(Object& self, Args&&... args) const;
 
 		inline bool HasAttribute(std::string_view attribute) const;
 		inline std::string_view GetAttribute(std::string_view attribute) const;
 
-		//Should be private
+		// Should be private
 		virtual void Initialize() = 0;
 		inline void* GetCustomDelegate() const;
+
 	protected:
 		void AddAttribute(std::string name, std::string value);
 		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		inline void SetCustomDelegate(void* delegate);
+
 	private:
 		std::string m_name;
 		const Class* m_returnValue;
@@ -59,12 +61,11 @@ namespace cct::refl
 		void* m_customDelegate;
 	};
 
-	template <typename T, typename... Args>
+	template<typename T, typename... Args>
 	Result<T, std::string> Method::Invoke(Object& self, Args&&... args) const
 	{
 		std::array<cct::Any, sizeof...(Args)> erasedArgs = {
-			cct::Any::Make<Args>(std::forward<Args>(args))...
-		};
+			cct::Any::Make<Args>(std::forward<Args>(args))...};
 
 		Result<Any, std::string> result = Invoke(self, erasedArgs);
 
@@ -81,8 +82,8 @@ namespace cct::refl
 			return std::move(result).GetError();
 		}
 	}
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Method/Method.inl"
 
-#endif //CONCERTO_REFLECTION_METHOD_HPP
+#endif // CONCERTO_REFLECTION_METHOD_HPP

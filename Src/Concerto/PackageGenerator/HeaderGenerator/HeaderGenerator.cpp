@@ -2,11 +2,10 @@
 // Created by arthur on 09/12/2024.
 //
 
-#include <algorithm>
-#include <format>
-
 #include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"
 
+#include <algorithm>
+#include <format>
 
 namespace cct
 {
@@ -14,9 +13,7 @@ namespace cct
 	{
 		std::string upperPackageName(package.name);
 		std::ranges::transform(upperPackageName, upperPackageName.begin(), [](char c)
-			{
-				return std::toupper(c);
-			});
+							   { return std::toupper(c); });
 		std::string api = upperPackageName + "PACKAGE_API";
 		Write("//This file was automatically generated, do not edit\n");
 		Write("#pragma once");
@@ -28,8 +25,8 @@ namespace cct
 		Write("#include <Concerto/Reflection/MemberVariable/MemberVariable.hpp>");
 		Write("#include <Concerto/Reflection/Method/Method.hpp>");
 		Write("#include <Concerto/Reflection/Package/Package.hpp>");
-	Write("#include <Concerto/Reflection/TemplateClass/TemplateClass.hpp>");
-	Write("#include <Concerto/Reflection/GenericClass/GenericClass.hpp>");
+		Write("#include <Concerto/Reflection/TemplateClass/TemplateClass.hpp>");
+		Write("#include <Concerto/Reflection/GenericClass/GenericClass.hpp>");
 		NewLine();
 
 		NewLine();
@@ -200,4 +197,4 @@ namespace cct
 		Write("{} std::string_view {}ToString({} value);", api, Capitalize(enum_.name), enum_.name);
 		Write("{} {} {}FromString(std::string_view str);", api, enum_.name, Capitalize(enum_.name));
 	}
-}
+} // namespace cct

@@ -5,8 +5,8 @@
 #ifndef CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
 #define CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -56,8 +56,8 @@ namespace cct::refl
 		std::size_t m_index;
 		UInt64 m_typeId;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/MemberVariable/MemberVariable.inl"
 
-#endif //CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
+#endif // CONCERTO_REFLECTION_MEMBERVARIABLE_HPP

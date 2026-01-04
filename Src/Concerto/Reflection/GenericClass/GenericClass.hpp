@@ -5,11 +5,11 @@
 #ifndef CONCERTO_REFLECTION_GENERIC_CLASS_HPP
 #define CONCERTO_REFLECTION_GENERIC_CLASS_HPP
 
+#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
-#include <memory>
 #include <vector>
-#include <span>
 
 #include "Concerto/Reflection/Class/Class.hpp"
 
@@ -48,6 +48,6 @@ namespace cct::refl
 		std::vector<std::string> m_typeParameterNames;
 		std::size_t m_typeParameterCount;
 	};
-}
+} // namespace cct::refl
 
-#endif //CONCERTO_REFLECTION_GENERIC_CLASS_HPP
+#endif // CONCERTO_REFLECTION_GENERIC_CLASS_HPP

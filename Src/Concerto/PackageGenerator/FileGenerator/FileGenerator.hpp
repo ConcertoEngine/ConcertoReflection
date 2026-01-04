@@ -5,11 +5,11 @@
 #ifndef CONCERTO_PKGGENERATOR_FILEGENERATOR_HPP
 #define CONCERTO_PKGGENERATOR_FILEGENERATOR_HPP
 
+#include <format>
 #include <fstream>
+#include <ranges>
 #include <sstream>
 #include <string>
-#include <format>
-#include <ranges>
 
 #include "Concerto/PackageGenerator/Defines.hpp"
 
@@ -44,12 +44,14 @@ namespace cct
 			}
 			m_stream << '\n';
 		}
+
 	private:
 		std::size_t m_indentLevel;
+
 	protected:
 		std::ostringstream m_stream;
 		std::string m_path;
 	};
-}
+} // namespace cct
 
-#endif //CONCERTO_PKGGENERATOR_FILEGENERATOR_HPP
+#endif // CONCERTO_PKGGENERATOR_FILEGENERATOR_HPP

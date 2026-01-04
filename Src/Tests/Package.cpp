@@ -2,10 +2,11 @@
 // Created by arthur on 09/12/2024.
 //
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
+#include <ConcertoReflectionPackage.gen.hpp>
 
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
-#include <ConcertoReflectionPackage.gen.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Package initialization and destruction")
 {

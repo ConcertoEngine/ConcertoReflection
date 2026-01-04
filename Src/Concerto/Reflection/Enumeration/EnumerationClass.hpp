@@ -5,15 +5,15 @@
 #ifndef CONCERTO_REFLECTION_ENUMERATION_CLASS_HPP
 #define CONCERTO_REFLECTION_ENUMERATION_CLASS_HPP
 
+#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
-#include <memory>
 #include <vector>
-#include <span>
 
 #include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/EnumValue/EnumValue.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
+#include "Concerto/Reflection/EnumValue/EnumValue.hpp"
 
 namespace cct::refl
 {
@@ -48,6 +48,6 @@ namespace cct::refl
 
 		std::vector<std::unique_ptr<EnumValue>> m_enumValues;
 	};
-}
+} // namespace cct::refl
 
 #endif // CONCERTO_REFLECTION_ENUMERATION_CLASS_HPP

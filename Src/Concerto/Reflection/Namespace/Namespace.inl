@@ -36,7 +36,6 @@ namespace cct::refl
 		return count;
 	}
 
-
 	inline std::size_t Namespace::GetNamespaceCount() const
 	{
 		return m_namespaces.size();
@@ -53,6 +52,6 @@ namespace cct::refl
 	{
 		return GetClass(name) != nullptr;
 	}
-}
+} // namespace cct::refl
 
-#endif //CONCERTO_REFLECTION_NAMESPACE_INL
+#endif // CONCERTO_REFLECTION_NAMESPACE_INL

@@ -5,10 +5,10 @@
 #ifndef CONCERTO_REFLECTION_NAMESPACE_HPP
 #define CONCERTO_REFLECTION_NAMESPACE_HPP
 
-#include <string>
-#include <vector>
 #include <memory>
 #include <span>
+#include <string>
+#include <vector>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -42,7 +42,7 @@ namespace cct::refl
 
 		[[nodiscard]] inline bool HasClass(std::string_view name) const;
 
-		//should be private
+		// should be private
 		void AddClass(std::unique_ptr<Class> klass);
 		void AddNamespace(std::unique_ptr<Namespace> nameSpace);
 		virtual void LoadNamespaces() = 0;
@@ -55,8 +55,8 @@ namespace cct::refl
 		std::vector<std::unique_ptr<Namespace>> m_namespaces;
 		std::size_t m_hash;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Namespace/Namespace.inl"
 
-#endif //CONCERTO_REFLECTION_NAMESPACE_HPP
+#endif // CONCERTO_REFLECTION_NAMESPACE_HPP

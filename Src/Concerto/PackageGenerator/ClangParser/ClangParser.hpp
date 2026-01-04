@@ -7,11 +7,11 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "Concerto/PackageGenerator/Defines.hpp"
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclTemplate.h>
 #include <clang/Frontend/ASTUnit.h>
-
-#include "Concerto/PackageGenerator/Defines.hpp"
 
 namespace cct
 {
@@ -19,10 +19,10 @@ namespace cct
 	{
 	public:
 		Package* Parse(const std::vector<std::string>& includeDirs,
-			const std::vector<std::string>& defines,
-			const std::vector<std::string>& sources,
-			const std::string& resourceDir,
-			const std::string& sdk);
+					   const std::vector<std::string>& defines,
+					   const std::vector<std::string>& sources,
+					   const std::string& resourceDir,
+					   const std::string& sdk);
 
 		void ProcessDeclaration(const clang::Decl* declaration);
 		void ProcessNamespace(const clang::NamespaceDecl* namespaceDeclaration);
@@ -39,5 +39,4 @@ namespace cct
 
 		void RemoveEmptyNamespaces(std::vector<Namespace>& namespaces);
 	};
-}
-
+} // namespace cct

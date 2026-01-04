@@ -45,7 +45,7 @@ namespace cct::refl
 
 		friend class Enumeration;
 	};
-}
+} // namespace cct::refl
 
 #include "Concerto/Reflection/EnumValue/EnumValue.inl"
 

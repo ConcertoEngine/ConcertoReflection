@@ -2,15 +2,13 @@
 // Created by arthur on 20/12/2024.
 //
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
-
+#include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Package loader")
 {

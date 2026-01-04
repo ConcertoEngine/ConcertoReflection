@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "Concerto/Reflection/Object/Object.refl.hpp"
-
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
 {
@@ -79,7 +78,7 @@ namespace cct::refl
 		}
 	}
 
-	template <typename T>
+	template<typename T>
 	T* Object::GetMemberVariable(std::size_t index)
 	{
 		Object* object = GetClass()->GetMemberVariable(index, *this);
@@ -93,7 +92,7 @@ namespace cct::refl
 		return static_cast<T*>(object);
 	}
 
-	template <typename T>
+	template<typename T>
 	const T* Object::GetMemberVariable(std::size_t index) const
 	{
 		Object* object = GetClass()->GetMemberVariable(index, *this);
@@ -107,7 +106,7 @@ namespace cct::refl
 		return static_cast<T*>(object);
 	}
 
-	template <typename T>
+	template<typename T>
 	T* Object::GetMemberVariable(std::string_view name)
 	{
 		const MemberVariable* memberVariable = GetClass()->GetMemberVariable(name);
@@ -116,7 +115,7 @@ namespace cct::refl
 		return GetMemberVariable<T>(memberVariable->GetIndex());
 	}
 
-	template <typename T>
+	template<typename T>
 	const T* Object::GetMemberVariable(std::string_view name) const
 	{
 		const MemberVariable* memberVariable = GetDynamicClass()->GetMemberVariable(name);
@@ -125,7 +124,7 @@ namespace cct::refl
 		return GetMemberVariable<T>(memberVariable->GetIndex());
 	}
 
-	template <typename T>
+	template<typename T>
 	T* Object::GetNativeMemberVariable(std::size_t index)
 	{
 		void* variable = GetDynamicClass()->GetNativeMemberVariable(index, *this);
@@ -140,7 +139,7 @@ namespace cct::refl
 		return static_cast<T*>(variable);
 	}
 
-	template <typename T>
+	template<typename T>
 	const T* Object::GetNativeMemberVariable(std::size_t index) const
 	{
 		void* variable = GetDynamicClass()->GetNativeMemberVariable(index, *this);
@@ -155,7 +154,7 @@ namespace cct::refl
 		return static_cast<T*>(variable);
 	}
 
-	template <typename T>
+	template<typename T>
 	T* Object::GetNativeMemberVariable(std::string_view name)
 	{
 		const NativeMemberVariable* memberVariable = GetDynamicClass()->GetNativeMemberVariable(name);
@@ -164,7 +163,7 @@ namespace cct::refl
 		return GetNativeMemberVariable<T>(memberVariable->GetIndex());
 	}
 
-	template <typename T>
+	template<typename T>
 	const T* Object::GetNativeMemberVariable(std::string_view name) const
 	{
 		const NativeMemberVariable* memberVariable = GetDynamicClass()->GetNativeMemberVariable(name);
@@ -172,4 +171,4 @@ namespace cct::refl
 			return nullptr;
 		return GetNativeMemberVariable<T>(memberVariable->GetIndex());
 	}
-}
+} // namespace cct::refl

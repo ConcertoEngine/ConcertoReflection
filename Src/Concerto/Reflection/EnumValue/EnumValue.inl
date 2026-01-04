@@ -20,4 +20,4 @@ namespace cct::refl
 	{
 		return m_index;
 	}
-}
+} // namespace cct::refl

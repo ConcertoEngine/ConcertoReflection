@@ -2,6 +2,8 @@
 // Created by arthur on 11/12/2024.
 //
 
+#include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
+
 #include <ranges>
 #include <set>
 
@@ -9,8 +11,6 @@
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
 #include "Concerto/Reflection/Namespace/Namespace.hpp"
-
-#include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
 
 namespace cct::refl
 {
@@ -68,7 +68,7 @@ namespace cct::refl
 
 		if (res.size() >= 1 && res[0] == ""sv)
 			res.erase(res.begin()); // because split on "::" gives an empty first element
-		
+
 		if (res.empty())
 		{
 			CCT_ASSERT_FALSE("Invalid class: {}", name);
@@ -99,7 +99,7 @@ namespace cct::refl
 		{
 			if (ns->GetName() == names[0])
 			{
-				Namespace* nestedNs =ns->GetNamespace(names.subspan(1));
+				Namespace* nestedNs = ns->GetNamespace(names.subspan(1));
 				if (nestedNs)
 					return nestedNs;
 			}
@@ -146,16 +146,12 @@ namespace cct::refl
 	void GlobalNamespace::RemoveNamespace(std::string_view name)
 	{
 		std::erase_if(m_namespaces, [&](const Namespace* ns)
-		{
-			return ns->GetName() == name;
-		});
+					  { return ns->GetName() == name; });
 	}
 
 	void GlobalNamespace::RemoveClass(std::string_view name)
 	{
 		std::erase_if(m_classes, [&](const Class* ns)
-		{
-			return ns->GetName() == name;
-		});
+					  { return ns->GetName() == name; });
 	}
-}
+} // namespace cct::refl

@@ -3,14 +3,15 @@
 //
 
 #include "Concerto/Reflection/Enumeration/Enumeration.hpp"
+
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
 
 namespace cct::refl
 {
-	Enumeration::Enumeration()
-		: m_value(0)
+	Enumeration::Enumeration() :
+		m_value(0)
 	{
 		m_dynamicClass = m_class;
 	}
@@ -49,7 +50,7 @@ namespace cct::refl
 		const EnumValue* enumValue = GetEnumValue(name);
 		if (enumValue)
 			return enumValue->GetValue();
-		
+
 		CCT_ASSERT_FALSE("Enumeration::FromString: enum value not found: {}", name);
 		return 0;
 	}
@@ -84,4 +85,4 @@ namespace cct::refl
 	{
 		m_value = value;
 	}
-}
+} // namespace cct::refl

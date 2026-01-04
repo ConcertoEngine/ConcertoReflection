@@ -2,15 +2,17 @@
 // Created by arthur on 10/11/2024.
 //
 
+#include "Concerto/Reflection/Class/Class.hpp"
+
 #include <ranges>
 #include <string_view>
+
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/Namespace/Namespace.hpp"
-#include "Concerto/Reflection/Method/Method.hpp"
-#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {
@@ -214,11 +216,9 @@ namespace cct::refl
 
 	bool Class::HasAttribute(std::string_view attribute) const
 	{
-		//not using "contains", because it does not support std::string_view
+		// not using "contains", because it does not support std::string_view
 		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-			{
-				return attribute == value.first;
-			});
+							   { return attribute == value.first; });
 		return it != m_attributes.end();
 	}
 
@@ -226,9 +226,7 @@ namespace cct::refl
 	{
 		// not using "contains", because it does not support std::string_view
 		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-			{
-				return "attribute" == value.first;
-			});
+							   { return "attribute" == value.first; });
 		if (it == m_attributes.end())
 		{
 			CCT_ASSERT_FALSE("Attribute '{}' does not exist", attribute);
@@ -323,12 +321,11 @@ namespace cct::refl
 			return nullptr;
 		}
 
-
 		if (res.size() == 1)
 			return GetClassByName("", res[0]);
 
-		std::string_view klass  = res.back();
+		std::string_view klass = res.back();
 		res.pop_back();
 		return GetClassByName(res, klass);
 	}
-}
+} // namespace cct::refl

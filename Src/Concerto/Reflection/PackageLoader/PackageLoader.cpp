@@ -2,15 +2,16 @@
 // Created by arthur on 20/12/2024.
 //
 
+#include "Concerto/Reflection/PackageLoader/PackageLoader.hpp"
+
 #include <filesystem>
 
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp"
-#include "Concerto/Reflection/Namespace/Namespace.inl"
-#include "Concerto/Reflection/Method/Method.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/Namespace/Namespace.inl"
 #include "Concerto/Reflection/Package/Package.hpp"
-#include "Concerto/Reflection/PackageLoader/PackageLoader.hpp"
 
 namespace cct::refl
 {
@@ -92,4 +93,4 @@ namespace cct::refl
 		for (const auto& pkg : m_packages)
 			pkg->InitializeClasses();
 	}
-}
+} // namespace cct::refl

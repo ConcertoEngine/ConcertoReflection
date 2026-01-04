@@ -1,15 +1,15 @@
-#include <iostream>
-#include <filesystem>
 #include <cstring>
+#include <cxxopts.hpp>
+#include <filesystem>
+#include <iostream>
 #include <string>
 #include <thread>
 
-#include <cxxopts.hpp>
 #include <Concerto/Core/Logger/Logger.hpp>
 
+#include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 #include "Concerto/PackageGenerator/CppGenerator/CppGenerator.hpp"
 #include "Concerto/PackageGenerator/HeaderGenerator/HeaderGenerator.hpp"
-#include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 
 int main(int argc, const char** argv)
 {
@@ -21,28 +21,20 @@ int main(int argc, const char** argv)
 	std::string resourceDir;
 	std::string sdk;
 
-	try {
+	try
+	{
 		cxxopts::Options options("Concerto Reflection Generator",
-			"Concerto Reflection Generator");
+								 "Concerto Reflection Generator");
 
-		options.add_options()
-			("outputDir", "Output directory", cxxopts::value<std::string>())
-			("I,include", "Include directories (one or more)", cxxopts::value<std::vector<std::string>>())
-			("D,define", "Preprocessor defines (one or more)", cxxopts::value<std::vector<std::string>>())
-			("s,source", "Source files (one or more)", cxxopts::value<std::vector<std::string>>())
-			("H,header", "Header file to include in the generated cpp", cxxopts::value<std::vector<std::string>>())
-			("R,resource-dir", "Clang resource directory", cxxopts::value<std::string>())
-			("S,sdk", "SDK path", cxxopts::value<std::string>())
-			("v,version", "1.0.0")
-			("h,help", "Show help");
+		options.add_options()("outputDir", "Output directory", cxxopts::value<std::string>())("I,include", "Include directories (one or more)", cxxopts::value<std::vector<std::string>>())("D,define", "Preprocessor defines (one or more)", cxxopts::value<std::vector<std::string>>())("s,source", "Source files (one or more)", cxxopts::value<std::vector<std::string>>())("H,header", "Header file to include in the generated cpp", cxxopts::value<std::vector<std::string>>())("R,resource-dir", "Clang resource directory", cxxopts::value<std::string>())("S,sdk", "SDK path", cxxopts::value<std::string>())("v,version", "1.0.0")("h,help", "Show help");
 
-		options.parse_positional({ "outputDir" });
+		options.parse_positional({"outputDir"});
 
 		auto result = options.parse(argc, argv);
 
 		if (result.count("help"))
 		{
-			std::cout << options.help({ "" }) << "\n";
+			std::cout << options.help({""}) << "\n";
 			return 0;
 		}
 
@@ -52,9 +44,10 @@ int main(int argc, const char** argv)
 			return 0;
 		}
 
-		if (!result.count("outputDir")) {
+		if (!result.count("outputDir"))
+		{
 			std::cerr << "Missing required 'outputDir' argument.\n";
-			std::cerr << options.help({ "" }) << "\n";
+			std::cerr << options.help({""}) << "\n";
 			return EXIT_FAILURE;
 		}
 		outputFolder = result["outputDir"].as<std::string>();
@@ -72,7 +65,7 @@ int main(int argc, const char** argv)
 		if (result.count("sdk"))
 			sdk = result["sdk"].as<std::string>();
 
-		//std::this_thread::sleep_for(std::chrono::seconds(5));
+		// std::this_thread::sleep_for(std::chrono::seconds(5));
 		cct::ClangParser parser;
 		Package* package = parser.Parse(includes, defines, sources, resourceDir, sdk);
 		if (!package)

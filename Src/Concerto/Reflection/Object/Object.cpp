@@ -2,11 +2,10 @@
 // Created by arthur on 10/11/2024.
 //
 
-#include "Concerto/Reflection/Object/Object.refl.hpp"
-
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
+#include "Concerto/Reflection/Object/Object.refl.hpp"
 
 namespace cct::refl
 {
@@ -46,4 +45,4 @@ namespace cct::refl
 
 		return *this;
 	}
-}
+} // namespace cct::refl

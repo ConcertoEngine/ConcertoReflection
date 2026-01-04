@@ -1,15 +1,15 @@
 //
 // Created by arthur on 12/31/2024.
 //
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
-#include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
-#include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 #include <Concerto/Reflection/Enumeration/Enumeration.hpp>
 #include <Concerto/Reflection/Enumeration/EnumerationClass.hpp>
+#include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
+#include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Enumeration metadata verification")
 {
@@ -91,21 +91,21 @@ SCENARIO("Enumeration metadata verification")
 
 					THEN("We can test flag operations")
 					{
-						CHECK(enumPtr->HasFlag(0, 0) == true);  // 0 & 0 == 0, true
-						CHECK(enumPtr->HasFlag(1, 1) == true);  // 1 & 1 == 1, true
-						CHECK(enumPtr->HasFlag(1, 0) == true);  // 1 & 0 == 0, true (flag 0 is always present)
+						CHECK(enumPtr->HasFlag(0, 0) == true); // 0 & 0 == 0, true
+						CHECK(enumPtr->HasFlag(1, 1) == true); // 1 & 1 == 1, true
+						CHECK(enumPtr->HasFlag(1, 0) == true); // 1 & 0 == 0, true (flag 0 is always present)
 
 						cct::Int64 combined = enumPtr->SetFlag(0, 1);
-						CHECK(combined == 1);  // 0 | 1 = 1
+						CHECK(combined == 1); // 0 | 1 = 1
 
 						combined = enumPtr->SetFlag(0, 0);
-						CHECK(combined == 0);  // 0 | 0 = 0
+						CHECK(combined == 0); // 0 | 0 = 0
 
 						cct::Int64 toggled = enumPtr->ToggleFlag(0, 1);
-						CHECK(toggled == 1);  // 0 ^ 1 = 1
+						CHECK(toggled == 1); // 0 ^ 1 = 1
 
 						toggled = enumPtr->ToggleFlag(1, 1);
-						CHECK(toggled == 0);  // 1 ^ 1 = 0
+						CHECK(toggled == 0); // 1 ^ 1 = 0
 					}
 				}
 			}
@@ -113,8 +113,7 @@ SCENARIO("Enumeration metadata verification")
 			THEN("We can retrieve enum values from the enumeration class")
 			{
 				const auto* enumClass = dynamic_cast<const cct::refl::EnumerationClass*>(
-					cct::refl::GetClassByName("cct::sample::SampleEnum")
-				);
+					cct::refl::GetClassByName("cct::sample::SampleEnum"));
 				REQUIRE(enumClass);
 
 				auto enumValues = enumClass->GetEnumValues();
@@ -133,8 +132,7 @@ SCENARIO("Enumeration metadata verification")
 			THEN("We can iterate over enum values with range-based for loops")
 			{
 				const auto* enumClass = dynamic_cast<const cct::refl::EnumerationClass*>(
-					cct::refl::GetClassByName("cct::sample::SampleEnum")
-				);
+					cct::refl::GetClassByName("cct::sample::SampleEnum"));
 				REQUIRE(enumClass);
 
 				std::size_t count = 0;

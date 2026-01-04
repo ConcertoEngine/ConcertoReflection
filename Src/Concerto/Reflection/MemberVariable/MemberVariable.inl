@@ -32,7 +32,6 @@ namespace cct::refl
 		m_typeId(typeId),
 		m_index(index)
 	{
-
 	}
 
 	inline std::string_view NativeMemberVariable::GetName() const
@@ -49,6 +48,6 @@ namespace cct::refl
 	{
 		return m_typeId;
 	}
-}
+} // namespace cct::refl
 
-#endif //CONCERTO_REFLECTION_MEMBERVARIABLE_INL
+#endif // CONCERTO_REFLECTION_MEMBERVARIABLE_INL

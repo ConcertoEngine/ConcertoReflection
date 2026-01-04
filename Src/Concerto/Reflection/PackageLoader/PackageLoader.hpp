@@ -35,10 +35,11 @@ namespace cct::refl
 		bool AddDynamicFolderAndLoad(std::string_view path);
 
 		void LoadPackages() const;
+
 	private:
 		std::vector<cct::DynLib> m_dynamicPackages;
 		std::vector<std::unique_ptr<Package>> m_packages;
 	};
-}
+} // namespace cct::refl
 
-#endif //CONCERTO_REFLECTION_PACKAGELOADER_HPP
+#endif // CONCERTO_REFLECTION_PACKAGELOADER_HPP

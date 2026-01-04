@@ -3,17 +3,19 @@
 //
 
 #include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
-#include <Concerto/Core/Logger/Logger.hpp>
-#include <toml11/parser.hpp>
+
 #include <algorithm>
 #include <optional>
 #include <sstream>
+
+#include <Concerto/Core/Logger/Logger.hpp>
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Attr.h>
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclTemplate.h>
+#include <clang/AST/PrettyPrinter.h>
 #include <clang/AST/Type.h>
 #include <clang/Frontend/ASTUnit.h>
 #include <clang/Lex/Lexer.h>
@@ -21,7 +23,7 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <llvm/ADT/SmallString.h>
-#include <clang/AST/PrettyPrinter.h>
+#include <toml11/parser.hpp>
 
 using namespace clang;
 using namespace clang::tooling;
@@ -68,7 +70,8 @@ namespace
 		auto* level = &pkg.namepsaces;
 		for (const auto& name : chain)
 		{
-			auto it = std::ranges::find_if(*level, [&](const Namespace& ns) { return ns.name == name; });
+			auto it = std::ranges::find_if(*level, [&](const Namespace& ns)
+										   { return ns.name == name; });
 			if (it == level->end())
 			{
 				Namespace ns;
@@ -86,7 +89,7 @@ namespace
 	}
 
 	bool ExtractCctAttribute(const Attr* A, ASTContext& astContext, const SourceManager& SM, const LangOptions& LO,
-		std::string& outScope, TomlAttributes& outAttrs)
+							 std::string& outScope, TomlAttributes& outAttrs)
 	{
 		const IdentifierInfo* identifierInfo = A->getAttrName();
 		auto attributeName = identifierInfo ? identifierInfo->getName() : StringRef();
@@ -105,8 +108,7 @@ namespace
 			"cct::NativeMember"sv,
 			"cct::Method"sv,
 			"cct::Enum"sv,
-			"cct::EnumValue"sv
-		};
+			"cct::EnumValue"sv};
 
 		std::string_view annotation(AnnotateAttribute->getAnnotation().begin(), AnnotateAttribute->getAnnotation().end());
 		bool known = false;
@@ -168,23 +170,21 @@ namespace
 		if (leaf)
 		{
 			auto it = std::ranges::find_if(leaf->enums, [&](const Enum& e)
-			{
-				return e.name == enm.name;
-			});
+										   { return e.name == enm.name; });
 
 			if (it == leaf->enums.end())
 				leaf->enums.push_back(enm);
 		}
 	}
-}
+} // namespace
 
 namespace cct
 {
 	Package* ClangParser::Parse(const std::vector<std::string>& includeDirs,
-		const std::vector<std::string>& defines,
-		const std::vector<std::string>& sources,
-		const std::string& resourceDir,
-		const std::string& sdk)
+								const std::vector<std::string>& defines,
+								const std::vector<std::string>& sources,
+								const std::string& resourceDir,
+								const std::string& sdk)
 	{
 		std::string code;
 
@@ -213,7 +213,7 @@ namespace cct
 			Logger::Error("LibTooling: failed to parse");
 			return nullptr;
 		}
-		
+
 		m_astContext = &AST->getASTContext();
 		m_sourceManager = &m_astContext->getSourceManager();
 		m_langOptions = &m_astContext->getLangOpts();
@@ -237,12 +237,16 @@ namespace cct
 		std::optional<std::pair<std::string, TomlAttributes>> genericClassAttr;
 		for (const auto* A : recordDeclaration->attrs())
 		{
-			std::string scope; TomlAttributes attrs;
+			std::string scope;
+			TomlAttributes attrs;
 			if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 				continue;
-			if (scope == "cct::Class") classAttr = std::make_pair(scope, attrs);
-			else if (scope == "cct::Package") packageAttr = std::make_pair(scope, attrs);
-			else if (scope == "cct::GenericClass") genericClassAttr = std::make_pair(scope, attrs);
+			if (scope == "cct::Class")
+				classAttr = std::make_pair(scope, attrs);
+			else if (scope == "cct::Package")
+				packageAttr = std::make_pair(scope, attrs);
+			else if (scope == "cct::GenericClass")
+				genericClassAttr = std::make_pair(scope, attrs);
 		}
 		auto txt = recordDeclaration->getNameAsString();
 		if (!classAttr && !packageAttr && !genericClassAttr)
@@ -339,7 +343,8 @@ namespace cct
 					break;
 				}
 			}
-			if (!hasAttr) continue;
+			if (!hasAttr)
+				continue;
 
 			Class::Member m;
 			m.name = F->getNameAsString();
@@ -356,7 +361,8 @@ namespace cct
 			TomlAttributes methodAttrs;
 			for (const auto* A : M->attrs())
 			{
-				std::string scope; TomlAttributes attrs;
+				std::string scope;
+				TomlAttributes attrs;
 				if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 					continue;
 				if (scope == "cct::Method")
@@ -366,7 +372,8 @@ namespace cct
 					break;
 				}
 			}
-			if (!hasAttr) continue;
+			if (!hasAttr)
+				continue;
 
 			Class::Method mm;
 			mm.name = M->getNameAsString();
@@ -378,8 +385,12 @@ namespace cct
 			{
 				Class::Method::Params param;
 				param.type = QualTypeToString(P->getType(), *m_astContext);
-				if (P->getIdentifier()) param.name = P->getNameAsString();
-				else { param.name = std::string("arg") + std::to_string(pi); }
+				if (P->getIdentifier())
+					param.name = P->getNameAsString();
+				else
+				{
+					param.name = std::string("arg") + std::to_string(pi);
+				}
 				mm.params.push_back(std::move(param));
 				++pi;
 			}
@@ -398,7 +409,8 @@ namespace cct
 		TomlAttributes enumAttrs;
 		for (const auto* A : enumDeclaration->attrs())
 		{
-			std::string scope; TomlAttributes attrs;
+			std::string scope;
+			TomlAttributes attrs;
 			if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 				continue;
 			if (scope == "cct::Enum")
@@ -408,7 +420,8 @@ namespace cct
 				break;
 			}
 		}
-		if (!hasAttr) return;
+		if (!hasAttr)
+			return;
 
 		Enum enm;
 		enm.name = enumDeclaration->getNameAsString();
@@ -489,7 +502,8 @@ namespace cct
 		std::optional<std::pair<std::string, TomlAttributes>> classAttr;
 		for (const auto* A : recordDecl->attrs())
 		{
-			std::string scope; TomlAttributes attrs;
+			std::string scope;
+			TomlAttributes attrs;
 			if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 				continue;
 			if (scope == "cct::Class")
@@ -556,7 +570,8 @@ namespace cct
 					break;
 				}
 			}
-			if (!hasAttr) continue;
+			if (!hasAttr)
+				continue;
 
 			Class::Member m;
 			m.name = F->getNameAsString();
@@ -572,7 +587,8 @@ namespace cct
 			TomlAttributes methodAttrs;
 			for (const auto* A : M->attrs())
 			{
-				std::string scope; TomlAttributes attrs;
+				std::string scope;
+				TomlAttributes attrs;
 				if (!ExtractCctAttribute(A, *m_astContext, *m_sourceManager, *m_langOptions, scope, attrs))
 					continue;
 				if (scope == "cct::Method")
@@ -582,7 +598,8 @@ namespace cct
 					break;
 				}
 			}
-			if (!hasAttr) continue;
+			if (!hasAttr)
+				continue;
 
 			Class::Method mm;
 			mm.name = M->getNameAsString();
@@ -594,8 +611,12 @@ namespace cct
 			{
 				Class::Method::Params param;
 				param.type = QualTypeToString(P->getType(), *m_astContext);
-				if (P->getIdentifier()) param.name = P->getNameAsString();
-				else { param.name = std::string("arg") + std::to_string(pi); }
+				if (P->getIdentifier())
+					param.name = P->getNameAsString();
+				else
+				{
+					param.name = std::string("arg") + std::to_string(pi);
+				}
 				mm.params.push_back(std::move(param));
 				++pi;
 			}
@@ -640,16 +661,13 @@ namespace cct
 		auto& classList = nsChain.empty() ? m_package.classes : leaf->classes;
 
 		auto it = std::ranges::find_if(classList, [&](const Class& c)
-		{
-			return c.name == templateClassName && c.isTemplateClass;
-		});
+									   { return c.name == templateClassName && c.isTemplateClass; });
 
 		if (it == classList.end())
 			return;
 
-		it->templateSpecializations.push_back(typeArgs.empty() ? "" :
-			[&typeArgs]()
-			{
+		it->templateSpecializations.push_back(typeArgs.empty() ? "" : [&typeArgs]()
+												  {
 				std::string result;
 				for (std::size_t i = 0; i < typeArgs.size(); ++i)
 				{
@@ -657,9 +675,7 @@ namespace cct
 					if (i < typeArgs.size() - 1)
 						result += ",";
 				}
-				return result;
-			}()
-		);
+				return result; }());
 	}
 
 	void ClangParser::RemoveEmptyNamespaces(std::vector<Namespace>& namespaces)
@@ -677,4 +693,4 @@ namespace cct
 				++it;
 		}
 	}
-}
+} // namespace cct

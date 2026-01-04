@@ -5,7 +5,6 @@
 #ifndef CONCERTO_PKGGENERATOR_HEADERGENERATOR_HPP
 #define CONCERTO_PKGGENERATOR_HEADERGENERATOR_HPP
 
-
 #include "Concerto/PackageGenerator/FileGenerator/FileGenerator.hpp"
 
 namespace cct
@@ -15,6 +14,7 @@ namespace cct
 	public:
 		using FileGenerator::FileGenerator;
 		bool Generate(const Package& package, std::span<std::string> args) override;
+
 	private:
 		void GenerateNamespace(const Namespace& ns, const std::string& api);
 		void GenerateClass(const Class& klass, const std::string& api);
@@ -22,6 +22,6 @@ namespace cct
 		void GenerateTemplateClass(const Class& klass, const std::string& api);
 		void GenerateEnum(const Enum& enum_, const std::string& api);
 	};
-}
+} // namespace cct
 
-#endif //CONCERTO_PKGGENERATOR_HEADERGENERATOR_HPP
+#endif // CONCERTO_PKGGENERATOR_HEADERGENERATOR_HPP

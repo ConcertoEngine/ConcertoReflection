@@ -2,13 +2,13 @@
 // Created by arthur on 09/12/2024.
 //
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Class metadata verification")
 {
@@ -21,7 +21,7 @@ SCENARIO("Class metadata verification")
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionPackage()));
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
 			packageLoader.LoadPackages();
-			
+
 			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 12);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 

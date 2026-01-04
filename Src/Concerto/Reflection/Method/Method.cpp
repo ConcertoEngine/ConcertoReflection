@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Reflection/Method/Method.hpp"
+
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
@@ -17,4 +18,4 @@ namespace cct::refl
 		m_customDelegate(delegate)
 	{
 	}
-}
+} // namespace cct::refl

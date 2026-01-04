@@ -11,4 +11,4 @@ namespace cct::refl
 {
 }
 
-#endif //CONCERTO_REFLECTION_REGISTRY_INL
+#endif // CONCERTO_REFLECTION_REGISTRY_INL

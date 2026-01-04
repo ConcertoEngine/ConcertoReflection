@@ -3,12 +3,13 @@
 //
 
 #include "Concerto/Reflection/TemplateClass/TemplateClass.hpp"
+
 #include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {
-	TemplateClass::TemplateClass(Namespace* nameSpace, std::string name, const Class* baseClass)
-		: Class(nameSpace, std::move(name), baseClass)
+	TemplateClass::TemplateClass(Namespace* nameSpace, std::string name, const Class* baseClass) :
+		Class(nameSpace, std::move(name), baseClass)
 	{
 	}
 
@@ -94,4 +95,4 @@ namespace cct::refl
 	{
 		// Initialize template class
 	}
-}
+} // namespace cct::refl

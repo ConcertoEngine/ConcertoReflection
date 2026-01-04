@@ -1,15 +1,14 @@
 //
 // Created by arthur on 10/11/2024.
 //
-#include <string>
-
-#include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/Method/Method.hpp"
-#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
-
 #include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 #include <ranges>
+#include <string>
+
+#include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
+#include "Concerto/Reflection/Method/Method.hpp"
 
 namespace cct::refl
 {
@@ -45,9 +44,7 @@ namespace cct::refl
 		}
 
 		auto it = std::find_if(m_classes.begin(), m_classes.end(), [&](const std::unique_ptr<Class>& value) -> bool
-			{
-				return value->GetName() == name;
-			});
+							   { return value->GetName() == name; });
 		if (it != m_classes.end())
 			return it->get();
 		return nullptr;
@@ -72,7 +69,6 @@ namespace cct::refl
 
 	Namespace* Namespace::GetNamespace(std::string_view name) const
 	{
-
 		for (auto& nameSpace : m_namespaces)
 		{
 			if (nameSpace->GetName() == name)
@@ -96,4 +92,4 @@ namespace cct::refl
 			return nameSpace;
 		return nameSpace->GetNamespace(res);
 	}
-}
+} // namespace cct::refl

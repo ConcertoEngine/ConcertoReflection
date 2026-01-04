@@ -6,9 +6,9 @@
 
 namespace cct::refl
 {
-	GenericClass::GenericClass(Namespace* nameSpace, std::string name, const Class* baseClass)
-		: Class(nameSpace, std::move(name), baseClass),
-		  m_typeParameterCount(0)
+	GenericClass::GenericClass(Namespace* nameSpace, std::string name, const Class* baseClass) :
+		Class(nameSpace, std::move(name), baseClass),
+		m_typeParameterCount(0)
 	{
 	}
 
@@ -34,7 +34,7 @@ namespace cct::refl
 		if (typeArgs.size() != m_typeParameterCount)
 		{
 			CCT_ASSERT_FALSE("Type argument count mismatch for '{}': expected {}, got {}",
-				GetName(), m_typeParameterCount, typeArgs.size());
+							 GetName(), m_typeParameterCount, typeArgs.size());
 			return nullptr;
 		}
 
@@ -71,4 +71,4 @@ namespace cct::refl
 		// Base implementation does nothing
 		// Subclasses override this to set up type parameters and other metadata
 	}
-}
+} // namespace cct::refl

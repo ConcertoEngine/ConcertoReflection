@@ -12,15 +12,20 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)							\
-	public:												\
-		static const cct::refl::Class* GetClass()		\
-			{return m_class;}							\
-	private:											\
-		inline static const cct::refl::Class* m_class;	\
-		friend class Internal##className##Class
+#define CCT_OBJECT(className)                      \
+public:                                            \
+	static const cct::refl::Class* GetClass()      \
+	{                                              \
+		return m_class;                            \
+	}                                              \
+                                                   \
+private:                                           \
+	inline static const cct::refl::Class* m_class; \
+	friend class Internal##className##Class
 
-struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection {};
+struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection
+{
+};
 
 namespace cct::refl
 {
@@ -61,17 +66,25 @@ namespace cct::refl
 		[[nodiscard]] inline const cct::refl::Object* GetMemberVariable(std::string_view name) const;
 		[[nodiscard]] inline cct::refl::Object* GetMemberVariable(std::string_view name);
 
-		template<typename T> [[nodiscard]] T* GetMemberVariable(std::size_t index);
-		template<typename T> [[nodiscard]] const T* GetMemberVariable(std::size_t index) const;
+		template<typename T>
+		[[nodiscard]] T* GetMemberVariable(std::size_t index);
+		template<typename T>
+		[[nodiscard]] const T* GetMemberVariable(std::size_t index) const;
 
-		template<typename T> [[nodiscard]] T* GetMemberVariable(std::string_view name);
-		template<typename T>[[nodiscard]] const T* GetMemberVariable(std::string_view name) const;
+		template<typename T>
+		[[nodiscard]] T* GetMemberVariable(std::string_view name);
+		template<typename T>
+		[[nodiscard]] const T* GetMemberVariable(std::string_view name) const;
 
-		template<typename T> [[nodiscard]] T* GetNativeMemberVariable(std::size_t index);
-		template<typename T> [[nodiscard]] const T* GetNativeMemberVariable(std::size_t index) const;
+		template<typename T>
+		[[nodiscard]] T* GetNativeMemberVariable(std::size_t index);
+		template<typename T>
+		[[nodiscard]] const T* GetNativeMemberVariable(std::size_t index) const;
 
-		template<typename T> [[nodiscard]] T* GetNativeMemberVariable(std::string_view name);
-		template<typename T> [[nodiscard]] const T* GetNativeMemberVariable(std::string_view name) const;
+		template<typename T>
+		[[nodiscard]] T* GetNativeMemberVariable(std::string_view name);
+		template<typename T>
+		[[nodiscard]] const T* GetNativeMemberVariable(std::string_view name) const;
 
 		[[nodiscard]] inline const cct::refl::Class* GetDynamicClass() const;
 		inline void SetDynamicClass(const Class* klass);
@@ -103,8 +116,8 @@ namespace cct::refl
 		CCT_OBJECT(Int16);
 	};
 
-	#define CCT_STRINGIFY(x) #x
-	#define CCT_QUOTE(x) "\"" CCT_STRINGIFY(x) "\""
+#define CCT_STRINGIFY(x) #x
+#define CCT_QUOTE(x) "\"" CCT_STRINGIFY(x) "\""
 
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Int32 : public cct::refl::Object
 	{
@@ -114,7 +127,10 @@ namespace cct::refl
 		{
 			m_dynamicClass = m_class;
 		}
-		Int32(cct::Int32 value) : m_value(value){}
+		Int32(cct::Int32 value) :
+			m_value(value)
+		{
+		}
 		~Int32() override = default;
 
 		bool operator==(const Int32& other) const
@@ -128,6 +144,7 @@ namespace cct::refl
 		}
 
 		CCT_OBJECT(Int32);
+
 	protected:
 		cct::Int32 m_value;
 	};
@@ -159,13 +176,13 @@ namespace cct::refl
 		{
 			if (!m_registry)
 			{
-//				OnValueChangeEvent(*this, ChangeType::Set);
+				//				OnValueChangeEvent(*this, ChangeType::Set);
 				m_value = value;
 				return;
 			}
-			//m_registry->NotifyPreChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
-			//m_value = value;
-			//m_registry->NotifyPostChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
+			// m_registry->NotifyPreChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
+			// m_value = value;
+			// m_registry->NotifyPostChange(*this, ChangeType::Set, CCT_STRINGIFY(m_value));
 		}
 
 		[[nodiscard]] cct::Int32 Get() const
@@ -174,16 +191,15 @@ namespace cct::refl
 		}
 
 	private:
-		//CCT_REFL_METHOD("ChangedEvent = " CCT_QUOTE(m_value))
-		//void OnValueChangeEvent(const Object& oldValue, EnumFlags<ChangeType> changeType)
+		// CCT_REFL_METHOD("ChangedEvent = " CCT_QUOTE(m_value))
+		// void OnValueChangeEvent(const Object& oldValue, EnumFlags<ChangeType> changeType)
 		//{
 		//	m_value = std::max(std::min(m_min, m_value), m_max);
-		//}
+		// }
 		cct::Int32 m_min;
 		cct::Int32 m_max;
 	};
-}
-
+} // namespace cct::refl
 
 #include "Concerto/Reflection/Object/Object.inl"
-#endif //CONCERTO_REFLECTION_OBJECT_HPP
+#endif // CONCERTO_REFLECTION_OBJECT_HPP

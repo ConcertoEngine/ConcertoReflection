@@ -3,14 +3,15 @@
 //
 
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
+
 #include "Concerto/Reflection/Enumeration/Enumeration.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
 #include "Concerto/Reflection/Namespace/Namespace.hpp"
 
 namespace cct::refl
 {
-	EnumerationClass::EnumerationClass(Namespace* nameSpace, std::string name)
-		: Class(nameSpace, std::move(name), nullptr)
+	EnumerationClass::EnumerationClass(Namespace* nameSpace, std::string name) :
+		Class(nameSpace, std::move(name), nullptr)
 	{
 	}
 
@@ -76,4 +77,4 @@ namespace cct::refl
 	void EnumerationClass::Initialize()
 	{
 	}
-}
+} // namespace cct::refl
