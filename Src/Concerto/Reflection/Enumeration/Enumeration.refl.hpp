@@ -39,6 +39,7 @@ namespace cct::refl
 		[[nodiscard]] const EnumValue* GetEnumValue(cct::Int64 value) const;
 
 		[[nodiscard]] cct::Int64 GetValue() const;
+		void SetEnumValue(cct::Int64 value);
 
 		[[nodiscard]] EnumIterable Enumerate() const;
 
@@ -55,7 +56,6 @@ namespace cct::refl
 
 	protected:
 		void AddEnumValue(std::string name, cct::Int64 value);
-		void SetEnumValue(cct::Int64 value);
 
 	private:
 		std::vector<std::unique_ptr<EnumValue>> m_enumValues;
