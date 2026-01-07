@@ -6,7 +6,7 @@
 #define CONCERTO_REFLECTION_REFLECTION_HPP
 
 #include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/Enumeration/Enumeration.hpp"
+#include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
 #include "Concerto/Reflection/EnumValue/EnumValue.hpp"

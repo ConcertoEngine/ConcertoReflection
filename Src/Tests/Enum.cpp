@@ -4,7 +4,7 @@
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
-#include <Concerto/Reflection/Enumeration/Enumeration.hpp>
+#include <Concerto/Reflection/Enumeration/Enumeration.refl.hpp>
 #include <Concerto/Reflection/Enumeration/EnumerationClass.hpp>
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>

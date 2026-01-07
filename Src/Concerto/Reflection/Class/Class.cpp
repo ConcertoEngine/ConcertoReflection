@@ -242,6 +242,8 @@ namespace cct::refl
 
 	bool Class::operator!=(const Class& other) const
 	{
+		if (this == nullptr)
+			return true;
 		return !(*this == other);
 	}
 

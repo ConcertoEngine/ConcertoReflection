@@ -19,7 +19,7 @@
 
 namespace cct::refl
 {
-	class CCT_REFL_CLASS() CCT_REFLECTION_API Enumeration : public Object
+	class CCT_REFL_CLASS() CCT_REFLECTION_API Enumeration : public cct::refl::Object
 	{
 	public:
 		Enumeration();

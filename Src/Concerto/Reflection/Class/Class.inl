@@ -16,6 +16,7 @@ namespace cct::refl
 		requires(std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 	std::unique_ptr<T> Class::CreateDefaultObject() const
 	{
+		CCT_ASSERT(T::GetClass() != nullptr, "Class pointer is null");
 		if (*T::GetClass() != *this)
 		{
 			CCT_ASSERT_FALSE("Invalid class");
