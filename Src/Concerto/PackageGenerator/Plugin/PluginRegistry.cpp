@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include <Concerto/Core/Logger/Logger.hpp>
+#include <Concerto/Profiler/Profiler.hpp>
 
 #include "Concerto/PackageGenerator/Plugin/ReflectionGeneratorPlugin.hpp"
 
@@ -22,6 +23,7 @@ namespace cct
 
 	bool PluginRegistry::LoadPlugin(std::string_view path)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		LoadedPlugin plugin;
 
 		if (!plugin.library.Load(path))

@@ -8,10 +8,31 @@ add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
 
 option("tests", { default = false, description = "Enable unit tests"})
-add_defines("CCT_ENABLE_ASSERTS")
+option("profiling", { description = "Build with tracy profiler", default = false })
 
 if has_config("tests") then
     add_requires("catch2")
+end
+
+if has_config("profiling") then
+    add_requires("tracy", {configs = {shared = true, cmake = false, debug = true, vs_runtime = is_mode("debug") and "MDd" or "MD"}})
+    
+    target("concerto-reflection-profiler")
+        set_kind("shared")
+        add_includedirs("Src/", { public = true })
+        add_headerfiles("Src/(Concerto/Profiler/*.hpp)")
+        add_packages("tracy", {public = true})
+        add_packages("concerto-core", {public = false})
+        add_defines("CCT_REFL_PROFILING", {public = true})
+        add_files("Src/Concerto/Profiler/**.cpp")
+        add_rpathdirs("$ORIGIN")
+        if is_plat("windows") then
+            add_packages("concerto-core-mt", { public = true })
+            set_runtimes("MT")
+        else
+            add_packages("concerto-core", { public = true })
+        end
+    target_end()
 end
 
 if is_plat("windows") then
@@ -71,6 +92,9 @@ target("concerto-plugin-api")
     if is_plat("windows") then
         set_runtimes("MT")
     end
+    if has_config("profiling") then
+        add_deps("concerto-reflection-profiler", { public = true })
+    end
 
 target("concerto-pkg-generator")
     set_kind("binary")
@@ -99,6 +123,9 @@ target("concerto-pkg-generator")
     if is_plat("windows") then
         set_runtimes("MT")
     end
+    -- if has_config("profiling") then
+    --     add_deps("concerto-reflection-profiler")
+    -- end
 
     on_config(function(package)
         import("core.project.project")
@@ -131,6 +158,9 @@ target("concerto-header-plugin")
     if is_mode("debug") then
         set_symbols("debug")
     end
+    if has_config("profiling") then
+        add_deps("concerto-reflection-profiler")
+    end
 
 -- Cpp Plugin
 target("concerto-cpp-plugin")
@@ -150,6 +180,9 @@ target("concerto-cpp-plugin")
 
     if is_mode("debug") then
         set_symbols("debug")
+    end
+    if has_config("profiling") then
+        add_deps("concerto-reflection-profiler")
     end
 
 target("concerto-reflection")
