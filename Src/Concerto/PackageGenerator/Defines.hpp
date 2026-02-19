@@ -101,7 +101,7 @@ struct Package
 	std::string description;
 
 	std::vector<Class> classes;
-	std::vector<Namespace> namepsaces;
+	std::vector<Namespace> namespaces;
 	std::vector<Enum> enums;
 };
 

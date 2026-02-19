@@ -2,9 +2,8 @@
 // Created by arthur on 31/12/2025
 //
 
-#include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
-
 #include "Concerto/Core/Assert.hpp"
+#include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
 

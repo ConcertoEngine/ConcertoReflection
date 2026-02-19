@@ -99,6 +99,8 @@ namespace cct::refl
 		{
 			if (ns->GetName() == names[0])
 			{
+				if (names.size() == 1)
+					return ns;
 				Namespace* nestedNs = ns->GetNamespace(names.subspan(1));
 				if (nestedNs)
 					return nestedNs;
