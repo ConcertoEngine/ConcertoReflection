@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include <Concerto/Core/Logger/Logger.hpp>
+#include <Concerto/Profiler/Profiler.hpp>
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Attr.h>
@@ -42,6 +43,7 @@ namespace
 
 	std::string QualTypeToString(const QualType& qt, const ASTContext& ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		PrintingPolicy policy(ctx.getLangOpts());
 		policy.SuppressTagKeyword = true;
 		policy.Bool = true;
@@ -52,6 +54,7 @@ namespace
 
 	std::vector<std::string> GetNamespaceChain(const DeclContext* DC)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		std::vector<std::string> chain;
 		while (DC)
 		{
@@ -68,6 +71,7 @@ namespace
 
 	Namespace* EnsureNamespace(Package& pkg, const std::vector<std::string>& chain)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		Namespace* current = nullptr;
 		auto* level = &pkg.namespaces;
 		for (const auto& name : chain)
@@ -93,6 +97,7 @@ namespace
 	bool ExtractCctAttribute(const Attr* A, ASTContext& astContext, const SourceManager& SM, const LangOptions& LO,
 							 std::string& outScope, TomlAttributes& outAttrs)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		const IdentifierInfo* identifierInfo = A->getAttrName();
 		auto attributeName = identifierInfo ? identifierInfo->getName() : StringRef();
 		const auto* AnnotateAttribute = dyn_cast<AnnotateAttr>(A);
@@ -151,6 +156,7 @@ namespace
 
 	void InsertClassIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Class& klass)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (nsChain.empty())
 		{
 			pkg.classes.push_back(klass);
@@ -163,6 +169,7 @@ namespace
 
 	void InsertEnumIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Enum& enumeration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (nsChain.empty())
 		{
 			pkg.enums.push_back(enumeration);
@@ -215,7 +222,7 @@ namespace cct
 
 		std::unique_ptr<ASTUnit> AST;
 		{
-		std::unique_ptr<ASTUnit> AST = buildASTFromCodeWithArgs(code, args);
+			CCT_REFL_AUTO_PROFILER_SCOPE;
 			AST = buildASTFromCodeWithArgs(code, args, "input.cc", "clang-tool",
 										   std::make_shared<PCHContainerOperations>(),
 										   getClangStripDependencyFileAdjuster(),
@@ -244,6 +251,7 @@ namespace cct
 
 	void ClangParser::ProcessRecord(const CXXRecordDecl* recordDeclaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!recordDeclaration || !recordDeclaration->isThisDeclarationADefinition())
 			return;
 
@@ -418,6 +426,7 @@ namespace cct
 
 	void ClangParser::ProcessEnum(const EnumDecl* enumDeclaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!enumDeclaration || !enumDeclaration->isThisDeclarationADefinition())
 			return;
 		bool hasAttr = false;
@@ -463,12 +472,14 @@ namespace cct
 
 	void ClangParser::ProcessNamespace(const NamespaceDecl* namespaceDeclaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		for (const auto* D : namespaceDeclaration->decls())
 			ProcessDeclaration(D);
 	}
 
 	void ClangParser::ProcessDeclaration(const Decl* declaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (const auto* CTD = llvm::dyn_cast<ClassTemplateDecl>(declaration))
 		{
 			ProcessTemplateRecord(CTD);
@@ -507,6 +518,7 @@ namespace cct
 
 	void ClangParser::ProcessTemplateRecord(const ClassTemplateDecl* templateDeclaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!templateDeclaration)
 			return;
 
@@ -644,6 +656,7 @@ namespace cct
 
 	void ClangParser::ProcessTemplateSpecialization(const ClassTemplateSpecializationDecl* specializationDeclaration)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!specializationDeclaration || !specializationDeclaration->isThisDeclarationADefinition())
 			return;
 

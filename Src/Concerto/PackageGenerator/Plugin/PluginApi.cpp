@@ -8,6 +8,8 @@
 #include <random>
 #include <ranges>
 
+#include <Concerto/Profiler/Profiler.hpp>
+
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/PackageGenerator/Defines.hpp"
 #include "Concerto/PackageGenerator/Plugin/ReflectionGeneratorPlugin.hpp"
@@ -16,6 +18,7 @@ extern "C"
 {
 	const char* crpPackageGetName(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		return reinterpret_cast<const Package*>(package)->name.c_str();
@@ -23,6 +26,7 @@ extern "C"
 
 	const char* crpPackageGetVersion(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		return reinterpret_cast<const Package*>(package)->version.c_str();
@@ -30,6 +34,7 @@ extern "C"
 
 	const char* crpPackageGetDescription(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		return reinterpret_cast<const Package*>(package)->description.c_str();
@@ -37,6 +42,7 @@ extern "C"
 
 	size_t crpPackageGetClassCount(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return 0;
 		return reinterpret_cast<const Package*>(package)->classes.size();
@@ -44,6 +50,7 @@ extern "C"
 
 	const CrpClass* crpPackageGetClass(const CrpPackage* package, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		const auto* pkg = reinterpret_cast<const Package*>(package);
@@ -54,6 +61,7 @@ extern "C"
 
 	size_t crpPackageGetNamespaceCount(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return 0;
 		return reinterpret_cast<const Package*>(package)->namespaces.size();
@@ -61,6 +69,7 @@ extern "C"
 
 	const CrpNamespace* crpPackageGetNamespace(const CrpPackage* package, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		const auto* pkg = reinterpret_cast<const Package*>(package);
@@ -71,6 +80,7 @@ extern "C"
 
 	size_t crpPackageGetEnumCount(const CrpPackage* package)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return 0;
 		return reinterpret_cast<const Package*>(package)->enums.size();
@@ -78,6 +88,7 @@ extern "C"
 
 	const CrpEnum* crpPackageGetEnum(const CrpPackage* package, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!package)
 			return nullptr;
 		const auto* pkg = reinterpret_cast<const Package*>(package);
@@ -88,6 +99,7 @@ extern "C"
 
 	const char* crpClassGetName(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		if (reinterpret_cast<const Class*>(cls)->name.empty())
@@ -97,6 +109,7 @@ extern "C"
 
 	const char* crpClassGetBase(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		if (reinterpret_cast<const Class*>(cls)->base.empty())
@@ -106,6 +119,7 @@ extern "C"
 
 	const char* crpClassGetScope(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		if (reinterpret_cast<const Class*>(cls)->scope.empty())
@@ -115,6 +129,7 @@ extern "C"
 
 	size_t crpClassGetMethodCount(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->methods.size();
@@ -122,6 +137,7 @@ extern "C"
 
 	const CrpClassMethod* crpClassGetMethod(const CrpClass* cls, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		const auto* klass = reinterpret_cast<const Class*>(cls);
@@ -132,6 +148,7 @@ extern "C"
 
 	size_t crpClassGetMemberCount(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->members.size();
@@ -139,6 +156,7 @@ extern "C"
 
 	const CrpClassMember* crpClassGetMember(const CrpClass* cls, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		const auto* klass = reinterpret_cast<const Class*>(cls);
@@ -149,6 +167,7 @@ extern "C"
 
 	int32_t crpClassIsTemplate(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->isTemplateClass ? 1 : 0;
@@ -156,6 +175,7 @@ extern "C"
 
 	int32_t crpClassIsGeneric(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->isGenericClass ? 1 : 0;
@@ -163,6 +183,7 @@ extern "C"
 
 	size_t crpClassGetTemplateParameterCount(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->templateParameters.size();
@@ -170,6 +191,7 @@ extern "C"
 
 	const CrpTemplateParameter* crpClassGetTemplateParameter(const CrpClass* cls, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		const auto* klass = reinterpret_cast<const Class*>(cls);
@@ -180,6 +202,7 @@ extern "C"
 
 	size_t crpClassGetTemplateSpecializationCount(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->templateSpecializations.size();
@@ -187,6 +210,7 @@ extern "C"
 
 	const char* crpClassGetTemplateSpecialization(const CrpClass* cls, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		const auto* klass = reinterpret_cast<const Class*>(cls);
@@ -199,6 +223,7 @@ extern "C"
 
 	size_t crpClassGetGenericTypeParameterFieldCount(const CrpClass* cls)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return 0;
 		return reinterpret_cast<const Class*>(cls)->genericTypeParameterFields.size();
@@ -206,6 +231,7 @@ extern "C"
 
 	const char* crpClassGetGenericTypeParameterField(const CrpClass* cls, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!cls)
 			return nullptr;
 		const auto* klass = reinterpret_cast<const Class*>(cls);
@@ -218,6 +244,7 @@ extern "C"
 
 	const char* crpClassMemberGetName(const CrpClassMember* member)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!member)
 			return nullptr;
 		if (reinterpret_cast<const Class::Member*>(member)->name.empty())
@@ -227,6 +254,7 @@ extern "C"
 
 	const char* crpClassMemberGetType(const CrpClassMember* member)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!member)
 			return nullptr;
 		if (reinterpret_cast<const Class::Member*>(member)->type.empty())
@@ -236,6 +264,7 @@ extern "C"
 
 	int32_t crpClassMemberIsNative(const CrpClassMember* member)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!member)
 			return 0;
 		return reinterpret_cast<const Class::Member*>(member)->isNative ? 1 : 0;
@@ -243,6 +272,7 @@ extern "C"
 
 	const char* crpClassMethodGetName(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return nullptr;
 		if (reinterpret_cast<const Class::Method*>(method)->name.empty())
@@ -252,6 +282,7 @@ extern "C"
 
 	const char* crpClassMethodGetBase(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return nullptr;
 		if (reinterpret_cast<const Class::Method*>(method)->base.empty())
@@ -261,6 +292,7 @@ extern "C"
 
 	const char* crpClassMethodGetReturnType(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return nullptr;
 		if (reinterpret_cast<const Class::Method*>(method)->returnValue.empty())
@@ -270,6 +302,7 @@ extern "C"
 
 	int32_t crpClassMethodHasCustomInvoker(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return 0;
 		return reinterpret_cast<const Class::Method*>(method)->customInvoker ? 1 : 0;
@@ -277,6 +310,7 @@ extern "C"
 
 	size_t crpClassMethodGetParamCount(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return 0;
 		return reinterpret_cast<const Class::Method*>(method)->params.size();
@@ -284,6 +318,7 @@ extern "C"
 
 	const CrpClassMethodParam* crpClassMethodGetParam(const CrpClassMethod* method, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return nullptr;
 		const auto* m = reinterpret_cast<const Class::Method*>(method);
@@ -294,6 +329,7 @@ extern "C"
 
 	const char* crpClassMethodParamGetName(const CrpClassMethodParam* param)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!param)
 			return nullptr;
 		if (reinterpret_cast<const Class::Method::Params*>(param)->name.empty())
@@ -303,6 +339,7 @@ extern "C"
 
 	const char* crpClassMethodParamGetType(const CrpClassMethodParam* param)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!param)
 			return nullptr;
 		if (reinterpret_cast<const Class::Method::Params*>(param)->type.empty())
@@ -312,6 +349,7 @@ extern "C"
 
 	int32_t crpClassMethodHasDelegate(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return 0;
 		const auto* m = reinterpret_cast<const Class::Method*>(method);
@@ -322,6 +360,7 @@ extern "C"
 
 	int32_t crpClassMethodIsBooleanDelegate(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return 0;
 		const auto* m = reinterpret_cast<const Class::Method*>(method);
@@ -335,6 +374,7 @@ extern "C"
 
 	const char* crpClassMethodGetDelegateName(const CrpClassMethod* method)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!method)
 			return nullptr;
 		const auto* m = reinterpret_cast<const Class::Method*>(method);
@@ -350,6 +390,7 @@ extern "C"
 
 	const char* crpEnumGetName(const CrpEnum* enm)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!enm)
 			return nullptr;
 		return reinterpret_cast<const Enum*>(enm)->name.c_str();
@@ -357,6 +398,7 @@ extern "C"
 
 	const char* crpEnumGetBase(const CrpEnum* enm)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!enm)
 			return nullptr;
 		return reinterpret_cast<const Enum*>(enm)->base.c_str();
@@ -364,6 +406,7 @@ extern "C"
 
 	size_t crpEnumGetElementCount(const CrpEnum* enm)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!enm)
 			return 0;
 		return reinterpret_cast<const Enum*>(enm)->elements.size();
@@ -371,6 +414,7 @@ extern "C"
 
 	const CrpEnumElement* crpEnumGetElement(const CrpEnum* enm, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!enm)
 			return nullptr;
 		const auto* enumType = reinterpret_cast<const Enum*>(enm);
@@ -381,6 +425,7 @@ extern "C"
 
 	const char* crpEnumElementGetName(const CrpEnumElement* elem)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!elem)
 			return nullptr;
 		return reinterpret_cast<const Enum::Element*>(elem)->name.c_str();
@@ -388,6 +433,7 @@ extern "C"
 
 	const char* crpEnumElementGetValue(const CrpEnumElement* elem)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!elem)
 			return nullptr;
 		return reinterpret_cast<const Enum::Element*>(elem)->value.c_str();
@@ -395,6 +441,7 @@ extern "C"
 
 	const char* crpTemplateParameterGetName(const CrpTemplateParameter* param)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!param)
 			return nullptr;
 		return reinterpret_cast<const TemplateParameter*>(param)->name.c_str();
@@ -402,6 +449,7 @@ extern "C"
 
 	const char* crpNamespaceGetName(const CrpNamespace* ns)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return nullptr;
 		return reinterpret_cast<const Namespace*>(ns)->name.c_str();
@@ -409,6 +457,7 @@ extern "C"
 
 	size_t crpNamespaceGetClassCount(const CrpNamespace* ns)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return 0;
 		return reinterpret_cast<const Namespace*>(ns)->classes.size();
@@ -416,6 +465,7 @@ extern "C"
 
 	const CrpClass* crpNamespaceGetClass(const CrpNamespace* ns, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return nullptr;
 		const auto* nspace = reinterpret_cast<const Namespace*>(ns);
@@ -426,6 +476,7 @@ extern "C"
 
 	size_t crpNamespaceGetEnumCount(const CrpNamespace* ns)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return 0;
 		return reinterpret_cast<const Namespace*>(ns)->enums.size();
@@ -433,6 +484,7 @@ extern "C"
 
 	const CrpEnum* crpNamespaceGetEnum(const CrpNamespace* ns, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return nullptr;
 		const auto* nspace = reinterpret_cast<const Namespace*>(ns);
@@ -443,6 +495,7 @@ extern "C"
 
 	size_t crpNamespaceGetNamespaceCount(const CrpNamespace* ns)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return 0;
 		return reinterpret_cast<const Namespace*>(ns)->namespaces.size();
@@ -450,6 +503,7 @@ extern "C"
 
 	const CrpNamespace* crpNamespaceGetNamespace(const CrpNamespace* ns, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ns)
 			return nullptr;
 		const auto* nspace = reinterpret_cast<const Namespace*>(ns);
@@ -460,6 +514,7 @@ extern "C"
 
 	void crpGenerationContextWrite(CrpGenerationContext* ctx, const char* format, ...)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx || !format)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextWrite: ctx or format is null");
@@ -492,6 +547,7 @@ extern "C"
 
 	void crpGenerationContextNewLine(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextNewLine: ctx is null");
@@ -504,6 +560,7 @@ extern "C"
 
 	void crpGenerationContextEnterScope(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextEnterScope: ctx is null");
@@ -516,6 +573,7 @@ extern "C"
 
 	void crpGenerationContextLeaveScope(CrpGenerationContext* ctx, const char* suffix)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextLeaveScope: ctx is null");
@@ -528,6 +586,7 @@ extern "C"
 
 	const CrpPackage* crpGenerationContextGetPackage(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextGetPackage: ctx is null");
@@ -539,6 +598,7 @@ extern "C"
 
 	const CrpClass* crpGenerationContextGetClass(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextGetClass: ctx is null");
@@ -550,6 +610,7 @@ extern "C"
 
 	const CrpNamespace* crpGenerationContextGetNamespace(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextGetNamespace: ctx is null");
@@ -561,6 +622,7 @@ extern "C"
 
 	const char* crpGenerationContextGetNamespacePath(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 		{
 			CCT_ASSERT_FALSE("crpGenerationContextGetNamespacePath: ctx is null");
@@ -572,6 +634,7 @@ extern "C"
 
 	void* crpGenerationContextGetPrivateData(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 			return nullptr;
 		auto* context = reinterpret_cast<cct::GenerationContext*>(ctx);
@@ -579,6 +642,7 @@ extern "C"
 	}
 	size_t crpGenerationContextGetHeaderCount(CrpGenerationContext* ctx)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 			return 0;
 		auto* context = reinterpret_cast<cct::GenerationContext*>(ctx);
@@ -587,6 +651,7 @@ extern "C"
 
 	const char* crpGenerationContextGetHeader(CrpGenerationContext* ctx, size_t index)
 	{
+		CCT_REFL_AUTO_PROFILER_SCOPE;
 		if (!ctx)
 			return nullptr;
 		auto* context = reinterpret_cast<cct::GenerationContext*>(ctx);
