@@ -3,51 +3,23 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories("concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 
--- package("concerto-core")
---     on_fetch(function (package)
---         local concerto_core = "C:/Users/Arthur/Documents/Git/ConcertoEngine/ConcertoCore/install"
---         return {
---             linkdirs = { path.join(concerto_core, "lib") },
---             includedirs = { path.join(concerto_core, "include")},
---             links = { "concerto-core" } 
---             }
---     end)
-
---     add_configs("asserts", {description = "Enable asserts.", default = false, type = "boolean"})
---     add_configs("enet", {description = "Enable ENet support.", default = false, type = "boolean"})
-
---     on_load(function (package)
---         if package:config("enet") then
---             package:add("deps", "enet")
---         end
---         if package:config("asserts") then
---             package:add("defines", "CCT_ENABLE_ASSERTS")
---         end
---         if package:is_plat("windows") then
---             package:add("syslinks", "user32", "kernel32")
---         end
---         if package:has_tool("cxx", "cl", "clang_cl") then
---             package:add("cxxflags", "/Zc:preprocessor", { public = true })
---         end
---         if not package:config("shared") then
---             package:add("defines", "CCT_CORE_LIB_STATIC")
---         end
---     end)
--- package_end()
-
-add_requires("concerto-core", {configs = {asserts = true, shared = is_kind("static") and false or true }})
 add_requires("toml11")
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
 
 option("tests", { default = false, description = "Enable unit tests"})
 add_defines("CCT_ENABLE_ASSERTS")
+
 if has_config("tests") then
     add_requires("catch2")
 end
 
 if is_plat("windows") then
+    add_requires("concerto-core", {debug = true, configs = {asserts = true, shared = true, runtimes = is_mode("debug") and "MDd" or "MD" }})
     set_runtimes(is_mode("debug") and "MDd" or "MD")
+    add_requires("concerto-core", {debug = true, configs = {asserts = true, shared = true, runtimes = "MT" }, alias = "concerto-core-mt"})
+else 
+    add_requires("concerto-core", {debug = true, configs = {asserts = true, shared = true}})
 end
 
 if is_mode("coverage") then
@@ -77,19 +49,50 @@ function add_files_to_target(p)
     end
 end
 
+target("concerto-plugin-api")
+    set_kind("shared")
+    set_languages("cxx20")
+    add_rpathdirs("$ORIGIN")
+    add_files("Src/Concerto/PackageGenerator/Plugin/PluginApi.cpp")
+    add_headerfiles("Src/(Concerto/PackageGenerator/Plugin/PluginApi.h)")
+    add_headerfiles("Src/(Concerto/PackageGenerator/Defines.hpp)")
+    add_includedirs("Src/", { public = true })
+    if is_plat("windows") then
+        add_packages("concerto-core-mt", { public = true })
+    else
+        add_packages("concerto-core", { public = true })
+    end
+    add_packages("toml11", { public = true })
+    add_defines("CRP_PLUGIN_API_BUILD")
+
+    if is_mode("debug") then
+        set_symbols("debug")
+    end
+    if is_plat("windows") then
+        set_runtimes("MT")
+    end
+
 target("concerto-pkg-generator")
     set_kind("binary")
     set_languages("cxx20")
     add_rpathdirs("$ORIGIN")
-    local files = { ".", "ClangParser", "CppGenerator", "HeaderGenerator", "FileGenerator" }
+    local files = { ".", "ClangParser", "Plugin" }
     for _, dir in ipairs(files) do
         add_files_to_target("Src/Concerto/PackageGenerator/" .. dir, false)
     end
-
+    remove_files("Src/Concerto/PackageGenerator/Plugin/PluginApi.cpp")
     add_includedirs("Src/", { public = true })
-    add_packages("concerto-core", "toml11", "libllvm", "cxxopts")
+    if is_plat("windows") then
+        add_packages("concerto-core-mt", { public = true })
+    else
+        add_packages("concerto-core", { public = true })
+    end
+    add_packages("toml11", { public = true })
+    add_packages("libllvm", "cxxopts")
+    add_deps("concerto-plugin-api")
     set_policy("build.fence", true)
-    add_defines("CCT_PKG_GENERATOR_BUILD")
+    add_defines("CCT_PKGGENERATOR_BUILD")
+
     if is_mode("debug") then
         set_symbols("debug")
     end
@@ -103,12 +106,51 @@ target("concerto-pkg-generator")
         assert(llvm, "libllvm not found!")
         local llvm_lib = path.join(llvm:installdir(), "lib")
 
-        local concerto_core = project.required_package("concerto-core")
+        local concerto_core = project.required_package("concerto-core" .. (is_plat("windows") and "-mt" or ""))
         assert(concerto_core, "concerto-core not found!")
         local concerto_core_lib = path.join(concerto_core:installdir(), "lib")
         package:add("rpathdirs", llvm_lib, concerto_core_lib)
     end)
 
+-- Header Plugin
+target("concerto-header-plugin")
+    set_kind("shared")
+    set_languages("c11")
+    add_rpathdirs("$ORIGIN")
+    add_files("Src/Concerto/HeaderPlugin/*.c")
+    add_includedirs("Src/", { public = true })
+    add_deps("concerto-plugin-api")
+
+    if is_plat("windows") then
+        add_packages("concerto-core-mt", { public = true })
+        set_runtimes("MT")
+    else
+        add_packages("concerto-core", { public = true })
+    end
+
+    if is_mode("debug") then
+        set_symbols("debug")
+    end
+
+-- Cpp Plugin
+target("concerto-cpp-plugin")
+    set_kind("shared")
+    set_languages("c11")
+    add_rpathdirs("$ORIGIN")
+    add_files("Src/Concerto/CppPlugin/*.c")
+    add_includedirs("Src/", { public = true })
+    add_deps("concerto-plugin-api")
+
+    if is_plat("windows") then
+        add_packages("concerto-core-mt", { public = true })
+        set_runtimes("MT")
+    else
+        add_packages("concerto-core", { public = true })
+    end
+
+    if is_mode("debug") then
+        set_symbols("debug")
+    end
 
 target("concerto-reflection")
     set_kind("$(kind)")
@@ -142,6 +184,8 @@ target("concerto-reflection")
         add_files_to_target("Src/Concerto/Reflection/" .. dir, true)
     end
     add_deps("concerto-pkg-generator")
+    add_deps("concerto-header-plugin", {plugin = "pkg-generator"})
+    add_deps("concerto-cpp-plugin", {plugin = "pkg-generator"})
     add_packages("concerto-core", { public = true })
     add_rules("cct_cpp_reflect")
 
@@ -158,7 +202,7 @@ if has_config("tests") then
         set_languages("cxx20")
         add_rpathdirs("$ORIGIN")
         add_files("Src/Tests/*.cpp", "Src/Tests/*.refl.hpp")
-        add_packages("catch2")
+        add_packages("catch2", "toml11")
         add_deps("concerto-reflection")
         add_rules("cct_cpp_reflect")
         add_includedirs(".", { public = true }) -- temporary
@@ -181,7 +225,7 @@ if has_config("tests") then
         assert(llvm, "libllvm not found!")
         local llvm_lib = path.join(llvm:installdir(), "lib")
 
-        local concerto_core = project.required_package("concerto-core")
+        local concerto_core = project.required_package("concerto-core" .. (is_plat("windows") and "-mt" or ""))
         assert(concerto_core, "concerto-core not found!")
         local concerto_core_lib = path.join(concerto_core:installdir(), "lib")
         package:add("rpathdirs", llvm_lib, concerto_core_lib)

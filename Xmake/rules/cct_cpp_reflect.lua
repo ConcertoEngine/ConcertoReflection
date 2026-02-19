@@ -40,6 +40,26 @@ rule("cct_cpp_reflect")
             table.insert(args, "-s" .. header)
         end
 
+        local function collect_plugins(t, plugins)
+            for _, dep in ipairs(t:get("deps") or {}) do
+                local dep_target = project.target(dep)
+                if dep_target then
+                    local plugin_type = t:extraconf("deps", dep, "plugin")
+                    if plugin_type == "pkg-generator" and dep_target:kind() == "shared" then
+                        local plugin_path = dep_target:targetfile()
+                        if plugin_path and not plugins[plugin_path] then
+                            plugins[plugin_path] = true
+                            table.insert(args, "-P" .. plugin_path)
+                        end
+                    end
+                    collect_plugins(dep_target, plugins)
+                end
+            end
+        end
+
+        local plugins = {}
+        collect_plugins(target, plugins)
+
         function process_target(t, args, is_root)
             for _, define in ipairs(t:get("defines")) do
                 local conf = (t:extraconf("defines") or {})[define]

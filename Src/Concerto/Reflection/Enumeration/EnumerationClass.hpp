@@ -39,7 +39,7 @@ namespace cct::refl
 		[[nodiscard]] EnumIterable Enumerate() const;
 
 		[[nodiscard]] std::unique_ptr<Object> CreateDefaultObject() const override;
-		
+
 		template<typename T>
 			requires(std::is_base_of_v<cct::refl::Object, T> && std::is_polymorphic_v<T>)
 		[[nodiscard]] std::unique_ptr<T> CreateDefaultObject() const

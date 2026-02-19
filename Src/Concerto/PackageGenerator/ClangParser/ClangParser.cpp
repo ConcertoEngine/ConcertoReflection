@@ -17,7 +17,9 @@
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/PrettyPrinter.h>
 #include <clang/AST/Type.h>
+#include <clang/Basic/DiagnosticOptions.h>
 #include <clang/Frontend/ASTUnit.h>
+#include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/CompilationDatabase.h>
@@ -67,7 +69,7 @@ namespace
 	Namespace* EnsureNamespace(Package& pkg, const std::vector<std::string>& chain)
 	{
 		Namespace* current = nullptr;
-		auto* level = &pkg.namepsaces;
+		auto* level = &pkg.namespaces;
 		for (const auto& name : chain)
 		{
 			auto it = std::ranges::find_if(*level, [&](const Namespace& ns)
@@ -147,33 +149,33 @@ namespace
 		return true;
 	}
 
-	void InsertClassIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Class& cls)
+	void InsertClassIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Class& klass)
 	{
 		if (nsChain.empty())
 		{
-			pkg.classes.push_back(cls);
+			pkg.classes.push_back(klass);
 			return;
 		}
 		Namespace* leaf = EnsureNamespace(pkg, nsChain);
 		if (leaf)
-			leaf->classes.push_back(cls);
+			leaf->classes.push_back(klass);
 	}
 
-	void InsertEnumIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Enum& enm)
+	void InsertEnumIntoPackage(Package& pkg, const std::vector<std::string>& nsChain, const Enum& enumeration)
 	{
 		if (nsChain.empty())
 		{
-			pkg.enums.push_back(enm);
+			pkg.enums.push_back(enumeration);
 			return;
 		}
 		Namespace* leaf = EnsureNamespace(pkg, nsChain);
 		if (leaf)
 		{
 			auto it = std::ranges::find_if(leaf->enums, [&](const Enum& e)
-										   { return e.name == enm.name; });
+										   { return e.name == enumeration.name; });
 
 			if (it == leaf->enums.end())
-				leaf->enums.push_back(enm);
+				leaf->enums.push_back(enumeration);
 		}
 	}
 } // namespace
@@ -207,7 +209,20 @@ namespace cct
 		for (auto& include : includeDirs)
 			args.emplace_back("-I" + include);
 
+		auto diagOpts = llvm::IntrusiveRefCntPtr<DiagnosticOptions>(new DiagnosticOptions());
+		diagOpts->ShowColors = true;
+		TextDiagnosticPrinter diagPrinter(llvm::outs(), diagOpts.get());
+
+		std::unique_ptr<ASTUnit> AST;
+		{
 		std::unique_ptr<ASTUnit> AST = buildASTFromCodeWithArgs(code, args);
+			AST = buildASTFromCodeWithArgs(code, args, "input.cc", "clang-tool",
+										   std::make_shared<PCHContainerOperations>(),
+										   getClangStripDependencyFileAdjuster(),
+										   FileContentMappings(),
+										   &diagPrinter);
+		}
+
 		if (!AST)
 		{
 			Logger::Error("LibTooling: failed to parse");
@@ -222,7 +237,7 @@ namespace cct
 		for (const auto* D : TU->decls())
 			ProcessDeclaration(D);
 
-		RemoveEmptyNamespaces(m_package.namepsaces);
+		RemoveEmptyNamespaces(m_package.namespaces);
 
 		return &m_package;
 	}
@@ -484,8 +499,8 @@ namespace cct
 					ProcessRecord(RD2);
 				else if (const auto* ED2 = llvm::dyn_cast<EnumDecl>(SD))
 					ProcessEnum(ED2);
-				else if (const auto* ND = llvm::dyn_cast<NamespaceDecl>(declaration))
-					ProcessNamespace(ND);
+				else if (const auto* ND2 = llvm::dyn_cast<NamespaceDecl>(SD))
+					ProcessNamespace(ND2);
 			}
 		}
 	}
