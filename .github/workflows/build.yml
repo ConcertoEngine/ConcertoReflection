@@ -32,8 +32,8 @@ jobs:
         - { name: Linux,             runner: ubuntu-latest,  shell: bash,        plat: linux,    arch: x86_64,      mode: releasedbg, package: true,  test: true,                                }
         - { name: macOS,             runner: macos-latest,   shell: bash,        plat: macosx,   arch: x86_64,      mode: debug,      package: true,  test: true,                                }
         - { name: macOS,             runner: macos-latest,   shell: bash,        plat: macosx,   arch: x86_64,      mode: releasedbg, package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-14,       shell: bash,        plat: macosx,   arch: arm64,       mode: debug,      package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-14,       shell: bash,        plat: macosx,   arch: arm64,       mode: releasedbg, package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-15,       shell: bash,        plat: macosx,   arch: arm64,       mode: debug,      package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-15,       shell: bash,        plat: macosx,   arch: arm64,       mode: releasedbg, package: true,  test: true,                                }
         # - { name: iOS,               runner: macos-latest,   shell: bash,        plat: iphoneos, arch: arm64,       mode: debug,      package: true,  test: false,                               }
         # - { name: iOS,               runner: macos-latest,   shell: bash,        plat: iphoneos, arch: arm64,       mode: releasedbg, package: true,  test: false,                               }
         kind: [shared, static]
@@ -56,6 +56,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get -y install mesa-common-dev
+
+    - name: Update clang to 20
+      if: ${{ matrix.confs.plat == 'macosx' }}
+      run: brew install llvm@20
 
     # Setup Emsdk
     - name: Setup Emscripten
@@ -96,7 +100,7 @@ jobs:
       if: ${{ matrix.confs.plat != 'mingw' }}
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: latest
+        xmake-version: branch@dev
         actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
 
     # Update xmake repository (in order to have the file that will be cached)
@@ -121,8 +125,16 @@ jobs:
       run: |
         PLATFORM_CONF=""
         if [ "${{ matrix.confs.test }}" == "true" ]; then
-          PLATFORM_CONF="${PLATFORM_CONF} --tests=y" >> $GITHUB_ENV
+          PLATFORM_CONF="${PLATFORM_CONF} --tests=y"
         fi
+
+        if [ "${{ matrix.confs.plat }}" = "macosx" ]; then
+          LLVM_PREFIX=$(brew --prefix llvm@20)
+          echo "LLVM_PREFIX=${LLVM_PREFIX}" >> $GITHUB_ENV
+
+          PLATFORM_CONF="${PLATFORM_CONF} --toolchain=llvm --runtimes=c++_shared --sdk=${LLVM_PREFIX}"
+        fi
+
         echo "ADDITIONAL_CONF=${{ env.ADDITIONAL_CONF }} $PLATFORM_CONF" >> $GITHUB_ENV
         FILENAME="concerto-reflection_${{ matrix.confs.plat }}_${{ matrix.confs.arch }}_${{ matrix.kind }}"
         if [ "${{ startsWith(github.event.ref, 'refs/tags/') }}" == "false" ]; then
