@@ -323,6 +323,13 @@ static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx
 			if (baseClass && baseClass[0] != '\0')
 			{
 				crpGenerationContextWrite(ctx, "const Class* baseClass = GetClassByName(\"%s\"sv);", baseClass);
+				crpGenerationContextWrite(ctx, "if (baseClass == nullptr)");
+				crpGenerationContextEnterScope(ctx);
+				{
+					if (nsPath && nsPath[0] != '\0')
+						crpGenerationContextWrite(ctx, "baseClass = GetClassByName(\"%s::%s\"sv);", nsPath, baseClass);
+				}
+				crpGenerationContextLeaveScope(ctx, NULL);
 				crpGenerationContextWrite(ctx, "CCT_ASSERT(baseClass != nullptr, \"Could not find class '%s'\");", baseClass);
 				crpGenerationContextWrite(ctx, "SetBaseClass(baseClass);");
 			}
