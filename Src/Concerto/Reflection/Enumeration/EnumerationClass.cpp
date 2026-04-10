@@ -74,6 +74,11 @@ namespace cct::refl
 		m_enumValues.emplace_back(std::make_unique<EnumValue>(std::move(name), value, index));
 	}
 
+	void EnumerationClass::AddDynamicEnumValue(Enumeration& enumeration, std::string name, cct::Int64 value) const
+	{
+		enumeration.AddEnumValue(std::move(name), value);
+	}
+
 	void EnumerationClass::Initialize()
 	{
 	}

@@ -12,7 +12,6 @@ namespace cct::refl
 	Enumeration::Enumeration() :
 		m_value(0)
 	{
-		m_dynamicClass = m_class;
 	}
 
 	std::string Enumeration::ToString(cct::Int64 value) const
