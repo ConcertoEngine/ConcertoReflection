@@ -17,6 +17,7 @@
 
 namespace cct::refl
 {
+	class Enumeration;
 	class CCT_REFLECTION_API EnumerationClass : public Class
 	{
 	public:
@@ -67,6 +68,7 @@ namespace cct::refl
 
 	protected:
 		void AddEnumValue(std::string name, cct::Int64 value);
+		void AddDynamicEnumValue(Enumeration& enumeration, std::string name, cct::Int64 value) const;
 
 	private:
 		virtual void Initialize() override;
