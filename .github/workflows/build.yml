@@ -30,10 +30,10 @@ jobs:
         - { name: Linux,             runner: ubuntu-latest,  shell: bash,        plat: linux,    arch: x86_64,      mode: debug,      package: false, test: true, config: --lsan=y               }
         - { name: Linux,             runner: ubuntu-latest,  shell: bash,        plat: linux,    arch: x86_64,      mode: debug,      package: false, test: true, config: --tsan=y               }
         - { name: Linux,             runner: ubuntu-latest,  shell: bash,        plat: linux,    arch: x86_64,      mode: releasedbg, package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-latest,   shell: bash,        plat: macosx,   arch: x86_64,      mode: debug,      package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-latest,   shell: bash,        plat: macosx,   arch: x86_64,      mode: releasedbg, package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-15,       shell: bash,        plat: macosx,   arch: arm64,       mode: debug,      package: true,  test: true,                                }
-        - { name: macOS,             runner: macos-15,       shell: bash,        plat: macosx,   arch: arm64,       mode: releasedbg, package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-15-intel,       shell: bash,        plat: macosx,   arch: x86_64,      mode: debug,      package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-15-intel,       shell: bash,        plat: macosx,   arch: x86_64,      mode: releasedbg, package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-26,       shell: bash,        plat: macosx,   arch: arm64,       mode: debug,      package: true,  test: true,                                }
+        - { name: macOS,             runner: macos-26,       shell: bash,        plat: macosx,   arch: arm64,       mode: releasedbg, package: true,  test: true,                                }
         # - { name: iOS,               runner: macos-latest,   shell: bash,        plat: iphoneos, arch: arm64,       mode: debug,      package: true,  test: false,                               }
         # - { name: iOS,               runner: macos-latest,   shell: bash,        plat: iphoneos, arch: arm64,       mode: releasedbg, package: true,  test: false,                               }
         kind: [shared, static]
@@ -100,7 +100,7 @@ jobs:
       if: ${{ matrix.confs.plat != 'mingw' }}
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: branch@dev
+        xmake-version: '3.0.5'
         actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
 
     # Update xmake repository (in order to have the file that will be cached)
@@ -149,7 +149,7 @@ jobs:
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
-      run: xmake config --plat=${{ matrix.confs.plat }} --arch=${{ matrix.confs.arch }} --kind=${{ matrix.kind }} --mode=${{ matrix.confs.mode }} ${{ env.ADDITIONAL_CONF }} --ccache=n --yes
+      run: xmake config -vD --plat=${{ matrix.confs.plat }} --arch=${{ matrix.confs.arch }} --kind=${{ matrix.kind }} --mode=${{ matrix.confs.mode }} ${{ env.ADDITIONAL_CONF }} --ccache=n --yes
 
     # Save dependencies
     - name: Save cached xmake dependencies
