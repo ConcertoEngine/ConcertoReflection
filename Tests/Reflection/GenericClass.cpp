@@ -9,7 +9,7 @@
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <Tests/SampleBar.refl.hpp>
+#include <SampleBar.refl.hpp>
 
 SCENARIO("GenericClass identification")
 {

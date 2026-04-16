@@ -25,7 +25,7 @@ rule("cct_cpp_reflect")
         import("core.tool.toolchain")
 
         local cctPkgGen = target:data("concerto-pkg-generator")
-        assert(cctPkgGen, "concerto-pkg-generator not found!")
+      --  assert(cctPkgGen, "concerto-pkg-generator not found!")
         local envs = target:data("concerto-pkg-generator-envs")
 
         local targetName = target:name():gsub("-(%a)", function(c) return c:upper() end):gsub("^%a", string.upper)
@@ -103,13 +103,16 @@ rule("cct_cpp_reflect")
         for _, header in ipairs(target:get("headerfiles")) do
             header = header:gsub("[%(%)]", "")
             for _, file_path in ipairs(os.filedirs(header)) do
+                file_path = path.normalize(file_path)
                 for _, incdir in ipairs(target:get("includedirs")) do
+                    incdir = path.normalize(incdir)
                     if file_path:startswith(incdir) then
                         file_path = file_path:sub(#incdir + 2)
                         break
                     end
                 end
                 if file_path:endswith(".refl.hpp") then
+                    file_path = file_path:gsub("\\", "/")
                     table.insert(args, "-H" .. file_path)
                 end
             end

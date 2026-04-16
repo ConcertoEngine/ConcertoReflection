@@ -6,7 +6,7 @@
 #include <Concerto/Reflection/Defines.hpp>
 #include <Concerto/Reflection/Object/Object.refl.hpp>
 
-#include "Tests/Defines.hpp"
+#include "Defines.hpp"
 
 struct CCT_PACKAGE("version = \"1.0\"", "description = \"Sample Package description\"", "serialize = [\"JSON\", \"YML\"]") ConcertoReflectionTests
 {

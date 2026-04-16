@@ -8,7 +8,7 @@
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
-#include "Tests/SampleBar.refl.hpp"
+#include "SampleBar.refl.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 SCENARIO("MemberVariable")

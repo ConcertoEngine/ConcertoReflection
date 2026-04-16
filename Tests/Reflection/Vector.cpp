@@ -10,9 +10,11 @@
 #include <Concerto/Reflection/GenericClass/GenericClass.hpp>
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
-#include <Concerto/Reflection/Signal/Connection.hpp>
+#include <Concerto/Core/Signal/Connection.hpp>
 #include <Concerto/Reflection/String/String.refl.hpp>
 #include <Concerto/Reflection/Vector/Vector.refl.hpp>
+
+using namespace std::string_view_literals;
 
 static void LoadPackages(cct::refl::PackageLoader& loader)
 {
@@ -114,7 +116,7 @@ SCENARIO("Vector - Add and OnInserted signal")
 
 		WHEN("Add(unique_ptr<String>) is called")
 		{
-			vec.Add(std::make_unique<cct::refl::String>("hello"));
+			vec.Add(std::make_unique<cct::refl::String>("hello"sv));
 
 			THEN("OnInserted fires with correct index and element")
 			{
@@ -126,7 +128,7 @@ SCENARIO("Vector - Add and OnInserted signal")
 
 			AND_WHEN("A second element is added")
 			{
-				vec.Add(std::make_unique<cct::refl::String>("world"));
+				vec.Add(std::make_unique<cct::refl::String>("world"sv));
 				THEN("OnInserted fires again with index 1")
 				{
 					CHECK(callCount == 2);
@@ -168,8 +170,8 @@ SCENARIO("Vector - Remove and OnRemoved signal")
 	{
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
-		vec.Add(std::make_unique<cct::refl::String>("first"));
-		vec.Add(std::make_unique<cct::refl::String>("second"));
+		vec.Add(std::make_unique<cct::refl::String>("first"sv));
+		vec.Add(std::make_unique<cct::refl::String>("second"sv));
 		REQUIRE(vec.GetCount() == 2);
 
 		std::size_t removedIndex = SIZE_MAX;
@@ -217,9 +219,9 @@ SCENARIO("Vector - Clear and OnCleared signal")
 	{
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
-		vec.Add(std::make_unique<cct::refl::String>("a"));
-		vec.Add(std::make_unique<cct::refl::String>("b"));
-		vec.Add(std::make_unique<cct::refl::String>("c"));
+		vec.Add(std::make_unique<cct::refl::String>("a"sv));
+		vec.Add(std::make_unique<cct::refl::String>("b"sv));
+		vec.Add(std::make_unique<cct::refl::String>("c"sv));
 		REQUIRE(vec.GetCount() == 3);
 
 		std::size_t countDuringClear = 0;
@@ -270,10 +272,10 @@ SCENARIO("Vector - OnValueChanged is emitted on every mutation")
 
 		WHEN("Add, Remove, and Clear are called")
 		{
-			vec.Add(std::make_unique<cct::refl::String>("x"));
+			vec.Add(std::make_unique<cct::refl::String>("x"sv));
 			CHECK(changeCount == 1);
 
-			vec.Add(std::make_unique<cct::refl::String>("y"));
+			vec.Add(std::make_unique<cct::refl::String>("y"sv));
 			CHECK(changeCount == 2);
 
 			vec.Remove(0);
@@ -296,14 +298,14 @@ SCENARIO("Vector - ScopedConnection auto-disconnect")
 		WHEN("A ScopedConnection on OnInserted goes out of scope")
 		{
 			{
-				cct::refl::ScopedConnection sc{
+				cct::ScopedConnection sc{
 					vec.OnInserted.Connect([&callCount](std::size_t, cct::refl::Object&)
 										   { ++callCount; })};
-				vec.Add(std::make_unique<cct::refl::String>("in scope"));
+				vec.Add(std::make_unique<cct::refl::String>("in scope"sv));
 				CHECK(callCount == 1);
 			} // sc destroyed, auto-disconnect
 
-			vec.Add(std::make_unique<cct::refl::String>("out of scope"));
+			vec.Add(std::make_unique<cct::refl::String>("out of scope"sv));
 			THEN("Callback is not called after scope exit") { CHECK(callCount == 1); }
 		}
 	}
@@ -315,7 +317,7 @@ SCENARIO("Vector - Get<T> templated access")
 	{
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
-		vec.Add(std::make_unique<cct::refl::String>("hello"));
+		vec.Add(std::make_unique<cct::refl::String>("hello"sv));
 
 		WHEN("Get<String>(0) is called")
 		{

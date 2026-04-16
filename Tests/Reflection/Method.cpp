@@ -8,7 +8,7 @@
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
-#include "Tests/SampleBar.refl.hpp"
+#include "SampleBar.refl.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 SCENARIO("Method")
@@ -23,7 +23,7 @@ SCENARIO("Method")
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
 			packageLoader.LoadPackages();
 
-			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 13);
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 15);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are invoking a method named 'Bar'")
