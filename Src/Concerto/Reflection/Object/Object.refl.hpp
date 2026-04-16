@@ -11,6 +11,7 @@
 #include <Concerto/Core/EnumFlags/EnumFlags.hpp>
 
 #include "Concerto/Reflection/Defines.hpp"
+#include "Concerto/Core/Signal/Signal.hpp"
 
 #define CCT_OBJECT(className)                      \
 public:                                            \
@@ -51,6 +52,12 @@ namespace cct::refl
 	public:
 		Object();
 		virtual ~Object() = default;
+
+		/// Emitted whenever the value of this object changes.
+		/// Connect with a lambda or a member function pointer:
+		///   obj.OnValueChanged.Connect([](){ ... });
+		///   obj.OnValueChanged.Connect(this, &MyClass::OnChanged);
+		Signal<> OnValueChanged;
 
 		Object(const Object& other);
 		Object(Object&& other) noexcept;
