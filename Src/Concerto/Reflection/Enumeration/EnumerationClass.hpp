@@ -46,11 +46,6 @@ namespace cct::refl
 		[[nodiscard]] std::unique_ptr<T> CreateDefaultObject() const
 		{
 			CCT_ASSERT(T::GetClass() != nullptr, "Class pointer is null");
-			if (*T::GetClass() != *this)
-			{
-				CCT_ASSERT_FALSE("Invalid class");
-				return nullptr;
-			}
 			if (!T::GetClass()->InheritsFrom(*cct::refl::Object::GetClass()))
 			{
 				CCT_ASSERT_FALSE("Trying to create object '{}' but it does not inherits from 'Class'", T::GetClass()->GetName());
