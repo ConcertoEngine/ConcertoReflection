@@ -1202,8 +1202,9 @@ static void AfterPackageGeneration(const CrpPackage* package, CrpGenerationConte
 		crpGenerationContextLeaveScope(ctx, ";");
 		crpGenerationContextNewLine(ctx);
 
-		crpGenerationContextWrite(ctx, "std::unique_ptr<cct::refl::Package> Create%sPackage()", packageName);
+		crpGenerationContextWrite(ctx, "std::unique_ptr<cct::refl::Package> Create%sPackage(cct::Logger* logger)", packageName);
 		crpGenerationContextEnterScope(ctx);
+		crpGenerationContextWrite(ctx, "cct::Logger::SetContext(logger);");
 		crpGenerationContextWrite(ctx, "return std::make_unique<Internal%sPackage>();", packageName);
 	}
 	crpGenerationContextLeaveScope(ctx, NULL);

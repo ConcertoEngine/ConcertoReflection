@@ -64,4 +64,14 @@
 
 #endif
 
+#include <Concerto/Core/Logger/LogMacros.hpp>
+
+#define CCT_REFL_LOG_TRACE(channel, fmt, ...) CCT_LOG_TRACE("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_REFL_LOG_DEBUG(channel, fmt, ...) CCT_LOG_DEBUG("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_REFL_LOG_INFO(channel, fmt, ...) CCT_LOG_INFO("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_REFL_LOG_WARN(channel, fmt, ...) CCT_LOG_WARN("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_REFL_LOG_ERROR(channel, fmt, ...) CCT_LOG_ERROR("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_REFL_LOG_CRITICAL(channel, fmt, ...) CCT_LOG_CRITICAL("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
+
+
 #endif // CONCERTO_REFLECTION_DEFINE_HPP

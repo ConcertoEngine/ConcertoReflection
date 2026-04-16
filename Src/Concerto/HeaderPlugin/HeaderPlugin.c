@@ -126,7 +126,7 @@ static void AfterPackageGeneration(const CrpPackage* package, CrpGenerationConte
 	ToUpper(packageName, upperName, sizeof(upperName));
 
 	crpGenerationContextNewLine(ctx);
-	crpGenerationContextWrite(ctx, "%sPACKAGE_API std::unique_ptr<cct::refl::Package> Create%sPackage();",
+	crpGenerationContextWrite(ctx, "%sPACKAGE_API std::unique_ptr<cct::refl::Package> Create%sPackage(cct::Logger* logger = nullptr);",
 							  upperName, packageName);
 }
 
