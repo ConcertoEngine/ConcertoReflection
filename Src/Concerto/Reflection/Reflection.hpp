@@ -15,5 +15,9 @@
 #include "Concerto/Reflection/Method/Method.hpp"
 #include "Concerto/Reflection/Namespace/Namespace.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
+#include "Concerto/Reflection/Signal/Connection.hpp"
+#include "Concerto/Reflection/Signal/Signal.hpp"
+#include "Concerto/Reflection/String/String.refl.hpp"
+#include "Concerto/Reflection/Vector/Vector.refl.hpp"
 
 #endif // CONCERTO_REFLECTION_REFLECTION_HPP
