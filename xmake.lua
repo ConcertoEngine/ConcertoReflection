@@ -212,6 +212,7 @@ target("concerto-reflection")
         "Registry",
         "TemplateClass",
         "Signal",
+        "String",
     }
     for _, dir in ipairs(files) do
         add_files_to_target("Src/Concerto/Reflection/" .. dir, true)
